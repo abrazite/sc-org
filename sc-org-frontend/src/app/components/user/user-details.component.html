@@ -1,0 +1,47 @@
+<div *ngIf="user">
+  <h3>{{user.name}}</h3>
+  <h4>Contact:</h4>
+  <div *ngIf="user.name">SC Handle: {{user.name}}</div>
+  <div *ngIf="user.discord">Discord: {{user.discord}}</div>
+  <div *ngIf="user.email">Email: {{user.email}}</div>
+  <h4>Rank:</h4>
+  <div *ngIf="user.activeOrganizationRecord as record">
+    <div *ngIf="record.kind === ServiceRecordKind.JoinedOrgRecord">
+      <div>Organization: {{record.properties.organizationName!}} ({{record.date!.toLocaleDateString()}})</div>
+    </div>
+    <div *ngIf="record.kind === ServiceRecordKind.RSICitizenRecord">
+      <div>Organization: {{record.properties.rsiCitizen!.mainOrganization.spectrumIdentification!}}</div>
+    </div>
+    <div *ngIf="record.properties.recruitedBy && record.properties.recruitedBy.length > 0">Recruited by: {{record.properties.recruitedBy.join(',')}}</div>
+  </div>
+  <div *ngIf="user.activeRankRecord as record">Rank: {{record.properties.rank!}}</div>
+  <div *ngIf="user.activeRSICitizenRecord as record">
+    <div *ngIf="record.properties.rsiCitizen as rsiCitizen">
+      <h4>RSI records:</h4>
+      <div *ngIf="rsiCitizen.citizenRecord">record: #{{rsiCitizen.citizenRecord}}</div>
+      <div *ngIf="rsiCitizen.citizenName">citizenName: {{rsiCitizen.citizenName}}</div>
+      <div *ngIf="rsiCitizen.handleName">handle: {{rsiCitizen.handleName}}</div>
+      <div *ngIf="rsiCitizen.enlistedRank">enlistedRank: {{rsiCitizen.enlistedRank}}</div>
+      <div *ngIf="rsiCitizen.enlisted">enlisted: {{rsiCitizen.enlisted.toLocaleDateString()}}</div>
+      <div *ngIf="rsiCitizen.location">location: {{rsiCitizen.location}}</div>
+      <div *ngIf="rsiCitizen.fluency">fluency: {{rsiCitizen.fluency}}</div>
+      <div *ngIf="rsiCitizen.bio">bio: <blockquote style='white-space: pre-line;'>{{rsiCitizen.bio}}</blockquote></div>
+      <div *ngIf="rsiCitizen.mainOrganization as mainOrganization">
+        <h5>Main organization</h5>
+        <div *ngIf="mainOrganization.name">{{mainOrganization.name}}</div>
+        <div *ngIf="mainOrganization.spectrumIdentification">id: {{mainOrganization.spectrumIdentification}}</div>
+        <div *ngIf="mainOrganization.rank">rank: {{mainOrganization.rank}}</div>
+      </div>
+    </div>
+  </div>
+  <h4>Service records:</h4>
+  <ul>
+    <li *ngFor="let record of sortedRecordsByDate()">
+      {{record.date!.toLocaleDateString()}}: {{ServiceRecordKind[record.kind!]}}
+      <span *ngIf="record.properties.organizationName">({{record.properties.organizationName}})</span>
+      <span *ngIf="record.properties.operationName">({{record.properties.operationName}})</span>
+      <span *ngIf="record.properties.certification">({{record.properties.certification}})</span>
+      <span *ngIf="record.properties.rank">({{record.properties.rank}})</span>
+    </li>
+  </ul>
+</div>

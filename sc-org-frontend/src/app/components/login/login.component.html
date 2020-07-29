@@ -1,0 +1,4 @@
+<div *ngIf="!user"><a (click)="redirectToLoginPage()">Login</a></div>
+<div *ngIf="user"><a (click)="logout()">
+  <span *ngIf="user.activeRankRecord as record">[{{record.properties.rank}}] </span>{{user.name}} | Logout</a>
+</div>

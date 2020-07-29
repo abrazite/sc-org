@@ -1,0 +1,24 @@
+<div style="width: 400px; margin: auto;">
+  <app-login></app-login>
+  <h2>Users</h2>
+  <div>
+    <input [(ngModel)]="userId" placeholder="User ID">
+    <button type="button" (click)="getUser()">Get user</button>
+    <button type="button" (click)="getAllUsers()">Get all</button>
+  </div>
+  <div>
+    <button type="button" (click)="getOrgUsers('THEIMC')">Get IMC</button>
+    <button type="button" (click)="getNonIMCUsers()">Get non-IMC</button>
+    <button type="button" (click)="getOrgUsers('INVFED')">Get INVFED</button>
+  </div>
+  <div>
+    <button type="button" (click)="test()">Test</button>
+  </div>
+
+  <div *ngIf="error">
+    <h3>Error:</h3>
+    <div>{{error}}</div>
+  </div>
+  <user-details [user]="user"></user-details>
+  <user-list [users]="users" [showOrg]="showOrgInUserList" (onSelectUser)="selectUser($event)"></user-list>
+</div>
