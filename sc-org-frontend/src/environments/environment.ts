@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  oauthClientId: '737809908681932842',
+  oauthClientId: '',
   oauthLoginUrl: 'https://discord.com/api/oauth2/authorize',
   oauthTokenUrl: 'https://discord.com/api/oauth2/token',
   oauthRevokeUrl: 'https://discord.com/api/oauth2/token/revoke',
