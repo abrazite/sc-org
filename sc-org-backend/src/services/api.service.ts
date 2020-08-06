@@ -4,6 +4,10 @@ import * as net from 'net';
 import * as core from 'express-serve-static-core';
 import cors from 'cors';
 
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+
+import { OrgManagerAPI } from '../api/org-manager.api';
 import { RSICitizenAPI } from '../api/rsi-citizen.api';
 
 export class APIService {
@@ -19,6 +23,11 @@ export class APIService {
       res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
       next();
     });
+
+    const swaggerDocument = YAML.load('./assets/org-manager.space-api-1.0.0-swagger.yaml');
+    this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+    this.app.use('/api/1.0.0', OrgManagerAPI.createRouter());
 
     this.app.use('/rsi/citizen', RSICitizenAPI.createRouter());
     this.server = this.app.listen(8081, () => {

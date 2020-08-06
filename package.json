@@ -1,18 +1,12 @@
 {
   "name": "sc-org",
-  "version": "0.0.0",
+  "version": "0.0.1",
+  "description": "A simple Node app with SQLite as a database management system, instantly up and running.",
+  "main": "server.js",
   "scripts": {
-    "tsc": "tsc",
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e",
-    "postinstall": "node patch-webpack.js",
-    "nginx": "ng build --prod && cd dist/sc-org && cp -r ./ /var/www/org-manager.space/html/"
+    "start2": "cd sc-org-backend && tsc && node dist/main.js",
+    "start": "cd sc-org-frontend && ng serve"
   },
-  "private": true,
   "dependencies": {
     "@angular/animations": "~10.0.5",
     "@angular/common": "~10.0.5",
@@ -26,6 +20,10 @@
     "@types/randomstring": "^1.1.6",
     "angular-2-local-storage": "^3.0.2",
     "crypto-js": "^4.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "node-html-parser": "^1.2.20",
+    "request": "^2.88.2",
     "randomstring": "^1.1.5",
     "rxjs": "~6.5.5",
     "sleep-promise": "^8.0.1",
@@ -51,5 +49,17 @@
     "ts-node": "~8.3.0",
     "tslint": "~6.1.0",
     "typescript": "~3.9.5"
-  }
+  },
+  "engines": {
+    "node": "12.x"
+  },
+  "repository": {
+    "url": "https://github.com/abrazite/sc-org.git"
+  },
+  "license": "MIT",
+  "keywords": [
+    "node",
+    "glitch",
+    "express"
+  ]
 }

@@ -1,0 +1,1701 @@
+openapi: 3.0.0
+servers:
+  - description: Dev
+    url: http://localhost:8081/api/1.0.0
+  - description: Live
+    url: https://org-manager.space/api/1.0.0
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/org-manager.space/api/1.0.0
+
+info:
+  description: membership managment api
+  version: 1.0.0rc0
+  title: org-manager.space API
+  contact:
+    email: abrazite@protonmail.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: admins
+    description: Secured Admin-only calls
+  - name: leadership
+    description: Ability to manage membership
+  - name: personnel
+    description: Operations available to regular personnel
+paths:
+
+    /active-duty:
+      post:
+        tags:
+          - leadership
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActiveDutyRecord'
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      get:
+        tags:
+          - personnel
+        parameters:
+          - in: query
+            name: searchString
+            description: pass an optional search string
+            required: false
+            schema:
+              type: string
+          - in: query
+            name: page
+            description: number of pages to skip for pagination
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+          - in: query
+            name: limit
+            description: maximum number of records to return
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+              maximum: 50
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ActiveDutyRecord'
+    /active-duty/{id}:
+      get:
+        tags:
+          - personnel
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActiveDutyRecord'
+          '404':
+            description: id not found
+      put:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActiveDutyRecord'
+        responses:
+          '200':
+            description: object updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      delete:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record deleted
+          '404':
+            description: id not found
+
+    /certification:
+      post:
+        tags:
+          - leadership
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificationRecord'
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      get:
+        tags:
+          - personnel
+        parameters:
+          - in: query
+            name: searchString
+            description: pass an optional search string
+            required: false
+            schema:
+              type: string
+          - in: query
+            name: page
+            description: number of pages to skip for pagination
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+          - in: query
+            name: limit
+            description: maximum number of records to return
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+              maximum: 50
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CertificationRecord'
+    /certification/{id}:
+      get:
+        tags:
+          - personnel
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CertificationRecord'
+          '404':
+            description: id not found
+      put:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificationRecord'
+        responses:
+          '200':
+            description: object updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      delete:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record deleted
+          '404':
+            description: id not found
+
+    /discord:
+      post:
+        tags:
+          - leadership
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscordRecord'
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      get:
+        tags:
+          - personnel
+        parameters:
+          - in: query
+            name: searchString
+            description: pass an optional search string
+            required: false
+            schema:
+              type: string
+          - in: query
+            name: page
+            description: number of pages to skip for pagination
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+          - in: query
+            name: limit
+            description: maximum number of records to return
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+              maximum: 50
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DiscordRecord'
+    /discord/{id}:
+      get:
+        tags:
+          - personnel
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/DiscordRecord'
+          '404':
+            description: id not found
+      put:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscordRecord'
+        responses:
+          '200':
+            description: object updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      delete:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record deleted
+          '404':
+            description: id not found
+
+    /joined-organization:
+      post:
+        tags:
+          - leadership
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JoinedOrganizationRecord'
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      get:
+        tags:
+          - personnel
+        parameters:
+          - in: query
+            name: searchString
+            description: pass an optional search string
+            required: false
+            schema:
+              type: string
+          - in: query
+            name: page
+            description: number of pages to skip for pagination
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+          - in: query
+            name: limit
+            description: maximum number of records to return
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+              maximum: 50
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/JoinedOrganizationRecord'
+    /joined-organization/{id}:
+      get:
+        tags:
+          - personnel
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JoinedOrganizationRecord'
+          '404':
+            description: id not found
+      put:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JoinedOrganizationRecord'
+        responses:
+          '200':
+            description: object updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      delete:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record deleted
+          '404':
+            description: id not found
+
+    /note:
+      post:
+        tags:
+          - leadership
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteRecord'
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      get:
+        tags:
+          - personnel
+        parameters:
+          - in: query
+            name: searchString
+            description: pass an optional search string
+            required: false
+            schema:
+              type: string
+          - in: query
+            name: page
+            description: number of pages to skip for pagination
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+          - in: query
+            name: limit
+            description: maximum number of records to return
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+              maximum: 50
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/NoteRecord'
+    /note/{id}:
+      get:
+        tags:
+          - personnel
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/NoteRecord'
+          '404':
+            description: id not found
+      put:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteRecord'
+        responses:
+          '200':
+            description: object updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      delete:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record deleted
+          '404':
+            description: id not found
+
+    /operation-attendence:
+      post:
+        tags:
+          - leadership
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationAttendenceRecord'
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      get:
+        tags:
+          - personnel
+        parameters:
+          - in: query
+            name: searchString
+            description: pass an optional search string
+            required: false
+            schema:
+              type: string
+          - in: query
+            name: page
+            description: number of pages to skip for pagination
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+          - in: query
+            name: limit
+            description: maximum number of records to return
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+              maximum: 50
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OperationAttendenceRecord'
+    /operation-attendence/{id}:
+      get:
+        tags:
+          - personnel
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/OperationAttendenceRecord'
+          '404':
+            description: id not found
+      put:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationAttendenceRecord'
+        responses:
+          '200':
+            description: object updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      delete:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record deleted
+          '404':
+            description: id not found
+
+    /rank-change:
+      post:
+        tags:
+          - leadership
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RankChangeRecord'
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      get:
+        tags:
+          - personnel
+        parameters:
+          - in: query
+            name: searchString
+            description: pass an optional search string
+            required: false
+            schema:
+              type: string
+          - in: query
+            name: page
+            description: number of pages to skip for pagination
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+          - in: query
+            name: limit
+            description: maximum number of records to return
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+              maximum: 50
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RankChangeRecord'
+    /rank-change/{id}:
+      get:
+        tags:
+          - personnel
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/RankChangeRecord'
+          '404':
+            description: id not found
+      put:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RankChangeRecord'
+        responses:
+          '200':
+            description: object updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      delete:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record deleted
+          '404':
+            description: id not found
+
+    /rsi-citizen:
+      post:
+        tags:
+          - leadership
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RSICitizenRecord'
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      get:
+        tags:
+          - personnel
+        parameters:
+          - in: query
+            name: searchString
+            description: pass an optional search string
+            required: false
+            schema:
+              type: string
+          - in: query
+            name: page
+            description: number of pages to skip for pagination
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+          - in: query
+            name: limit
+            description: maximum number of records to return
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+              maximum: 50
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RSICitizenRecord'
+    /rsi-citizen/{id}:
+      get:
+        tags:
+          - personnel
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/RSICitizenRecord'
+          '404':
+            description: id not found
+      put:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RSICitizenRecord'
+        responses:
+          '200':
+            description: object updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      delete:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record deleted
+          '404':
+            description: id not found
+
+    /rsi-citizen-organization:
+      post:
+        tags:
+          - leadership
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RSICitizenOrganizationRecord'
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      get:
+        tags:
+          - personnel
+        parameters:
+          - in: query
+            name: searchString
+            description: pass an optional search string
+            required: false
+            schema:
+              type: string
+          - in: query
+            name: page
+            description: number of pages to skip for pagination
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+          - in: query
+            name: limit
+            description: maximum number of records to return
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+              maximum: 50
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RSICitizenOrganizationRecord'
+    /rsi-citizen-organization/{id}:
+      get:
+        tags:
+          - personnel
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/RSICitizenOrganizationRecord'
+          '404':
+            description: id not found
+      put:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RSICitizenOrganizationRecord'
+        responses:
+          '200':
+            description: object updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      delete:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record deleted
+          '404':
+            description: id not found
+
+    /rsi-organization:
+      post:
+        tags:
+          - leadership
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RSIOrganizationRecord'
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      get:
+        tags:
+          - personnel
+        parameters:
+          - in: query
+            name: searchString
+            description: pass an optional search string
+            required: false
+            schema:
+              type: string
+          - in: query
+            name: page
+            description: number of pages to skip for pagination
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+          - in: query
+            name: limit
+            description: maximum number of records to return
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+              maximum: 50
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RSIOrganizationRecord'
+    /rsi-organization/{id}:
+      get:
+        tags:
+          - personnel
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/RSIOrganizationRecord'
+          '404':
+            description: id not found
+      put:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RSIOrganizationRecord'
+        responses:
+          '200':
+            description: object updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      delete:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record deleted
+          '404':
+            description: id not found
+
+    /status:
+      post:
+        tags:
+          - leadership
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusRecord'
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      get:
+        tags:
+          - personnel
+        parameters:
+          - in: query
+            name: searchString
+            description: pass an optional search string
+            required: false
+            schema:
+              type: string
+          - in: query
+            name: page
+            description: number of pages to skip for pagination
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+          - in: query
+            name: limit
+            description: maximum number of records to return
+            schema:
+              type: integer
+              format: int32
+              minimum: 0
+              maximum: 50
+        responses:
+          '200':
+            description: search results matching criteria
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/StatusRecord'
+    /status/{id}:
+      get:
+        tags:
+          - personnel
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/StatusRecord'
+          '404':
+            description: id not found
+      put:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusRecord'
+        responses:
+          '200':
+            description: object updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateRecordResponse'
+          '400':
+            description: bad input parameter
+          '500':
+            description: server error
+      delete:
+        tags:
+          - admins
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+        responses:
+          '200':
+            description: record deleted
+          '404':
+            description: id not found
+
+components:
+  schemas:
+    ActiveDutyRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ed159c6d-bfec-46e6-9092-0ec5acd96ced
+        date:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        personnelId:
+          type: string
+          format: uuid
+          example: 1d9a97a1-9775-4f2a-ad32-8cb78c1961c3
+        issuerPersonnelId:
+          type: string
+          format: uuid
+          example: 32bd75e6-731e-469f-b79d-bcfb445b4b84
+        description:
+          type: string
+          example: 'Org meeting'
+    CertificationRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ed159c6d-bfec-46e6-9092-0ec5acd96ced
+        date:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        personnelId:
+          type: string
+          format: uuid
+          example: 1d9a97a1-9775-4f2a-ad32-8cb78c1961c3
+        issuerPersonnelId:
+          type: string
+          format: uuid
+          example: 32bd75e6-731e-469f-b79d-bcfb445b4b84
+        certificationId:
+          type: string
+          format: uuid
+          example: 89f251f7-77cf-40d7-b928-44e36c8763bf          
+    DiscordRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ed159c6d-bfec-46e6-9092-0ec5acd96ced
+        date:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        personnelId:
+          type: string
+          format: uuid
+          example: 1d9a97a1-9775-4f2a-ad32-8cb78c1961c3
+        issuerPersonnelId:
+          type: string
+          format: uuid
+          example: 32bd75e6-731e-469f-b79d-bcfb445b4b84
+        discordId:
+          type: string
+          example: ''
+        username:
+          type: string
+          example: 'abrazite'          
+        discriminator:
+          type: number
+          example: 1234      
+    JoinedOrganizationRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ed159c6d-bfec-46e6-9092-0ec5acd96ced
+        date:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        personnelId:
+          type: string
+          format: uuid
+          example: 1d9a97a1-9775-4f2a-ad32-8cb78c1961c3
+        issuerPersonnelId:
+          type: string
+          format: uuid
+          example: 32bd75e6-731e-469f-b79d-bcfb445b4b84
+        organizationId:
+          type: string
+          format: uuid
+          example: 22f1dd6d-4efe-4fff-840a-a6e765a10353
+        recruitedByPersonnelId:
+          type: string
+          format: uuid
+          example: ae6382ab-f346-4133-9d75-56b6c403b1ab
+    NoteRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ed159c6d-bfec-46e6-9092-0ec5acd96ced
+        date:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        personnelId:
+          type: string
+          format: uuid
+          example: 1d9a97a1-9775-4f2a-ad32-8cb78c1961c3
+        issuerPersonnelId:
+          type: string
+          format: uuid
+          example: 32bd75e6-731e-469f-b79d-bcfb445b4b84
+        note:
+          type: string
+          example: 'This personnel has interest in FPS'
+    OperationAttendenceRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ed159c6d-bfec-46e6-9092-0ec5acd96ced
+        date:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        personnelId:
+          type: string
+          format: uuid
+          example: 1d9a97a1-9775-4f2a-ad32-8cb78c1961c3
+        issuerPersonnelId:
+          type: string
+          format: uuid
+          example: 32bd75e6-731e-469f-b79d-bcfb445b4b84
+        name:
+          type: string
+          example: 'Blizzard Storm Box Delivery'
+    RankChangeRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ed159c6d-bfec-46e6-9092-0ec5acd96ced
+        date:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        personnelId:
+          type: string
+          format: uuid
+          example: 1d9a97a1-9775-4f2a-ad32-8cb78c1961c3
+        issuerPersonnelId:
+          type: string
+          format: uuid
+          example: 32bd75e6-731e-469f-b79d-bcfb445b4b84
+        rankId:
+          type: string
+          format: uuid
+          example: 459ce181-6ae8-4a18-ac68-cf46dde69beb
+    RSICitizenRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ed159c6d-bfec-46e6-9092-0ec5acd96ced
+        date:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        personnelId:
+          type: string
+          format: uuid
+          example: 1d9a97a1-9775-4f2a-ad32-8cb78c1961c3
+        citizenRecord:
+          type: number
+          example: 123456
+        citizenName:
+          type: string
+          example: 'abrazite'
+        handleName:
+          type: string
+          example: 'abrazite'
+        enlistedRank:
+          type: string
+          example: 'abrazite'
+        enlisted:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        location:
+          type: string
+          example: 'United States'
+        fluency:
+          type: string
+          example: 'English'
+        website:
+          type: string
+          example: 'org-manager.space'
+        biography:
+          type: string
+          example: 'Flys ships in the verse'
+    RSIOrganizationRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ed159c6d-bfec-46e6-9092-0ec5acd96ced
+        date:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        organizationId:
+          type: string
+          format: uuid
+          example: ef6ef62e-ad59-427b-8365-4bd7a522c7c2
+        name:
+          type: string
+          example: 'Interstellar Management Corps'
+        sid:
+          type: string
+          example: 'THEIMC'
+        memberCount:
+          type: number
+          example: 292
+        archetype:
+          type: string
+          example: 'Organization'
+        primaryActivity:
+          type: string
+          example: 'Freelancing'
+        secondaryActivity:
+          type: string
+          example: 'Security'
+        commitment:
+          type: string
+          example: 'Regular'
+        primaryLanguage:
+          type: string
+          example: 'English'
+        recruiting:
+          type: boolean
+          example: true
+        rolePlay:
+          type: boolean
+          example: true
+        exclusive:
+          type: boolean
+          example: true
+    RSICitizenOrganizationRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ed159c6d-bfec-46e6-9092-0ec5acd96ced
+        date:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        personnelId:
+          type: string
+          format: uuid
+          example: 1d9a97a1-9775-4f2a-ad32-8cb78c1961c3
+        organizationId:
+          type: string
+          format: uuid
+          example: ef6ef62e-ad59-427b-8365-4bd7a522c7c2
+        main:
+          type: boolean
+          example: true
+        rank:
+          type: string
+          example: 'Enlisted'
+    StatusRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ed159c6d-bfec-46e6-9092-0ec5acd96ced
+        date:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        personnelId:
+          type: string
+          format: uuid
+          example: 1d9a97a1-9775-4f2a-ad32-8cb78c1961c3
+        issuerPersonnelId:
+          type: string
+          format: uuid
+          example: 32bd75e6-731e-469f-b79d-bcfb445b4b84
+        statusId:
+          type: string
+          format: uuid
+          example: a3609360-b3d9-4da4-ad2f-070ce997dd55
+    CreateRecordResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: 'ok'
+        id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+    Personnel:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        activeDutyRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActiveDutyRecord'
+        certificationRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/CertificationRecord'
+        discordRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscordRecord'
+        joinedOrganizationRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/JoinedOrganizationRecord'
+        noteRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteRecord'
+        operationAttendenceRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationAttendenceRecord'
+        rankChangeRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/RankChangeRecord'
+        rsiCitizenRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/RSICitizenRecord'
+        rsiOrganizationRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/RSIOrganizationRecord'
+        statusRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatusRecord'

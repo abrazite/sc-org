@@ -19,7 +19,7 @@ export class UserService {
   }
 
   public getUser(uid: string): Observable<User> {
-    return this.httpService.get<UserSchema[]>('http://localhost:4200/assets/users.json')
+    return this.httpService.get<UserSchema[]>('/assets/users.json')
       .pipe(map(data => {
         const userJson = data.find(json => json.uid === uid);
         if (!userJson) {
@@ -42,7 +42,7 @@ export class UserService {
   }
 
   public getUserByDiscord(discordHandle: string | null): Observable<User> {
-    return this.httpService.get<UserSchema[]>('http://localhost:4200/assets/users.json')
+    return this.httpService.get<UserSchema[]>('/assets/users.json')
       .pipe(map(data => {
         const userJson = data.find(json => json.discord === discordHandle);
         if (!userJson) {
@@ -65,7 +65,7 @@ export class UserService {
   }
 
   public getAllUsers(): Observable<User[]> {
-    return this.httpService.get<UserSchema[]>('http://localhost:4200/assets/users.json').pipe(
+    return this.httpService.get<UserSchema[]>('/assets/users.json').pipe(
       map(data => data.map(json => User.fromJson(json)))
     );
   }
