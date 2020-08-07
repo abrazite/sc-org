@@ -1889,7 +1889,7 @@ components:
           type: string
           format: uuid
           example: 459ce181-6ae8-4a18-ac68-cf46dde69beb
-    RSICitizenRecord:
+    RsiCitizenRecord:
       type: object
       properties:
         id:
@@ -1932,7 +1932,7 @@ components:
         biography:
           type: string
           example: 'Flys ships in the verse'
-    RSIOrganizationRecord:
+    RsiOrganizationRecord:
       type: object
       properties:
         id:
@@ -1980,7 +1980,7 @@ components:
         exclusive:
           type: boolean
           example: true
-    RSICitizenOrganizationRecord:
+    RsiCitizenOrganizationRecord:
       type: object
       properties:
         id:
@@ -2032,7 +2032,7 @@ components:
           type: string
           format: uuid
           example: a3609360-b3d9-4da4-ad2f-070ce997dd55
-    BranchRecord:
+    BranchesRecord:
       type: object
       properties:
         id:
@@ -2049,7 +2049,7 @@ components:
         branch:
           type: string
           example: 'Helljumpers'
-    GradeRecord:
+    GradesRecord:
       type: object
       properties:
         id:
@@ -2066,7 +2066,7 @@ components:
         grade:
           type: string
           example: 'Recruit'
-    RankRecord:
+    RanksRecord:
       type: object
       properties:
         id:
@@ -2139,11 +2139,11 @@ components:
         rsiCitizenRecords:
           type: array
           items:
-            $ref: '#/components/schemas/RSICitizenRecord'
+            $ref: '#/components/schemas/RsiCitizenRecord'
         rsiOrganizationRecords:
           type: array
           items:
-            $ref: '#/components/schemas/RSIOrganizationRecord'
+            $ref: '#/components/schemas/RsiOrganizationRecord'
         statusRecords:
           type: array
           items:

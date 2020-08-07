@@ -2,7 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 export function fromBinaryUUID(buf: Buffer | null): string | null {
-  if (buf === null) {
+  if (buf === null || buf === undefined) {
     return null;
   }
 
@@ -16,7 +16,7 @@ export function fromBinaryUUID(buf: Buffer | null): string | null {
 }
 
 export function toBinaryUUID(uuid: string | null): Buffer | null {
-  if (uuid === null) {
+  if (uuid === null || uuid === undefined) {
     return null;
   }
 
@@ -144,7 +144,6 @@ export interface Discord {
   organizationId: string | null;
   personnelId: string | null;
   issuerPersonnelId: string | null;
-  discordId: string | null;
   username: string | null;
   discriminator: number | null;
 }
@@ -160,9 +159,6 @@ export class DiscordParser {
     if (json.issuerPersonnelId === null) {
       throw new Error('missing required issuerPersonnelId');
     }
-    if (json.discordId === null) {
-      throw new Error('missing required discordId');
-    }
     if (json.username === null) {
       throw new Error('missing required username');
     }
@@ -172,7 +168,6 @@ export class DiscordParser {
       const record = {        id: json.id ? json.id : uuidv4(),        date: json.date ? new Date(Date.parse(json.date)) : new Date(),        organizationId: json.organizationId,
         personnelId: json.personnelId,
         issuerPersonnelId: json.issuerPersonnelId,
-        discordId: json.discordId,
         username: json.username,
         discriminator: json.discriminator,
       }
@@ -186,7 +181,6 @@ export class DiscordParser {
         toBinaryUUID(record.organizationId),
         toBinaryUUID(record.personnelId),
         toBinaryUUID(record.issuerPersonnelId),
-        record.discordId,
         record.username,
         record.discriminator,
       ];
@@ -200,7 +194,6 @@ export class DiscordParser {
         organizationId: fromBinaryUUID(mysql.organization_id),
         personnelId: fromBinaryUUID(mysql.personnel_id),
         issuerPersonnelId: fromBinaryUUID(mysql.issuer_personnel_id),
-        discordId: mysql.discordId,
         username: mysql.username,
         discriminator: mysql.discriminator,
       };
@@ -790,7 +783,7 @@ export interface Ranks {
   branchId: string | null;
   gradeId: string | null;
   abbreviation: string | null;
-  rank: string | null;
+  name: string | null;
 }
 
 export class RanksParser {
@@ -805,7 +798,7 @@ export class RanksParser {
         branchId: json.branchId,
         gradeId: json.gradeId,
         abbreviation: json.abbreviation,
-        rank: json.rank,
+        name: json.name,
       }
       return record;
     }
@@ -817,7 +810,7 @@ export class RanksParser {
         toBinaryUUID(record.branchId),
         toBinaryUUID(record.gradeId),
         record.abbreviation,
-        record.rank,
+        record.name,
       ];
       return mysql;
     }
@@ -829,7 +822,7 @@ export class RanksParser {
         branchId: fromBinaryUUID(mysql.branch_id),
         gradeId: fromBinaryUUID(mysql.grade_id),
         abbreviation: mysql.abbreviation,
-        rank: mysql.rank,
+        name: mysql.name,
       };
       return record;
     }

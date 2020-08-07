@@ -71,8 +71,8 @@ class APIDefinitions {
         mysqlCreateFieldRequired: [...commonFieldRequired, true]
       }, {
         route: 'discord',
-        mysqlFields: [...commonFields, 'discord_id', 'username', 'discriminator'],
-        fieldTypes: [...commonFieldTypes, 'string-32', 'string-32', 'int'],
+        mysqlFields: [...commonFields, 'username', 'discriminator'],
+        fieldTypes: [...commonFieldTypes, 'string-128', 'int'],
         mysqlCreateFieldRequired: [...commonFieldRequired, true, true, true]
       }, {
         route: 'joined-organization',
@@ -204,7 +204,7 @@ class APIDefinitions {
         mysqlCreateFieldRequired: [false, true, true, false]
       }, {
         route: 'ranks',
-        mysqlFields: ['id', 'organization_id', 'branch_id', 'grade_id', 'abbreviation', 'rank'],
+        mysqlFields: ['id', 'organization_id', 'branch_id', 'grade_id', 'abbreviation', 'name'],
         fieldTypes: ['uuid', 'uuid', 'uuid', 'uuid', 'string-16', 'string-64'],
         mysqlCreateFieldRequired: [false, true, false, false, true, false]
       }
@@ -620,7 +620,7 @@ components:
           type: string
           format: uuid
           example: 459ce181-6ae8-4a18-ac68-cf46dde69beb
-    RSICitizenRecord:
+    RsiCitizenRecord:
       type: object
       properties:
         id:
@@ -663,7 +663,7 @@ components:
         biography:
           type: string
           example: 'Flys ships in the verse'
-    RSIOrganizationRecord:
+    RsiOrganizationRecord:
       type: object
       properties:
         id:
@@ -711,7 +711,7 @@ components:
         exclusive:
           type: boolean
           example: true
-    RSICitizenOrganizationRecord:
+    RsiCitizenOrganizationRecord:
       type: object
       properties:
         id:
@@ -763,7 +763,7 @@ components:
           type: string
           format: uuid
           example: a3609360-b3d9-4da4-ad2f-070ce997dd55
-    BranchRecord:
+    BranchesRecord:
       type: object
       properties:
         id:
@@ -780,7 +780,7 @@ components:
         branch:
           type: string
           example: 'Helljumpers'
-    GradeRecord:
+    GradesRecord:
       type: object
       properties:
         id:
@@ -797,7 +797,7 @@ components:
         grade:
           type: string
           example: 'Recruit'
-    RankRecord:
+    RanksRecord:
       type: object
       properties:
         id:
@@ -870,11 +870,11 @@ components:
         rsiCitizenRecords:
           type: array
           items:
-            $ref: '#/components/schemas/RSICitizenRecord'
+            $ref: '#/components/schemas/RsiCitizenRecord'
         rsiOrganizationRecords:
           type: array
           items:
-            $ref: '#/components/schemas/RSIOrganizationRecord'
+            $ref: '#/components/schemas/RsiOrganizationRecord'
         statusRecords:
           type: array
           items:
@@ -943,11 +943,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/${definition.route}', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT ${definition.insertFieldNames} FROM ${definition.mysqlTable} LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT ${definition.insertFieldNames} FROM ${definition.mysqlTable} ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -1045,7 +1059,7 @@ class ParserGenerator extends Generator {
 import { v4 as uuidv4 } from 'uuid';
 
 export function fromBinaryUUID(buf: Buffer | null): string | null {
-  if (buf === null) {
+  if (buf === null || buf === undefined) {
     return null;
   }
 
@@ -1059,7 +1073,7 @@ export function fromBinaryUUID(buf: Buffer | null): string | null {
 }
 
 export function toBinaryUUID(uuid: string | null): Buffer | null {
-  if (uuid === null) {
+  if (uuid === null || uuid === undefined) {
     return null;
   }
 

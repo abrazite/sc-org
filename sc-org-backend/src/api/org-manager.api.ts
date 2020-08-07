@@ -40,11 +40,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/active-duty', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, description FROM active_duty LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, description FROM active_duty ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -130,11 +144,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/certification', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, certification_id FROM certification LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, certification_id FROM certification ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -206,7 +234,7 @@ export class OrgManagerAPI {
     router.post('/discord', (req, res) => {
       const record = parsers.DiscordParser.fromCreateRequest(req.body);
       connection.query(
-        'INSERT INTO discord (id, date, organization_id, personnel_id, issuer_personnel_id, discord_id, username, discriminator) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO discord (id, date, organization_id, personnel_id, issuer_personnel_id, username, discriminator) VALUES (?, ?, ?, ?, ?, ?, ?)',
         parsers.DiscordParser.toMySql(record),
         (err: mysql.MysqlError | null) => {
           if (err) {
@@ -220,11 +248,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/discord', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, discord_id, username, discriminator FROM discord LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, username, discriminator FROM discord ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -238,7 +280,7 @@ export class OrgManagerAPI {
 
     router.get('/discord/:id', (req, res) => {
       connection.query(
-        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, discord_id, username, discriminator FROM discord WHERE id=?',
+        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, username, discriminator FROM discord WHERE id=?',
         [parsers.toBinaryUUID(req.params.id)],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
@@ -259,7 +301,7 @@ export class OrgManagerAPI {
         throw new Error('id mistmatch');
       }
       connection.query(
-        'UPDATE discord SET id=?, date=?, organization_id=?, personnel_id=?, issuer_personnel_id=?, discord_id=?, username=?, discriminator=? WHERE id=? LIMIT 1',
+        'UPDATE discord SET id=?, date=?, organization_id=?, personnel_id=?, issuer_personnel_id=?, username=?, discriminator=? WHERE id=? LIMIT 1',
         [...parsers.DiscordParser.toMySql(record), parsers.toBinaryUUID(record.id)],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
@@ -310,11 +352,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/joined-organization', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, joined_organization_id, recruited_by_personnel_id FROM joined_organization LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, joined_organization_id, recruited_by_personnel_id FROM joined_organization ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -400,11 +456,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/note', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, note FROM note LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, note FROM note ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -490,11 +560,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/operation-attendence', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, name FROM operation_attendence LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, name FROM operation_attendence ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -580,11 +664,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/rank-change', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, rank_id FROM rank_change LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, rank_id FROM rank_change ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -670,11 +768,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/status', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, status_id FROM status LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, status_id FROM status ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -760,11 +872,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/rsi-citizen', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, date, personnel_id, citizen_record, citizen_name, handle_name, enlisted_rank, enlisted, location, fluency, website, biography FROM rsi_citizen LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, date, personnel_id, citizen_record, citizen_name, handle_name, enlisted_rank, enlisted, location, fluency, website, biography FROM rsi_citizen ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -850,11 +976,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/rsi-citizen-organization', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, date, personnel_id, organization_id, main, rank FROM rsi_citizen_organization LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, date, personnel_id, organization_id, main, rank FROM rsi_citizen_organization ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -940,11 +1080,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/rsi-organization', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, date, organization_id, name, sid, member_count, archetype, primary_activity, secondary_activity, commitment, primary_language, recruiting, role_play, exclusive FROM rsi_organization LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, date, organization_id, name, sid, member_count, archetype, primary_activity, secondary_activity, commitment, primary_language, recruiting, role_play, exclusive FROM rsi_organization ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -1030,11 +1184,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/branches', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, organization_id, abbreviation, branch FROM branches LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, organization_id, abbreviation, branch FROM branches ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -1120,11 +1288,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/grades', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, organization_id, abbreviation, grade FROM grades LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, organization_id, abbreviation, grade FROM grades ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -1196,7 +1378,7 @@ export class OrgManagerAPI {
     router.post('/ranks', (req, res) => {
       const record = parsers.RanksParser.fromCreateRequest(req.body);
       connection.query(
-        'INSERT INTO ranks (id, organization_id, branch_id, grade_id, abbreviation, rank) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO ranks (id, organization_id, branch_id, grade_id, abbreviation, name) VALUES (?, ?, ?, ?, ?, ?)',
         parsers.RanksParser.toMySql(record),
         (err: mysql.MysqlError | null) => {
           if (err) {
@@ -1210,11 +1392,25 @@ export class OrgManagerAPI {
     });
 
     router.get('/ranks', (req, res) => {
+      const filterStrs: string[] = [];
+      const filterParams: any[] = [];
+      Object.keys(req.query).forEach(key => {
+        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+        const sqlField = keySplit.join('_');
+        filterStrs.push(sqlField + '=?');
+        if (keySplit.includes('id')) {
+          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+        } else {
+          filterParams.push(req.query[key]);
+        }
+      });
+      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const page = req.query.page ? parseInt(req.query.page as string) : 0;
       connection.query(
-        'SELECT id, organization_id, branch_id, grade_id, abbreviation, rank FROM ranks LIMIT ? OFFSET ?',
-        [limit, limit * page],
+        'SELECT id, organization_id, branch_id, grade_id, abbreviation, name FROM ranks ' + filterStr + ' LIMIT ? OFFSET ?',
+        [...filterParams, limit, limit * page],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
             console.error(err);
@@ -1228,7 +1424,7 @@ export class OrgManagerAPI {
 
     router.get('/ranks/:id', (req, res) => {
       connection.query(
-        'SELECT id, organization_id, branch_id, grade_id, abbreviation, rank FROM ranks WHERE id=?',
+        'SELECT id, organization_id, branch_id, grade_id, abbreviation, name FROM ranks WHERE id=?',
         [parsers.toBinaryUUID(req.params.id)],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
@@ -1249,7 +1445,7 @@ export class OrgManagerAPI {
         throw new Error('id mistmatch');
       }
       connection.query(
-        'UPDATE ranks SET id=?, organization_id=?, branch_id=?, grade_id=?, abbreviation=?, rank=? WHERE id=? LIMIT 1',
+        'UPDATE ranks SET id=?, organization_id=?, branch_id=?, grade_id=?, abbreviation=?, name=? WHERE id=? LIMIT 1',
         [...parsers.RanksParser.toMySql(record), parsers.toBinaryUUID(record.id)],
         (err: mysql.MysqlError | null, results?: any) => {
           if (err) {
