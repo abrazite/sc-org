@@ -9,7 +9,7 @@
     <div *ngIf="record.kind === ServiceRecordKind.JoinedOrgRecord">
       <div>Organization: {{record.properties.organizationName!}} ({{record.date!.toLocaleDateString()}})</div>
     </div>
-    <div *ngIf="record.kind === ServiceRecordKind.RSICitizenRecord">
+    <div *ngIf="record.kind === ServiceRecordKind.RsiCitizenRecord">
       <div>Organization: {{record.properties.rsiCitizen!.mainOrganization.spectrumIdentification!}}</div>
     </div>
     <div *ngIf="record.properties.recruitedBy && record.properties.recruitedBy.length > 0">Recruited by: {{record.properties.recruitedBy.join(',')}}</div>

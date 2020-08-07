@@ -490,7 +490,7 @@ export interface RsiCitizen {
   citizenName: string | null;
   handleName: string | null;
   enlistedRank: string | null;
-  enlisted: Date | null;
+  enlisteddate: Date | null;
   location: string | null;
   fluency: string | null;
   website: string | null;
@@ -510,7 +510,7 @@ export class RsiCitizenParser {
         citizenName: json.citizenName,
         handleName: json.handleName,
         enlistedRank: json.enlistedRank,
-        enlisted: json.enlisted ? new Date(Date.parse(json.enlisted)) : null,
+        enlisteddate: json.enlisteddate ? new Date(Date.parse(json.enlisteddate)) : null,
         location: json.location,
         fluency: json.fluency,
         website: json.website,
@@ -528,7 +528,7 @@ export class RsiCitizenParser {
         record.citizenName,
         record.handleName,
         record.enlistedRank,
-        record.enlisted,
+        record.enlisteddate,
         record.location,
         record.fluency,
         record.website,
@@ -546,7 +546,7 @@ export class RsiCitizenParser {
         citizenName: mysql.citizenName,
         handleName: mysql.handleName,
         enlistedRank: mysql.enlistedRank,
-        enlisted: new Date(Date.parse(mysql.enlisted)),
+        enlisteddate: new Date(Date.parse(mysql.enlistedDate)),
         location: mysql.location,
         fluency: mysql.fluency,
         website: mysql.website,
@@ -821,6 +821,53 @@ export class RanksParser {
         organizationId: fromBinaryUUID(mysql.organization_id),
         branchId: fromBinaryUUID(mysql.branch_id),
         gradeId: fromBinaryUUID(mysql.grade_id),
+        abbreviation: mysql.abbreviation,
+        name: mysql.name,
+      };
+      return record;
+    }
+  }
+
+export interface Certifications {
+  id: string | null;
+  organizationId: string | null;
+  branchId: string | null;
+  abbreviation: string | null;
+  name: string | null;
+}
+
+export class CertificationsParser {
+  static fromCreateRequest(json: any): Certifications {
+    if (json.organizationId === null) {
+      throw new Error('missing required organizationId');
+    }
+    if (json.abbreviation === null) {
+      throw new Error('missing required abbreviation');
+    }
+      const record = {        id: json.id ? json.id : uuidv4(),        organizationId: json.organizationId,
+        branchId: json.branchId,
+        abbreviation: json.abbreviation,
+        name: json.name,
+      }
+      return record;
+    }
+    
+    static toMySql(record: Certifications): any {
+      const mysql = [
+        toBinaryUUID(record.id),
+        toBinaryUUID(record.organizationId),
+        toBinaryUUID(record.branchId),
+        record.abbreviation,
+        record.name,
+      ];
+      return mysql;
+    }
+    
+    static fromMySql(mysql: any): Certifications {
+      const record = {
+        id: fromBinaryUUID(mysql.id),
+        organizationId: fromBinaryUUID(mysql.organization_id),
+        branchId: fromBinaryUUID(mysql.branch_id),
         abbreviation: mysql.abbreviation,
         name: mysql.name,
       };

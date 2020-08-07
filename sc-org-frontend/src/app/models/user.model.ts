@@ -46,7 +46,7 @@ export class User {
       const recentRecordsFirst = this.serviceRecords.sort((a, b) => b.date!.getTime() - a.date!.getTime());
       return recentRecordsFirst.find(r =>
         r.kind! === ServiceRecordKind.JoinedOrgRecord ||
-        (r.kind! === ServiceRecordKind.RSICitizenRecord && r.properties.rsiCitizen!.mainOrganization.spectrumIdentification));
+        (r.kind! === ServiceRecordKind.RsiCitizenRecord && r.properties.rsiCitizen!.mainOrganization.spectrumIdentification));
     }
     return;
   }
@@ -62,7 +62,7 @@ export class User {
   get activeRSICitizenRecord(): ServiceRecord | undefined {
     if (this.serviceRecords) {
       const recentRecordsFirst = this.serviceRecords.sort((a, b) => b.date!.getTime() - a.date!.getTime());
-      return recentRecordsFirst.find(r => r.kind! === ServiceRecordKind.RSICitizenRecord);
+      return recentRecordsFirst.find(r => r.kind! === ServiceRecordKind.RsiCitizenRecord);
     }
     return;
   }

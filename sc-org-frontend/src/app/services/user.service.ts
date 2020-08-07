@@ -79,7 +79,7 @@ export class UserService {
             uid: `SR${user.serviceRecords.length}-${user.name}`,
             date: new Date(),
             issuer: 'sc-org',
-            kind: ServiceRecordKind[ServiceRecordKind.RSICitizenRecord],
+            kind: ServiceRecordKind[ServiceRecordKind.RsiCitizenRecord],
             rsiCitizen: record
           } as RSICitizenRecordSchema));
         }

@@ -1692,6 +1692,125 @@ paths:
         '404':
           description: id not found
 
+  /certifications:
+    post:
+      tags:
+        - leadership
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificationsRecord'
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRecordResponse'
+        '400':
+          description: bad input parameter
+        '500':
+          description: server error
+    get:
+      tags:
+        - personnel
+      parameters:
+        - in: query
+          name: searchString
+          description: pass an optional search string
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: page
+          description: number of pages to skip for pagination
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - in: query
+          name: limit
+          description: maximum number of records to return
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 50
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CertificationsRecord'
+  /certifications/{id}:
+    get:
+      tags:
+        - personnel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+      responses:
+        '200':
+          description: record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificationsRecord'
+        '404':
+          description: id not found
+    put:
+      tags:
+        - admins
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificationsRecord'
+      responses:
+        '200':
+          description: object updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRecordResponse'
+        '400':
+          description: bad input parameter
+        '500':
+          description: server error
+    delete:
+      tags:
+        - admins
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+      responses:
+        '200':
+          description: record deleted
+        '404':
+          description: id not found
+
 components:
   schemas:
     ActiveDutyRecord:
@@ -1916,7 +2035,7 @@ components:
         enlistedRank:
           type: string
           example: 'abrazite'
-        enlisted:
+        enlistedDate:
           type: string
           format: date-time
           example: '2016-08-29T09:12:33.001Z'
@@ -2090,7 +2209,28 @@ components:
           example: 'CDR'
         name:
           type: string
-          example: 'Commander'          
+          example: 'Commander'
+    CertificationsRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: fd0265af-b083-44ce-8133-2c274a41691b
+        organizationId:
+          type: string
+          format: uuid
+          example: ef6ef62e-ad59-427b-8365-4bd7a522c7c2
+        branch_id:
+          type: string
+          format: uuid
+          example: da7c67e4-7afe-4b0c-91d9-cbef54a62eea
+        abbreviation:
+          type: string
+          example: 'BG'
+        name:
+          type: string
+          example: 'Basic Ground'                    
     CreateRecordResponse:
       type: object
       properties:

@@ -9,7 +9,7 @@ export enum ServiceRecordKind {
   LeaveRecord,
   ReitredRecord,
   NoteRecord,
-  RSICitizenRecord,
+  RsiCitizenRecord,
   MiscActiveDutyRecord
 }
 
@@ -114,7 +114,7 @@ export class ServiceRecord {
     if (serviceRecord.kind === ServiceRecordKind.NoteRecord) {
       serviceRecord.properties.note = (json as NoteRecordSchema).note;
     }
-    if (serviceRecord.kind === ServiceRecordKind.RSICitizenRecord) {
+    if (serviceRecord.kind === ServiceRecordKind.RsiCitizenRecord) {
       serviceRecord.properties.rsiCitizen = (json as RSICitizenRecordSchema).rsiCitizen!;
       if (serviceRecord.properties.rsiCitizen.enlisted) {
         serviceRecord.properties.rsiCitizen.enlisted = new Date(serviceRecord.properties.rsiCitizen!.enlisted);

@@ -107,7 +107,7 @@ class APIDefinitions {
           'citizen_name',
           'handle_name',
           'enlisted_rank',
-          'enlisted',
+          'enlistedDate',
           'location',
           'fluency',
           'website',
@@ -207,6 +207,11 @@ class APIDefinitions {
         mysqlFields: ['id', 'organization_id', 'branch_id', 'grade_id', 'abbreviation', 'name'],
         fieldTypes: ['uuid', 'uuid', 'uuid', 'uuid', 'string-16', 'string-64'],
         mysqlCreateFieldRequired: [false, true, false, false, true, false]
+      }, {
+        route: 'certifications',
+        mysqlFields: ['id', 'organization_id', 'branch_id', 'abbreviation', 'name'],
+        fieldTypes: ['uuid', 'uuid', 'uuid', 'string-16', 'string-64'],
+        mysqlCreateFieldRequired: [false, true, false, true, false]
       }
     ];
 
@@ -647,7 +652,7 @@ components:
         enlistedRank:
           type: string
           example: 'abrazite'
-        enlisted:
+        enlistedDate:
           type: string
           format: date-time
           example: '2016-08-29T09:12:33.001Z'
@@ -821,7 +826,28 @@ components:
           example: 'CDR'
         name:
           type: string
-          example: 'Commander'          
+          example: 'Commander'
+    CertificationsRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: fd0265af-b083-44ce-8133-2c274a41691b
+        organizationId:
+          type: string
+          format: uuid
+          example: ef6ef62e-ad59-427b-8365-4bd7a522c7c2
+        branch_id:
+          type: string
+          format: uuid
+          example: da7c67e4-7afe-4b0c-91d9-cbef54a62eea
+        abbreviation:
+          type: string
+          example: 'BG'
+        name:
+          type: string
+          example: 'Basic Ground'                    
     CreateRecordResponse:
       type: object
       properties:
@@ -920,112 +946,142 @@ export class OrgManagerAPI {
 
     router.use(cors());
     router.use(bodyParser.json());    
+
     `;
   }
 
   fromDefinition(definition) {
     let template = `
 
-    router.post('/${definition.route}', (req, res) => {
-      const record = parsers.${definition.parser}.fromCreateRequest(req.body);
-      connection.query(
-        'INSERT INTO ${definition.mysqlTable} (${definition.insertFieldNames}) VALUES (${definition.insertFieldParams})',
-        parsers.${definition.parser}.toMySql(record),
-        (err: mysql.MysqlError | null) => {
-          if (err) {
-            console.error(err);
-            res.status(500).json({ status: 'error', message: err.message });
-          } else {
-            res.status(200).json({ status: 'ok', id: record.id });
+    router.post('/${definition.route}', (req, res, next) => {
+      try {
+        const record = parsers.${definition.parser}.fromCreateRequest(req.body);
+        connection.query(
+          'INSERT INTO ${definition.mysqlTable} (${definition.insertFieldNames}) VALUES (${definition.insertFieldParams})',
+          parsers.${definition.parser}.toMySql(record),
+          (err: mysql.MysqlError | null) => {
+            if (err) {
+              console.error(err);
+              res.status(500).json({ status: 'error', message: err.message });
+            } else {
+              console.log('POST ${definition.route} ' + record.id);
+              res.status(200).json({ status: 'ok', id: record.id });
+            }
           }
-        }
-      )
-    });
-
-    router.get('/${definition.route}', (req, res) => {
-      const filterStrs: string[] = [];
-      const filterParams: any[] = [];
-      Object.keys(req.query).forEach(key => {
-        const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
-        const sqlField = keySplit.join('_');
-        filterStrs.push(sqlField + '=?');
-        if (keySplit.includes('id')) {
-          filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
-        } else {
-          filterParams.push(req.query[key]);
-        }
-      });
-      const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
-
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
-      const page = req.query.page ? parseInt(req.query.page as string) : 0;
-      connection.query(
-        'SELECT ${definition.insertFieldNames} FROM ${definition.mysqlTable} ' + filterStr + ' LIMIT ? OFFSET ?',
-        [...filterParams, limit, limit * page],
-        (err: mysql.MysqlError | null, results?: any) => {
-          if (err) {
-            console.error(err);
-            res.status(500).json({ status: 'error', message: err.message });
-          } else {
-            res.status(200).json(results!.map((r: any) => parsers.${definition.parser}.fromMySql(r)));
-          }
-        }
-      )
-    });
-
-    router.get('/${definition.route}/:id', (req, res) => {
-      connection.query(
-        'SELECT ${definition.insertFieldNames} FROM ${definition.mysqlTable} WHERE id=?',
-        [parsers.toBinaryUUID(req.params.id)],
-        (err: mysql.MysqlError | null, results?: any) => {
-          if (err) {
-            console.error(err);
-            res.status(500).json({ status: 'error', message: err.message });
-          } else if (results && results.length > 0) {
-            res.status(200).json(results!.map((r: any) => parsers.${definition.parser}.fromMySql(r)));
-          } else {
-            res.status(404).json({ status: 'error' });
-          }
-        }
-      )
-    });
-
-    router.put('/${definition.route}/:id', (req, res) => {
-      const record = parsers.${definition.parser}.fromCreateRequest(req.body);
-      if (record.id !== req.params.id) {
-        throw new Error('id mistmatch');
+        )
+      } catch(err) {
+        res.status(500).json({ status: 'error', message: err.message });
       }
-      connection.query(
-        'UPDATE ${definition.mysqlTable} SET ${definition.updateSetFields} WHERE id=? LIMIT 1',
-        [...parsers.${definition.parser}.toMySql(record), parsers.toBinaryUUID(record.id)],
-        (err: mysql.MysqlError | null, results?: any) => {
-          if (err) {
-            console.error(err);
-            res.status(500).json({ status: 'error', message: err.message });
-          } else if (results && results.affectedRows === 1) {
-            res.status(200).json({ status: 'ok' });
-          } else {
-            res.status(404).json({ status: 'error' });
-          }
-        }
-      )
     });
 
-    router.delete('/${definition.route}/:id', (req, res) => {
-      connection.query(
-        'DELETE FROM ${definition.mysqlTable} WHERE id=? LIMIT 1',
-        [parsers.toBinaryUUID(req.params.id)],
-        (err: mysql.MysqlError | null, results?: any) => {
-          if (err) {
-            console.error(err);
-            res.status(500).json({ status: 'error', message: err.message });
-          } else if (results && results.affectedRows === 1) {
-            res.status(200).json({ status: 'ok' });
+    router.get('/${definition.route}', (req, res, next) => {
+      try {
+        const filterStrs: string[] = [];
+        const filterParams: any[] = [];
+        Object.keys(req.query).forEach(key => {
+          const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+          const sqlField = keySplit.join('_');
+          filterStrs.push(sqlField + '=?');
+          if (keySplit.includes('id')) {
+            filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+          } else if (keySplit.includes('date')) {
+            filterParams.push(new Date(Date.parse(req.query[key] as string)));
           } else {
-            res.status(404).json({ status: 'error' });
+            filterParams.push(req.query[key]);
           }
+        });
+        const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+        const page = req.query.page ? parseInt(req.query.page as string) : 0;
+
+        connection.query(
+          'SELECT ${definition.insertFieldNames} FROM ${definition.mysqlTable} ' + filterStr + ' LIMIT ? OFFSET ?',
+          [...filterParams, limit, limit * page],
+          (err: mysql.MysqlError | null, results?: any) => {
+            if (err) {
+              console.error(err);
+              res.status(500).json({ status: 'error', message: err.message });
+            } else {
+              res.status(200).json(results!.map((r: any) => parsers.${definition.parser}.fromMySql(r)));
+            }
+          }
+        )
+      } catch(err) {
+        res.status(500).json({ status: 'error', message: err.message });
+      }
+    });
+
+    router.get('/${definition.route}/:id', (req, res, next) => {
+      try {
+        connection.query(
+          'SELECT ${definition.insertFieldNames} FROM ${definition.mysqlTable} WHERE id=?',
+          [parsers.toBinaryUUID(req.params.id)],
+          (err: mysql.MysqlError | null, results?: any) => {
+            if (err) {
+              console.error(err);
+              res.status(500).json({ status: 'error', message: err.message });
+            } else if (results && results.length > 0) {
+              res.status(200).json(results!.map((r: any) => parsers.${definition.parser}.fromMySql(r)));
+            } else {
+              res.status(404).json({ status: 'error' });
+            }
+          }
+        )
+      } catch(err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: err.message });
+      }
+    });
+
+    router.put('/${definition.route}/:id', (req, res, next) => {
+      try {
+        const record = parsers.${definition.parser}.fromCreateRequest(req.body);
+        if (record.id !== req.params.id) {
+          throw new Error('id mistmatch');
         }
-      )
+        connection.query(
+          'UPDATE ${definition.mysqlTable} SET ${definition.updateSetFields} WHERE id=? LIMIT 1',
+          [...parsers.${definition.parser}.toMySql(record), parsers.toBinaryUUID(record.id)],
+          (err: mysql.MysqlError | null, results?: any) => {
+            if (err) {
+              console.error(err);
+              res.status(500).json({ status: 'error', message: err.message });
+            } else if (results && results.affectedRows === 1) {
+              console.log('PUT ${definition.route} ' + record.id);
+              res.status(200).json({ status: 'ok' });
+            } else {
+              res.status(404).json({ status: 'error' });
+            }
+          }
+        )
+      } catch(err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: err.message });
+      }
+    });
+
+    router.delete('/${definition.route}/:id', (req, res, next) => {
+      try {
+        connection.query(
+          'DELETE FROM ${definition.mysqlTable} WHERE id=? LIMIT 1',
+          [parsers.toBinaryUUID(req.params.id)],
+          (err: mysql.MysqlError | null, results?: any) => {
+            if (err) {
+              console.error(err);
+              res.status(500).json({ status: 'error', message: err.message });
+            } else if (results && results.affectedRows === 1) {
+              console.log('DEL ${definition.route} ' + req.params.id);
+              res.status(200).json({ status: 'ok' });
+            } else {
+              res.status(404).json({ status: 'error' });
+            }
+          }
+        )
+      } catch(err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: err.message });
+      }
     });
 
 `;
