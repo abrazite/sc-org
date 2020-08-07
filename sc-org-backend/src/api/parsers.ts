@@ -1,3 +1,4 @@
+// Auto generated
 import { v4 as uuidv4 } from 'uuid';
 
 export function fromBinaryUUID(buf: Buffer | null): string | null {
@@ -27,10 +28,11 @@ export function toBinaryUUID(uuid: string | null): Buffer | null {
     buf.slice(8, 16),
   ]);
 }
-
+    
 export interface ActiveDuty {
   id: string | null;
   date: Date | null;
+  organizationId: string | null;
   personnelId: string | null;
   issuerPersonnelId: string | null;
   description: string | null;
@@ -38,15 +40,16 @@ export interface ActiveDuty {
 
 export class ActiveDutyParser {
   static fromCreateRequest(json: any): ActiveDuty {
+    if (json.organizationId === null) {
+      throw new Error('missing required organizationId');
+    }
     if (json.personnelId === null) {
       throw new Error('missing required personnelId');
     }
     if (json.issuerPersonnelId === null) {
       throw new Error('missing required issuerPersonnelId');
     }
-      const record = {
-        id: json.id ? json.id : uuidv4(),
-        date: json.date ? new Date(Date.parse(json.date)) : new Date(),
+      const record = {        id: json.id ? json.id : uuidv4(),        date: json.date ? new Date(Date.parse(json.date)) : new Date(),        organizationId: json.organizationId,
         personnelId: json.personnelId,
         issuerPersonnelId: json.issuerPersonnelId,
         description: json.description,
@@ -58,6 +61,7 @@ export class ActiveDutyParser {
       const mysql = [
         toBinaryUUID(record.id),
         record.date,
+        toBinaryUUID(record.organizationId),
         toBinaryUUID(record.personnelId),
         toBinaryUUID(record.issuerPersonnelId),
         record.description,
@@ -69,6 +73,7 @@ export class ActiveDutyParser {
       const record = {
         id: fromBinaryUUID(mysql.id),
         date: new Date(Date.parse(mysql.date)),
+        organizationId: fromBinaryUUID(mysql.organization_id),
         personnelId: fromBinaryUUID(mysql.personnel_id),
         issuerPersonnelId: fromBinaryUUID(mysql.issuer_personnel_id),
         description: mysql.description,
@@ -80,6 +85,7 @@ export class ActiveDutyParser {
 export interface Certification {
   id: string | null;
   date: Date | null;
+  organizationId: string | null;
   personnelId: string | null;
   issuerPersonnelId: string | null;
   certificationId: string | null;
@@ -87,6 +93,9 @@ export interface Certification {
 
 export class CertificationParser {
   static fromCreateRequest(json: any): Certification {
+    if (json.organizationId === null) {
+      throw new Error('missing required organizationId');
+    }
     if (json.personnelId === null) {
       throw new Error('missing required personnelId');
     }
@@ -96,9 +105,7 @@ export class CertificationParser {
     if (json.certificationId === null) {
       throw new Error('missing required certificationId');
     }
-      const record = {
-        id: json.id ? json.id : uuidv4(),
-        date: json.date ? new Date(Date.parse(json.date)) : new Date(),
+      const record = {        id: json.id ? json.id : uuidv4(),        date: json.date ? new Date(Date.parse(json.date)) : new Date(),        organizationId: json.organizationId,
         personnelId: json.personnelId,
         issuerPersonnelId: json.issuerPersonnelId,
         certificationId: json.certificationId,
@@ -110,6 +117,7 @@ export class CertificationParser {
       const mysql = [
         toBinaryUUID(record.id),
         record.date,
+        toBinaryUUID(record.organizationId),
         toBinaryUUID(record.personnelId),
         toBinaryUUID(record.issuerPersonnelId),
         toBinaryUUID(record.certificationId),
@@ -121,6 +129,7 @@ export class CertificationParser {
       const record = {
         id: fromBinaryUUID(mysql.id),
         date: new Date(Date.parse(mysql.date)),
+        organizationId: fromBinaryUUID(mysql.organization_id),
         personnelId: fromBinaryUUID(mysql.personnel_id),
         issuerPersonnelId: fromBinaryUUID(mysql.issuer_personnel_id),
         certificationId: fromBinaryUUID(mysql.certification_id),
@@ -132,6 +141,7 @@ export class CertificationParser {
 export interface Discord {
   id: string | null;
   date: Date | null;
+  organizationId: string | null;
   personnelId: string | null;
   issuerPersonnelId: string | null;
   discordId: string | null;
@@ -141,6 +151,9 @@ export interface Discord {
 
 export class DiscordParser {
   static fromCreateRequest(json: any): Discord {
+    if (json.organizationId === null) {
+      throw new Error('missing required organizationId');
+    }
     if (json.personnelId === null) {
       throw new Error('missing required personnelId');
     }
@@ -156,9 +169,7 @@ export class DiscordParser {
     if (json.discriminator === null) {
       throw new Error('missing required discriminator');
     }
-      const record = {
-        id: json.id ? json.id : uuidv4(),
-        date: json.date ? new Date(Date.parse(json.date)) : new Date(),
+      const record = {        id: json.id ? json.id : uuidv4(),        date: json.date ? new Date(Date.parse(json.date)) : new Date(),        organizationId: json.organizationId,
         personnelId: json.personnelId,
         issuerPersonnelId: json.issuerPersonnelId,
         discordId: json.discordId,
@@ -172,6 +183,7 @@ export class DiscordParser {
       const mysql = [
         toBinaryUUID(record.id),
         record.date,
+        toBinaryUUID(record.organizationId),
         toBinaryUUID(record.personnelId),
         toBinaryUUID(record.issuerPersonnelId),
         record.discordId,
@@ -185,6 +197,7 @@ export class DiscordParser {
       const record = {
         id: fromBinaryUUID(mysql.id),
         date: new Date(Date.parse(mysql.date)),
+        organizationId: fromBinaryUUID(mysql.organization_id),
         personnelId: fromBinaryUUID(mysql.personnel_id),
         issuerPersonnelId: fromBinaryUUID(mysql.issuer_personnel_id),
         discordId: mysql.discordId,
@@ -198,29 +211,31 @@ export class DiscordParser {
 export interface JoinedOrganization {
   id: string | null;
   date: Date | null;
+  organizationId: string | null;
   personnelId: string | null;
   issuerPersonnelId: string | null;
-  organizationId: string | null;
+  joinedOrganizationId: string | null;
   recruitedByPersonnelId: string | null;
 }
 
 export class JoinedOrganizationParser {
   static fromCreateRequest(json: any): JoinedOrganization {
+    if (json.organizationId === null) {
+      throw new Error('missing required organizationId');
+    }
     if (json.personnelId === null) {
       throw new Error('missing required personnelId');
     }
     if (json.issuerPersonnelId === null) {
       throw new Error('missing required issuerPersonnelId');
     }
-    if (json.organizationId === null) {
-      throw new Error('missing required organizationId');
+    if (json.joinedOrganizationId === null) {
+      throw new Error('missing required joinedOrganizationId');
     }
-      const record = {
-        id: json.id ? json.id : uuidv4(),
-        date: json.date ? new Date(Date.parse(json.date)) : new Date(),
+      const record = {        id: json.id ? json.id : uuidv4(),        date: json.date ? new Date(Date.parse(json.date)) : new Date(),        organizationId: json.organizationId,
         personnelId: json.personnelId,
         issuerPersonnelId: json.issuerPersonnelId,
-        organizationId: json.organizationId,
+        joinedOrganizationId: json.joinedOrganizationId,
         recruitedByPersonnelId: json.recruitedByPersonnelId,
       }
       return record;
@@ -230,9 +245,10 @@ export class JoinedOrganizationParser {
       const mysql = [
         toBinaryUUID(record.id),
         record.date,
+        toBinaryUUID(record.organizationId),
         toBinaryUUID(record.personnelId),
         toBinaryUUID(record.issuerPersonnelId),
-        toBinaryUUID(record.organizationId),
+        toBinaryUUID(record.joinedOrganizationId),
         toBinaryUUID(record.recruitedByPersonnelId),
       ];
       return mysql;
@@ -242,9 +258,10 @@ export class JoinedOrganizationParser {
       const record = {
         id: fromBinaryUUID(mysql.id),
         date: new Date(Date.parse(mysql.date)),
+        organizationId: fromBinaryUUID(mysql.organization_id),
         personnelId: fromBinaryUUID(mysql.personnel_id),
         issuerPersonnelId: fromBinaryUUID(mysql.issuer_personnel_id),
-        organizationId: fromBinaryUUID(mysql.organization_id),
+        joinedOrganizationId: fromBinaryUUID(mysql.joined_organization_id),
         recruitedByPersonnelId: fromBinaryUUID(mysql.recruited_by_personnel_id),
       };
       return record;
@@ -254,6 +271,7 @@ export class JoinedOrganizationParser {
 export interface Note {
   id: string | null;
   date: Date | null;
+  organizationId: string | null;
   personnelId: string | null;
   issuerPersonnelId: string | null;
   note: string | null;
@@ -261,6 +279,9 @@ export interface Note {
 
 export class NoteParser {
   static fromCreateRequest(json: any): Note {
+    if (json.organizationId === null) {
+      throw new Error('missing required organizationId');
+    }
     if (json.personnelId === null) {
       throw new Error('missing required personnelId');
     }
@@ -270,9 +291,7 @@ export class NoteParser {
     if (json.note === null) {
       throw new Error('missing required note');
     }
-      const record = {
-        id: json.id ? json.id : uuidv4(),
-        date: json.date ? new Date(Date.parse(json.date)) : new Date(),
+      const record = {        id: json.id ? json.id : uuidv4(),        date: json.date ? new Date(Date.parse(json.date)) : new Date(),        organizationId: json.organizationId,
         personnelId: json.personnelId,
         issuerPersonnelId: json.issuerPersonnelId,
         note: json.note,
@@ -284,6 +303,7 @@ export class NoteParser {
       const mysql = [
         toBinaryUUID(record.id),
         record.date,
+        toBinaryUUID(record.organizationId),
         toBinaryUUID(record.personnelId),
         toBinaryUUID(record.issuerPersonnelId),
         record.note,
@@ -295,6 +315,7 @@ export class NoteParser {
       const record = {
         id: fromBinaryUUID(mysql.id),
         date: new Date(Date.parse(mysql.date)),
+        organizationId: fromBinaryUUID(mysql.organization_id),
         personnelId: fromBinaryUUID(mysql.personnel_id),
         issuerPersonnelId: fromBinaryUUID(mysql.issuer_personnel_id),
         note: mysql.note,
@@ -306,6 +327,7 @@ export class NoteParser {
 export interface OperationAttendence {
   id: string | null;
   date: Date | null;
+  organizationId: string | null;
   personnelId: string | null;
   issuerPersonnelId: string | null;
   name: string | null;
@@ -313,15 +335,16 @@ export interface OperationAttendence {
 
 export class OperationAttendenceParser {
   static fromCreateRequest(json: any): OperationAttendence {
+    if (json.organizationId === null) {
+      throw new Error('missing required organizationId');
+    }
     if (json.personnelId === null) {
       throw new Error('missing required personnelId');
     }
     if (json.issuerPersonnelId === null) {
       throw new Error('missing required issuerPersonnelId');
     }
-      const record = {
-        id: json.id ? json.id : uuidv4(),
-        date: json.date ? new Date(Date.parse(json.date)) : new Date(),
+      const record = {        id: json.id ? json.id : uuidv4(),        date: json.date ? new Date(Date.parse(json.date)) : new Date(),        organizationId: json.organizationId,
         personnelId: json.personnelId,
         issuerPersonnelId: json.issuerPersonnelId,
         name: json.name,
@@ -333,6 +356,7 @@ export class OperationAttendenceParser {
       const mysql = [
         toBinaryUUID(record.id),
         record.date,
+        toBinaryUUID(record.organizationId),
         toBinaryUUID(record.personnelId),
         toBinaryUUID(record.issuerPersonnelId),
         record.name,
@@ -344,6 +368,7 @@ export class OperationAttendenceParser {
       const record = {
         id: fromBinaryUUID(mysql.id),
         date: new Date(Date.parse(mysql.date)),
+        organizationId: fromBinaryUUID(mysql.organization_id),
         personnelId: fromBinaryUUID(mysql.personnel_id),
         issuerPersonnelId: fromBinaryUUID(mysql.issuer_personnel_id),
         name: mysql.name,
@@ -355,6 +380,7 @@ export class OperationAttendenceParser {
 export interface RankChange {
   id: string | null;
   date: Date | null;
+  organizationId: string | null;
   personnelId: string | null;
   issuerPersonnelId: string | null;
   rankId: string | null;
@@ -362,6 +388,9 @@ export interface RankChange {
 
 export class RankChangeParser {
   static fromCreateRequest(json: any): RankChange {
+    if (json.organizationId === null) {
+      throw new Error('missing required organizationId');
+    }
     if (json.personnelId === null) {
       throw new Error('missing required personnelId');
     }
@@ -371,9 +400,7 @@ export class RankChangeParser {
     if (json.rankId === null) {
       throw new Error('missing required rankId');
     }
-      const record = {
-        id: json.id ? json.id : uuidv4(),
-        date: json.date ? new Date(Date.parse(json.date)) : new Date(),
+      const record = {        id: json.id ? json.id : uuidv4(),        date: json.date ? new Date(Date.parse(json.date)) : new Date(),        organizationId: json.organizationId,
         personnelId: json.personnelId,
         issuerPersonnelId: json.issuerPersonnelId,
         rankId: json.rankId,
@@ -385,6 +412,7 @@ export class RankChangeParser {
       const mysql = [
         toBinaryUUID(record.id),
         record.date,
+        toBinaryUUID(record.organizationId),
         toBinaryUUID(record.personnelId),
         toBinaryUUID(record.issuerPersonnelId),
         toBinaryUUID(record.rankId),
@@ -396,9 +424,66 @@ export class RankChangeParser {
       const record = {
         id: fromBinaryUUID(mysql.id),
         date: new Date(Date.parse(mysql.date)),
+        organizationId: fromBinaryUUID(mysql.organization_id),
         personnelId: fromBinaryUUID(mysql.personnel_id),
         issuerPersonnelId: fromBinaryUUID(mysql.issuer_personnel_id),
         rankId: fromBinaryUUID(mysql.rank_id),
+      };
+      return record;
+    }
+  }
+
+export interface Status {
+  id: string | null;
+  date: Date | null;
+  organizationId: string | null;
+  personnelId: string | null;
+  issuerPersonnelId: string | null;
+  statusId: string | null;
+}
+
+export class StatusParser {
+  static fromCreateRequest(json: any): Status {
+    if (json.organizationId === null) {
+      throw new Error('missing required organizationId');
+    }
+    if (json.personnelId === null) {
+      throw new Error('missing required personnelId');
+    }
+    if (json.issuerPersonnelId === null) {
+      throw new Error('missing required issuerPersonnelId');
+    }
+    if (json.statusId === null) {
+      throw new Error('missing required statusId');
+    }
+      const record = {        id: json.id ? json.id : uuidv4(),        date: json.date ? new Date(Date.parse(json.date)) : new Date(),        organizationId: json.organizationId,
+        personnelId: json.personnelId,
+        issuerPersonnelId: json.issuerPersonnelId,
+        statusId: json.statusId,
+      }
+      return record;
+    }
+    
+    static toMySql(record: Status): any {
+      const mysql = [
+        toBinaryUUID(record.id),
+        record.date,
+        toBinaryUUID(record.organizationId),
+        toBinaryUUID(record.personnelId),
+        toBinaryUUID(record.issuerPersonnelId),
+        toBinaryUUID(record.statusId),
+      ];
+      return mysql;
+    }
+    
+    static fromMySql(mysql: any): Status {
+      const record = {
+        id: fromBinaryUUID(mysql.id),
+        date: new Date(Date.parse(mysql.date)),
+        organizationId: fromBinaryUUID(mysql.organization_id),
+        personnelId: fromBinaryUUID(mysql.personnel_id),
+        issuerPersonnelId: fromBinaryUUID(mysql.issuer_personnel_id),
+        statusId: fromBinaryUUID(mysql.status_id),
       };
       return record;
     }
@@ -408,7 +493,7 @@ export interface RsiCitizen {
   id: string | null;
   date: Date | null;
   personnelId: string | null;
-  citizenRecord: number | null;
+  citizenRecord: undefined | null;
   citizenName: string | null;
   handleName: string | null;
   enlistedRank: string | null;
@@ -427,10 +512,7 @@ export class RsiCitizenParser {
     if (json.handleName === null) {
       throw new Error('missing required handleName');
     }
-      const record = {
-        id: json.id ? json.id : uuidv4(),
-        date: json.date ? new Date(Date.parse(json.date)) : new Date(),
-        personnelId: json.personnelId,
+      const record = {        id: json.id ? json.id : uuidv4(),        date: json.date ? new Date(Date.parse(json.date)) : new Date(),        personnelId: json.personnelId,
         citizenRecord: json.citizenRecord,
         citizenName: json.citizenName,
         handleName: json.handleName,
@@ -486,8 +568,8 @@ export interface RsiCitizenOrganization {
   date: Date | null;
   personnelId: string | null;
   organizationId: string | null;
-  main: string | null;
-  rank: boolean | null;
+  main: boolean | null;
+  rank: string | null;
 }
 
 export class RsiCitizenOrganizationParser {
@@ -501,13 +583,7 @@ export class RsiCitizenOrganizationParser {
     if (json.main === null) {
       throw new Error('missing required main');
     }
-    if (json.rank === null) {
-      throw new Error('missing required rank');
-    }
-      const record = {
-        id: json.id ? json.id : uuidv4(),
-        date: json.date ? new Date(Date.parse(json.date)) : new Date(),
-        personnelId: json.personnelId,
+      const record = {        id: json.id ? json.id : uuidv4(),        date: json.date ? new Date(Date.parse(json.date)) : new Date(),        personnelId: json.personnelId,
         organizationId: json.organizationId,
         main: json.main,
         rank: json.rank,
@@ -521,7 +597,7 @@ export class RsiCitizenOrganizationParser {
         record.date,
         toBinaryUUID(record.personnelId),
         toBinaryUUID(record.organizationId),
-        toBinaryUUID(record.main),
+        record.main,
         record.rank,
       ];
       return mysql;
@@ -533,7 +609,7 @@ export class RsiCitizenOrganizationParser {
         date: new Date(Date.parse(mysql.date)),
         personnelId: fromBinaryUUID(mysql.personnel_id),
         organizationId: fromBinaryUUID(mysql.organization_id),
-        main: fromBinaryUUID(mysql.main),
+        main: mysql.main,
         rank: mysql.rank,
       };
       return record;
@@ -546,7 +622,7 @@ export interface RsiOrganization {
   organizationId: string | null;
   name: string | null;
   sid: string | null;
-  memberCount: number | null;
+  memberCount: undefined | null;
   archetype: string | null;
   primaryActivity: string | null;
   secondaryActivity: string | null;
@@ -565,10 +641,7 @@ export class RsiOrganizationParser {
     if (json.sid === null) {
       throw new Error('missing required sid');
     }
-      const record = {
-        id: json.id ? json.id : uuidv4(),
-        date: json.date ? new Date(Date.parse(json.date)) : new Date(),
-        organizationId: json.organizationId,
+      const record = {        id: json.id ? json.id : uuidv4(),        date: json.date ? new Date(Date.parse(json.date)) : new Date(),        organizationId: json.organizationId,
         name: json.name,
         sid: json.sid,
         memberCount: json.memberCount,
@@ -625,51 +698,140 @@ export class RsiOrganizationParser {
     }
   }
 
-export interface Status {
+export interface Branches {
   id: string | null;
-  date: Date | null;
-  personnelId: string | null;
-  issuerPersonnelId: string | null;
-  statusId: string | null;
+  organizationId: string | null;
+  abbreviation: string | null;
+  branch: string | null;
 }
 
-export class StatusParser {
-  static fromCreateRequest(json: any): Status {
-    if (json.personnelId === null) {
-      throw new Error('missing required personnelId');
+export class BranchesParser {
+  static fromCreateRequest(json: any): Branches {
+    if (json.organizationId === null) {
+      throw new Error('missing required organizationId');
     }
-    if (json.issuerPersonnelId === null) {
-      throw new Error('missing required issuerPersonnelId');
+    if (json.abbreviation === null) {
+      throw new Error('missing required abbreviation');
     }
-      const record = {
-        id: json.id ? json.id : uuidv4(),
-        date: json.date ? new Date(Date.parse(json.date)) : new Date(),
-        personnelId: json.personnelId,
-        issuerPersonnelId: json.issuerPersonnelId,
-        statusId: json.statusId,
+      const record = {        id: json.id ? json.id : uuidv4(),        organizationId: json.organizationId,
+        abbreviation: json.abbreviation,
+        branch: json.branch,
       }
       return record;
     }
     
-    static toMySql(record: Status): any {
+    static toMySql(record: Branches): any {
       const mysql = [
         toBinaryUUID(record.id),
-        record.date,
-        toBinaryUUID(record.personnelId),
-        toBinaryUUID(record.issuerPersonnelId),
-        toBinaryUUID(record.statusId),
+        toBinaryUUID(record.organizationId),
+        record.abbreviation,
+        record.branch,
       ];
       return mysql;
     }
     
-    static fromMySql(mysql: any): Status {
+    static fromMySql(mysql: any): Branches {
       const record = {
         id: fromBinaryUUID(mysql.id),
-        date: new Date(Date.parse(mysql.date)),
-        personnelId: fromBinaryUUID(mysql.personnel_id),
-        issuerPersonnelId: fromBinaryUUID(mysql.issuer_personnel_id),
-        statusId: fromBinaryUUID(mysql.status_id),
+        organizationId: fromBinaryUUID(mysql.organization_id),
+        abbreviation: mysql.abbreviation,
+        branch: mysql.branch,
       };
       return record;
     }
   }
+
+export interface Grades {
+  id: string | null;
+  organizationId: string | null;
+  abbreviation: string | null;
+  grade: string | null;
+}
+
+export class GradesParser {
+  static fromCreateRequest(json: any): Grades {
+    if (json.organizationId === null) {
+      throw new Error('missing required organizationId');
+    }
+    if (json.abbreviation === null) {
+      throw new Error('missing required abbreviation');
+    }
+      const record = {        id: json.id ? json.id : uuidv4(),        organizationId: json.organizationId,
+        abbreviation: json.abbreviation,
+        grade: json.grade,
+      }
+      return record;
+    }
+    
+    static toMySql(record: Grades): any {
+      const mysql = [
+        toBinaryUUID(record.id),
+        toBinaryUUID(record.organizationId),
+        record.abbreviation,
+        record.grade,
+      ];
+      return mysql;
+    }
+    
+    static fromMySql(mysql: any): Grades {
+      const record = {
+        id: fromBinaryUUID(mysql.id),
+        organizationId: fromBinaryUUID(mysql.organization_id),
+        abbreviation: mysql.abbreviation,
+        grade: mysql.grade,
+      };
+      return record;
+    }
+  }
+
+export interface Ranks {
+  id: string | null;
+  organizationId: string | null;
+  branchId: string | null;
+  gradeId: string | null;
+  abbreviation: string | null;
+  rank: string | null;
+}
+
+export class RanksParser {
+  static fromCreateRequest(json: any): Ranks {
+    if (json.organizationId === null) {
+      throw new Error('missing required organizationId');
+    }
+    if (json.abbreviation === null) {
+      throw new Error('missing required abbreviation');
+    }
+      const record = {        id: json.id ? json.id : uuidv4(),        organizationId: json.organizationId,
+        branchId: json.branchId,
+        gradeId: json.gradeId,
+        abbreviation: json.abbreviation,
+        rank: json.rank,
+      }
+      return record;
+    }
+    
+    static toMySql(record: Ranks): any {
+      const mysql = [
+        toBinaryUUID(record.id),
+        toBinaryUUID(record.organizationId),
+        toBinaryUUID(record.branchId),
+        toBinaryUUID(record.gradeId),
+        record.abbreviation,
+        record.rank,
+      ];
+      return mysql;
+    }
+    
+    static fromMySql(mysql: any): Ranks {
+      const record = {
+        id: fromBinaryUUID(mysql.id),
+        organizationId: fromBinaryUUID(mysql.organization_id),
+        branchId: fromBinaryUUID(mysql.branch_id),
+        gradeId: fromBinaryUUID(mysql.grade_id),
+        abbreviation: mysql.abbreviation,
+        rank: mysql.rank,
+      };
+      return record;
+    }
+  }
+

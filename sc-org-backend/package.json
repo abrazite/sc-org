@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "copy:assets": "ncp src/assets ./dist/assets",
-    "build": "tsc && npm run copy:assets",
-    "start": "tsc && npm run copy:assets && cd dist && node main.js",
+    "build": "node scripts/api_generator.js && tsc && npm run copy:assets",
+    "start": "npm run build && cd dist && node main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "abrazite",

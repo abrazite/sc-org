@@ -1,51 +1,61 @@
 CREATE TABLE `org_manager`.`joined_organization` (
   `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
   `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
   `personnel_id` BINARY(16) NOT NULL,
   `issuer_personnel_id` BINARY(16) NULL,
-  `organization_id` BINARY(16) NULL,
   `recruited_by_personnel_id` BINARY(16) NULL,
+  `joined_organization_id` BINARY(16) NOT NULL,
   INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
 
 CREATE TABLE `org_manager`.`operation_attendence` (
   `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
   `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
   `personnel_id` BINARY(16) NOT NULL,
   `issuer_personnel_id` BINARY(16) NULL,
   `name` VARCHAR(128) NULL,
   INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
 
 CREATE TABLE `org_manager`.`rank_change` (
   `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
   `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
   `personnel_id` BINARY(16) NOT NULL,
   `issuer_personnel_id` BINARY(16) NULL,
   `rank_id` BINARY(16) NOT NULL,
   INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
 
 CREATE TABLE `org_manager`.`certification` (
   `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
   `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
   `personnel_id` BINARY(16) NOT NULL,
   `issuer_personnel_id` BINARY(16) NULL,
   `certification_id` BINARY(16) NOT NULL,
   INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
 
 CREATE TABLE `org_manager`.`status` (
   `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
   `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
   `personnel_id` BINARY(16) NOT NULL,
   `issuer_personnel_id` BINARY(16) NULL,
   `status_id` BINARY(16) NOT NULL,
   INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);  
 
@@ -53,31 +63,37 @@ CREATE TABLE `org_manager`.`note` (
   `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
   `date` DATETIME NULL DEFAULT NOW(),
   `personnel_id` BINARY(16) NOT NULL,
+  `organization_id` BINARY(16) NOT NULL,
   `issuer_personnel_id` BINARY(16) NULL,
   `note` LONGTEXT NOT NULL,
   INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);  
 
 CREATE TABLE `org_manager`.`active_duty` (
   `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
   `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
   `personnel_id` BINARY(16) NOT NULL,
   `issuer_personnel_id` BINARY(16) NULL,
   `description` VARCHAR(128) NULL,
   INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);    
 
 CREATE TABLE `org_manager`.`discord` (
   `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
   `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
   `personnel_id` BINARY(16) NOT NULL,
   `issuer_personnel_id` BINARY(16) NULL,
   `discord_id` VARCHAR(32) NULL,
   `username` VARCHAR(32) NULL,
   `discriminator` INT NULL,
   INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);      
 
@@ -128,3 +144,34 @@ CREATE TABLE `org_manager`.`rsi_citizen_organization` (
   INDEX `organization_id` (`organization_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);   
+
+CREATE TABLE `org_manager`.`branches` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `organization_id` BINARY(16) NOT NULL,
+  `abbreviation` VARCHAR(16) NOT NULL,
+  `branch` VARCHAR(64) NULL,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);   
+
+CREATE TABLE `org_manager`.`grades` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `organization_id` BINARY(16) NOT NULL,
+  `abbreviation` VARCHAR(16) NOT NULL,
+  `grade` VARCHAR(64) NULL,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);   
+
+CREATE TABLE `org_manager`.`ranks` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `organization_id` BINARY(16) NOT NULL,
+  `branch_id` BINARY(16) NULL,
+  `grade_id` BINARY(16) NULL,
+  `abbreviation` VARCHAR(16) NOT NULL,
+  `rank` VARCHAR(64) NULL,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  INDEX `branch_id` (`branch_id` ASC) VISIBLE,
+  INDEX `grade_id` (`grade_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE); 
