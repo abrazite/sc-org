@@ -1,4 +1,4 @@
-const users = require('./users.json');
+const users = require('./users-002.json');
 const v4 = require('uuid');
 const fetch = require('node-fetch');
 
@@ -224,8 +224,7 @@ function createRsiCitizenRecord(json) {
   return createRecord(
     `${API_SERVER}/rsi-citizen?personnelId=${json.personnelId}&date=${json.date.toISOString()}`,
     `${API_SERVER}/rsi-citizen`,
-    json,
-    true
+    json
   );
 }
 
@@ -311,10 +310,7 @@ function createCertificationRecord(json) {
   );
 }
 
-function createRecord(getRoute, postRoute, json, log) {
-  if (log) {
-    console.log(getRoute);
-  }
+function createRecord(getRoute, postRoute, json) {
   return fetch(getRoute)
     .then(res => res.ok ? res.json() : { status: 'error' })
     .then(res => Array.isArray(res) && res.length > 0 ? res[0] : null)
