@@ -3,28 +3,18 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import fetch from 'node-fetch';
 import * as core from "express-serve-static-core";
-import mysql from 'mysql';
 
 import { environment } from '../environments/environment';
-import * as parsers from './parsers';
 
-const API_SERVER = 'http://localhost:8081/api/1.0.0';
+const API_SERVER = `http://localhost:${environment.apiPort}${environment.apiPath}`;
 
 export class OrgManagerViewsAPI {
-  static createRouter(): core.Router {
+  createRouter(): core.Router {
     const router = express.Router();
-    const connection = mysql.createConnection({
-      host: environment.mysqlHost,
-      user: environment.mysqlUser,
-      password: environment.mysqlPassword,
-      database: environment.mysqlDatabase
-    });
-    connection.connect();
-
     router.use(cors());
     router.use(bodyParser.json());    
 
-    router.get('/personnel/:id', (req, res, next) => {
+    router.get('/personnel/:id', (req, res) => {
       try {
         const personnelId = req.params.id;
         const organizationId = req.query.organizationId;

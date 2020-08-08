@@ -344,22 +344,3 @@ function importUsers() {
 }
 
 createTheIMC();
-
-/*
-fetch('http://localhost:8081/api/1.0.0/rank-change', {
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  method: 'POST',
-  body: JSON.stringify({
-    'id': 'ed159c6d-bfec-46e6-9092-0ec5acd96ced',
-    'date': '2016-08-29T09:12:33.001Z',
-    'organizationId': 'ef6ef62e-ad59-427b-8365-4bd7a522c7c2',
-    'personnelId': null,
-    'issuerPersonnelId': '32bd75e6-731e-469f-b79d-bcfb445b4b84',
-    'rankId': '459ce181-6ae8-4a18-ac68-cf46dde69beb'
-  })
-}).then(res => {
-  console.log(res);
-})
-*/

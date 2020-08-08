@@ -5,29 +5,23 @@ import bodyParser from 'body-parser';
 import * as core from "express-serve-static-core";
 import mysql from 'mysql';
 
-import { environment } from '../environments/environment';
+import { DatabaseService } from '../services/database.service';
 import * as parsers from './parsers';
 
 export class OrgManagerAPI {
-  static createRouter(): core.Router {
-    const router = express.Router();
-    const connection = mysql.createConnection({
-      host: environment.mysqlHost,
-      user: environment.mysqlUser,
-      password: environment.mysqlPassword,
-      database: environment.mysqlDatabase
-    });
-    connection.connect();
+  constructor(private databaseService: DatabaseService) {}
 
+  createRouter(): core.Router {
+    const router = express.Router();
     router.use(cors());
-    router.use(bodyParser.json());    
+    router.use(bodyParser.json());
 
     
 
     router.post('/active-duty', (req, res, next) => {
       try {
         const record = parsers.ActiveDutyParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO active_duty (id, date, organization_id, personnel_id, issuer_personnel_id, description) VALUES (?, ?, ?, ?, ?, ?)',
           parsers.ActiveDutyParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -66,7 +60,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, description FROM active_duty ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -85,7 +79,7 @@ export class OrgManagerAPI {
 
     router.get('/active-duty/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, description FROM active_duty WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -111,7 +105,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE active_duty SET id=?, date=?, organization_id=?, personnel_id=?, issuer_personnel_id=?, description=? WHERE id=? LIMIT 1',
           [...parsers.ActiveDutyParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -134,7 +128,7 @@ export class OrgManagerAPI {
 
     router.delete('/active-duty/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM active_duty WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -160,7 +154,7 @@ export class OrgManagerAPI {
     router.post('/certification', (req, res, next) => {
       try {
         const record = parsers.CertificationParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO certification (id, date, organization_id, personnel_id, issuer_personnel_id, certification_id) VALUES (?, ?, ?, ?, ?, ?)',
           parsers.CertificationParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -199,7 +193,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, certification_id FROM certification ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -218,7 +212,7 @@ export class OrgManagerAPI {
 
     router.get('/certification/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, certification_id FROM certification WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -244,7 +238,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE certification SET id=?, date=?, organization_id=?, personnel_id=?, issuer_personnel_id=?, certification_id=? WHERE id=? LIMIT 1',
           [...parsers.CertificationParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -267,7 +261,7 @@ export class OrgManagerAPI {
 
     router.delete('/certification/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM certification WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -293,7 +287,7 @@ export class OrgManagerAPI {
     router.post('/discord', (req, res, next) => {
       try {
         const record = parsers.DiscordParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO discord (id, date, organization_id, personnel_id, issuer_personnel_id, username, discriminator) VALUES (?, ?, ?, ?, ?, ?, ?)',
           parsers.DiscordParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -332,7 +326,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, username, discriminator FROM discord ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -351,7 +345,7 @@ export class OrgManagerAPI {
 
     router.get('/discord/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, username, discriminator FROM discord WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -377,7 +371,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE discord SET id=?, date=?, organization_id=?, personnel_id=?, issuer_personnel_id=?, username=?, discriminator=? WHERE id=? LIMIT 1',
           [...parsers.DiscordParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -400,7 +394,7 @@ export class OrgManagerAPI {
 
     router.delete('/discord/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM discord WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -426,7 +420,7 @@ export class OrgManagerAPI {
     router.post('/joined-organization', (req, res, next) => {
       try {
         const record = parsers.JoinedOrganizationParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO joined_organization (id, date, organization_id, personnel_id, issuer_personnel_id, joined_organization_id, recruited_by_personnel_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
           parsers.JoinedOrganizationParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -465,7 +459,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, joined_organization_id, recruited_by_personnel_id FROM joined_organization ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -484,7 +478,7 @@ export class OrgManagerAPI {
 
     router.get('/joined-organization/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, joined_organization_id, recruited_by_personnel_id FROM joined_organization WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -510,7 +504,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE joined_organization SET id=?, date=?, organization_id=?, personnel_id=?, issuer_personnel_id=?, joined_organization_id=?, recruited_by_personnel_id=? WHERE id=? LIMIT 1',
           [...parsers.JoinedOrganizationParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -533,7 +527,7 @@ export class OrgManagerAPI {
 
     router.delete('/joined-organization/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM joined_organization WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -559,7 +553,7 @@ export class OrgManagerAPI {
     router.post('/note', (req, res, next) => {
       try {
         const record = parsers.NoteParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO note (id, date, organization_id, personnel_id, issuer_personnel_id, note) VALUES (?, ?, ?, ?, ?, ?)',
           parsers.NoteParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -598,7 +592,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, note FROM note ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -617,7 +611,7 @@ export class OrgManagerAPI {
 
     router.get('/note/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, note FROM note WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -643,7 +637,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE note SET id=?, date=?, organization_id=?, personnel_id=?, issuer_personnel_id=?, note=? WHERE id=? LIMIT 1',
           [...parsers.NoteParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -666,7 +660,7 @@ export class OrgManagerAPI {
 
     router.delete('/note/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM note WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -692,7 +686,7 @@ export class OrgManagerAPI {
     router.post('/operation-attendence', (req, res, next) => {
       try {
         const record = parsers.OperationAttendenceParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO operation_attendence (id, date, organization_id, personnel_id, issuer_personnel_id, name) VALUES (?, ?, ?, ?, ?, ?)',
           parsers.OperationAttendenceParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -731,7 +725,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, name FROM operation_attendence ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -750,7 +744,7 @@ export class OrgManagerAPI {
 
     router.get('/operation-attendence/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, name FROM operation_attendence WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -776,7 +770,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE operation_attendence SET id=?, date=?, organization_id=?, personnel_id=?, issuer_personnel_id=?, name=? WHERE id=? LIMIT 1',
           [...parsers.OperationAttendenceParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -799,7 +793,7 @@ export class OrgManagerAPI {
 
     router.delete('/operation-attendence/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM operation_attendence WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -825,7 +819,7 @@ export class OrgManagerAPI {
     router.post('/rank-change', (req, res, next) => {
       try {
         const record = parsers.RankChangeParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO rank_change (id, date, organization_id, personnel_id, issuer_personnel_id, rank_id) VALUES (?, ?, ?, ?, ?, ?)',
           parsers.RankChangeParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -864,7 +858,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, rank_id FROM rank_change ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -883,7 +877,7 @@ export class OrgManagerAPI {
 
     router.get('/rank-change/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, rank_id FROM rank_change WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -909,7 +903,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE rank_change SET id=?, date=?, organization_id=?, personnel_id=?, issuer_personnel_id=?, rank_id=? WHERE id=? LIMIT 1',
           [...parsers.RankChangeParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -932,7 +926,7 @@ export class OrgManagerAPI {
 
     router.delete('/rank-change/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM rank_change WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -958,7 +952,7 @@ export class OrgManagerAPI {
     router.post('/status', (req, res, next) => {
       try {
         const record = parsers.StatusParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO status (id, date, organization_id, personnel_id, issuer_personnel_id, status_id) VALUES (?, ?, ?, ?, ?, ?)',
           parsers.StatusParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -997,7 +991,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, status_id FROM status ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1016,7 +1010,7 @@ export class OrgManagerAPI {
 
     router.get('/status/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, status_id FROM status WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1042,7 +1036,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE status SET id=?, date=?, organization_id=?, personnel_id=?, issuer_personnel_id=?, status_id=? WHERE id=? LIMIT 1',
           [...parsers.StatusParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1065,7 +1059,7 @@ export class OrgManagerAPI {
 
     router.delete('/status/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM status WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1091,7 +1085,7 @@ export class OrgManagerAPI {
     router.post('/rsi-citizen', (req, res, next) => {
       try {
         const record = parsers.RsiCitizenParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO rsi_citizen (id, date, personnel_id, citizen_record, citizen_name, handle_name, enlisted_rank, enlistedDate, location, fluency, website, biography) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           parsers.RsiCitizenParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -1130,7 +1124,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, personnel_id, citizen_record, citizen_name, handle_name, enlisted_rank, enlistedDate, location, fluency, website, biography FROM rsi_citizen ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1149,7 +1143,7 @@ export class OrgManagerAPI {
 
     router.get('/rsi-citizen/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, personnel_id, citizen_record, citizen_name, handle_name, enlisted_rank, enlistedDate, location, fluency, website, biography FROM rsi_citizen WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1175,7 +1169,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE rsi_citizen SET id=?, date=?, personnel_id=?, citizen_record=?, citizen_name=?, handle_name=?, enlisted_rank=?, enlistedDate=?, location=?, fluency=?, website=?, biography=? WHERE id=? LIMIT 1',
           [...parsers.RsiCitizenParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1198,7 +1192,7 @@ export class OrgManagerAPI {
 
     router.delete('/rsi-citizen/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM rsi_citizen WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1224,7 +1218,7 @@ export class OrgManagerAPI {
     router.post('/rsi-citizen-organization', (req, res, next) => {
       try {
         const record = parsers.RsiCitizenOrganizationParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO rsi_citizen_organization (id, date, personnel_id, organization_id, main) VALUES (?, ?, ?, ?, ?)',
           parsers.RsiCitizenOrganizationParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -1263,7 +1257,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, personnel_id, organization_id, main FROM rsi_citizen_organization ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1282,7 +1276,7 @@ export class OrgManagerAPI {
 
     router.get('/rsi-citizen-organization/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, personnel_id, organization_id, main FROM rsi_citizen_organization WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1308,7 +1302,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE rsi_citizen_organization SET id=?, date=?, personnel_id=?, organization_id=?, main=? WHERE id=? LIMIT 1',
           [...parsers.RsiCitizenOrganizationParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1331,7 +1325,7 @@ export class OrgManagerAPI {
 
     router.delete('/rsi-citizen-organization/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM rsi_citizen_organization WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1357,7 +1351,7 @@ export class OrgManagerAPI {
     router.post('/rsi-organization', (req, res, next) => {
       try {
         const record = parsers.RsiOrganizationParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO rsi_organization (id, date, organization_id, name, sid, member_count, archetype, primary_activity, secondary_activity, commitment, primary_language, recruiting, role_play, exclusive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           parsers.RsiOrganizationParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -1396,7 +1390,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, name, sid, member_count, archetype, primary_activity, secondary_activity, commitment, primary_language, recruiting, role_play, exclusive FROM rsi_organization ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1415,7 +1409,7 @@ export class OrgManagerAPI {
 
     router.get('/rsi-organization/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, date, organization_id, name, sid, member_count, archetype, primary_activity, secondary_activity, commitment, primary_language, recruiting, role_play, exclusive FROM rsi_organization WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1441,7 +1435,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE rsi_organization SET id=?, date=?, organization_id=?, name=?, sid=?, member_count=?, archetype=?, primary_activity=?, secondary_activity=?, commitment=?, primary_language=?, recruiting=?, role_play=?, exclusive=? WHERE id=? LIMIT 1',
           [...parsers.RsiOrganizationParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1464,7 +1458,7 @@ export class OrgManagerAPI {
 
     router.delete('/rsi-organization/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM rsi_organization WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1490,7 +1484,7 @@ export class OrgManagerAPI {
     router.post('/branches', (req, res, next) => {
       try {
         const record = parsers.BranchesParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO branches (id, organization_id, abbreviation, branch) VALUES (?, ?, ?, ?)',
           parsers.BranchesParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -1529,7 +1523,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, organization_id, abbreviation, branch FROM branches ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1548,7 +1542,7 @@ export class OrgManagerAPI {
 
     router.get('/branches/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, organization_id, abbreviation, branch FROM branches WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1574,7 +1568,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE branches SET id=?, organization_id=?, abbreviation=?, branch=? WHERE id=? LIMIT 1',
           [...parsers.BranchesParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1597,7 +1591,7 @@ export class OrgManagerAPI {
 
     router.delete('/branches/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM branches WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1623,7 +1617,7 @@ export class OrgManagerAPI {
     router.post('/grades', (req, res, next) => {
       try {
         const record = parsers.GradesParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO grades (id, organization_id, abbreviation, grade) VALUES (?, ?, ?, ?)',
           parsers.GradesParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -1662,7 +1656,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, organization_id, abbreviation, grade FROM grades ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1681,7 +1675,7 @@ export class OrgManagerAPI {
 
     router.get('/grades/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, organization_id, abbreviation, grade FROM grades WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1707,7 +1701,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE grades SET id=?, organization_id=?, abbreviation=?, grade=? WHERE id=? LIMIT 1',
           [...parsers.GradesParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1730,7 +1724,7 @@ export class OrgManagerAPI {
 
     router.delete('/grades/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM grades WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1756,7 +1750,7 @@ export class OrgManagerAPI {
     router.post('/ranks', (req, res, next) => {
       try {
         const record = parsers.RanksParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO ranks (id, organization_id, branch_id, grade_id, abbreviation, name) VALUES (?, ?, ?, ?, ?, ?)',
           parsers.RanksParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -1795,7 +1789,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, organization_id, branch_id, grade_id, abbreviation, name FROM ranks ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1814,7 +1808,7 @@ export class OrgManagerAPI {
 
     router.get('/ranks/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, organization_id, branch_id, grade_id, abbreviation, name FROM ranks WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1840,7 +1834,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE ranks SET id=?, organization_id=?, branch_id=?, grade_id=?, abbreviation=?, name=? WHERE id=? LIMIT 1',
           [...parsers.RanksParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1863,7 +1857,7 @@ export class OrgManagerAPI {
 
     router.delete('/ranks/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM ranks WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1889,7 +1883,7 @@ export class OrgManagerAPI {
     router.post('/certifications', (req, res, next) => {
       try {
         const record = parsers.CertificationsParser.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO certifications (id, organization_id, branch_id, abbreviation, name) VALUES (?, ?, ?, ?, ?)',
           parsers.CertificationsParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -1928,7 +1922,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, organization_id, branch_id, abbreviation, name FROM certifications ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1947,7 +1941,7 @@ export class OrgManagerAPI {
 
     router.get('/certifications/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT id, organization_id, branch_id, abbreviation, name FROM certifications WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1973,7 +1967,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE certifications SET id=?, organization_id=?, branch_id=?, abbreviation=?, name=? WHERE id=? LIMIT 1',
           [...parsers.CertificationsParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1996,7 +1990,7 @@ export class OrgManagerAPI {
 
     router.delete('/certifications/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM certifications WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {

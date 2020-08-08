@@ -1,2 +1,5 @@
 import { APIService } from './services/api.service';
-const apiService = new APIService();
+import { DatabaseService } from './services/database.service';
+
+const databaseService = new DatabaseService();
+const apiService = new APIService(databaseService);

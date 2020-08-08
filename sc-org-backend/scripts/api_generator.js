@@ -1,5 +1,11 @@
 const fs = require('fs');
 
+// todo: convert this file to ts and import environment.ts
+const environment = {
+  apiPort: 8081,
+  apiPath: '/api/1.0.0',
+};
+
 class CodeGenerator {
   constructor() {
     this.apiDefinitions = new APIDefinitions();
@@ -274,12 +280,12 @@ class SwaggerGenerator extends Generator {
     const str = `
 openapi: 3.0.0
 servers:
-  - description: Dev
-    url: http://localhost:8081/api/1.0.0
   - description: Live
-    url: https://org-manager.space/api/1.0.0
+    url: https://org-manager.space${environment.apiPath}
+  - description: Dev
+    url: http://localhost:${environment.apiPort}${environment.apiPath}
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/org-manager.space/api/1.0.0
+    url: https://virtserver.swaggerhub.com/org-manager.space${environment.apiPort}${environment.apiPath}
 
 info:
   description: membership managment api
@@ -930,22 +936,16 @@ import bodyParser from 'body-parser';
 import * as core from "express-serve-static-core";
 import mysql from 'mysql';
 
-import { environment } from '../environments/environment';
+import { DatabaseService } from '../services/database.service';
 import * as parsers from './parsers';
 
 export class OrgManagerAPI {
-  static createRouter(): core.Router {
-    const router = express.Router();
-    const connection = mysql.createConnection({
-      host: environment.mysqlHost,
-      user: environment.mysqlUser,
-      password: environment.mysqlPassword,
-      database: environment.mysqlDatabase
-    });
-    connection.connect();
+  constructor(private databaseService: DatabaseService) {}
 
+  createRouter(): core.Router {
+    const router = express.Router();
     router.use(cors());
-    router.use(bodyParser.json());    
+    router.use(bodyParser.json());
 
     `;
   }
@@ -956,7 +956,7 @@ export class OrgManagerAPI {
     router.post('/${definition.route}', (req, res, next) => {
       try {
         const record = parsers.${definition.parser}.fromCreateRequest(req.body);
-        connection.query(
+        this.databaseService.connection.query(
           'INSERT INTO ${definition.mysqlTable} (${definition.insertFieldNames}) VALUES (${definition.insertFieldParams})',
           parsers.${definition.parser}.toMySql(record),
           (err: mysql.MysqlError | null) => {
@@ -995,7 +995,7 @@ export class OrgManagerAPI {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT ${definition.insertFieldNames} FROM ${definition.mysqlTable} ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1014,7 +1014,7 @@ export class OrgManagerAPI {
 
     router.get('/${definition.route}/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'SELECT ${definition.insertFieldNames} FROM ${definition.mysqlTable} WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1040,7 +1040,7 @@ export class OrgManagerAPI {
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
         }
-        connection.query(
+        this.databaseService.connection.query(
           'UPDATE ${definition.mysqlTable} SET ${definition.updateSetFields} WHERE id=? LIMIT 1',
           [...parsers.${definition.parser}.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
@@ -1063,7 +1063,7 @@ export class OrgManagerAPI {
 
     router.delete('/${definition.route}/:id', (req, res, next) => {
       try {
-        connection.query(
+        this.databaseService.connection.query(
           'DELETE FROM ${definition.mysqlTable} WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
