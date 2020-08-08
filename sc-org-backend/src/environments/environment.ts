@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  apiHost: 'http://localhost:8081',
   apiPort: 8081,
   apiPath: '/api/1.0.0',
   mysqlHost: 'localhost',
