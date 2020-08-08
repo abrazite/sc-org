@@ -8,6 +8,7 @@ import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 
 import { OrgManagerAPI } from '../api/org-manager.api';
+import { OrgManagerViewsAPI } from '../api/org-manager-views.api';
 import { RSICitizenAPI } from '../api/rsi-citizen.api';
 
 export class APIService {
@@ -28,6 +29,7 @@ export class APIService {
     this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
     this.app.use('/api/1.0.0', OrgManagerAPI.createRouter());
+    this.app.use('/api/1.0.0', OrgManagerViewsAPI.createRouter());
 
     this.app.use('/rsi/citizen', RSICitizenAPI.createRouter());
     this.server = this.app.listen(8081, () => {

@@ -139,8 +139,8 @@ class APIDefinitions {
         ]
       }, {
         route: 'rsi-citizen-organization',
-        mysqlFields: [...rsiCommonFields, 'organization_id', 'main', 'rank'],
-        fieldTypes: [...rsiCommonFieldTypes, 'uuid', 'boolean', 'string-64'],
+        mysqlFields: [...rsiCommonFields, 'organization_id', 'main'],
+        fieldTypes: [...rsiCommonFieldTypes, 'uuid', 'boolean'],
         mysqlCreateFieldRequired: [...rsiCommonFieldRequired, true, true, false]
       }, {
         route: 'rsi-organization',

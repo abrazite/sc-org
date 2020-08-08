@@ -1225,7 +1225,7 @@ export class OrgManagerAPI {
       try {
         const record = parsers.RsiCitizenOrganizationParser.fromCreateRequest(req.body);
         connection.query(
-          'INSERT INTO rsi_citizen_organization (id, date, personnel_id, organization_id, main, rank) VALUES (?, ?, ?, ?, ?, ?)',
+          'INSERT INTO rsi_citizen_organization (id, date, personnel_id, organization_id, main) VALUES (?, ?, ?, ?, ?)',
           parsers.RsiCitizenOrganizationParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
             if (err) {
@@ -1264,7 +1264,7 @@ export class OrgManagerAPI {
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
         connection.query(
-          'SELECT id, date, personnel_id, organization_id, main, rank FROM rsi_citizen_organization ' + filterStr + ' LIMIT ? OFFSET ?',
+          'SELECT id, date, personnel_id, organization_id, main FROM rsi_citizen_organization ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
             if (err) {
@@ -1283,7 +1283,7 @@ export class OrgManagerAPI {
     router.get('/rsi-citizen-organization/:id', (req, res, next) => {
       try {
         connection.query(
-          'SELECT id, date, personnel_id, organization_id, main, rank FROM rsi_citizen_organization WHERE id=?',
+          'SELECT id, date, personnel_id, organization_id, main FROM rsi_citizen_organization WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
             if (err) {
@@ -1309,7 +1309,7 @@ export class OrgManagerAPI {
           throw new Error('id mistmatch');
         }
         connection.query(
-          'UPDATE rsi_citizen_organization SET id=?, date=?, personnel_id=?, organization_id=?, main=?, rank=? WHERE id=? LIMIT 1',
+          'UPDATE rsi_citizen_organization SET id=?, date=?, personnel_id=?, organization_id=?, main=? WHERE id=? LIMIT 1',
           [...parsers.RsiCitizenOrganizationParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
             if (err) {

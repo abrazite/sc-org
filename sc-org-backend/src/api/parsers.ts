@@ -562,7 +562,6 @@ export interface RsiCitizenOrganization {
   personnelId: string | null;
   organizationId: string | null;
   main: boolean | null;
-  rank: string | null;
 }
 
 export class RsiCitizenOrganizationParser {
@@ -579,7 +578,6 @@ export class RsiCitizenOrganizationParser {
       const record = {        id: json.id ? json.id : uuidv4(),        date: json.date ? new Date(Date.parse(json.date)) : new Date(),        personnelId: json.personnelId,
         organizationId: json.organizationId,
         main: json.main,
-        rank: json.rank,
       }
       return record;
     }
@@ -591,7 +589,6 @@ export class RsiCitizenOrganizationParser {
         toBinaryUUID(record.personnelId),
         toBinaryUUID(record.organizationId),
         record.main,
-        record.rank,
       ];
       return mysql;
     }
@@ -603,7 +600,6 @@ export class RsiCitizenOrganizationParser {
         personnelId: fromBinaryUUID(mysql.personnel_id),
         organizationId: fromBinaryUUID(mysql.organization_id),
         main: mysql.main,
-        rank: mysql.rank,
       };
       return record;
     }

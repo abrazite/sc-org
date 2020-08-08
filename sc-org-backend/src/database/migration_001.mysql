@@ -138,7 +138,6 @@ CREATE TABLE `org_manager`.`rsi_citizen_organization` (
   `personnel_id` BINARY(16) NOT NULL,
   `organization_id` BINARY(16) NOT NULL,
   `main` BOOLEAN NULL,
-  `rank` VARCHAR(64) NULL,
   INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
   INDEX `organization_id` (`organization_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
