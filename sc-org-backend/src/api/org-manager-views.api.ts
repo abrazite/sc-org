@@ -300,18 +300,12 @@ export class OrgManagerViewsAPI {
 
         fetch(`${API_SERVER}/discord?organizationId=${organizationId}&limit=${limit}&page=${page}`)
           .then(OrgManagerViewsAPI.checkStatusOrThrow)
-          .then((records: Object[]) => {
-            let promise = Promise.resolve();
-            records.forEach((r: any) => {
-              promise = promise
-                .then(() => fetch(`${API_SERVER}/personnel/${r.personnelId}?organizationId=${organizationId}`))
-                .then(OrgManagerViewsAPI.checkStatusOrThrow)
-                .then(json => {
-                  personnel.push(json);
-                });
-            });
-            return promise;
-          })
+          .then((records: Object[]) => Promise.all(records.map((r: any) => 
+            fetch(`${API_SERVER}/personnel/${r.personnelId}?organizationId=${organizationId}`)
+              .then(OrgManagerViewsAPI.checkStatusOrThrow)
+              .then(json => {
+                personnel.push(json);
+              }))))
           .then(() => {
             res.status(200).json(personnel);
           })
