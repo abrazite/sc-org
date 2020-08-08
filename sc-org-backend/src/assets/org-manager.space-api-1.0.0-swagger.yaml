@@ -6,7 +6,7 @@ servers:
   - description: Dev
     url: http://localhost:8081/api/1.0.0
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/org-manager.space8081/api/1.0.0
+    url: https://virtserver.swaggerhub.com/org-manager.space/api/1.0.0
 
 info:
   description: membership managment api

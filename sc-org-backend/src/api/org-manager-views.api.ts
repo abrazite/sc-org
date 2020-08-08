@@ -7,7 +7,7 @@ import * as core from "express-serve-static-core";
 import { environment } from '../environments/environment';
 import * as schema from './schema';
 
-const API_SERVER = `${environment.apiHost}:${environment.apiPort}${environment.apiPath}`;
+const API_SERVER = `${environment.apiHost}${environment.apiPath}`;
 
 export class OrgManagerViewsAPI {
   createRouter(): core.Router {

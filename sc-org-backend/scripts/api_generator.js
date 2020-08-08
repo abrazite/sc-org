@@ -285,7 +285,7 @@ servers:
   - description: Dev
     url: http://localhost:${environment.apiPort}${environment.apiPath}
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/org-manager.space${environment.apiPort}${environment.apiPath}
+    url: https://virtserver.swaggerhub.com/org-manager.space${environment.apiPath}
 
 info:
   description: membership managment api
