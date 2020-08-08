@@ -44,6 +44,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -177,6 +181,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -310,6 +318,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -443,6 +455,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -576,6 +592,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -709,6 +729,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -842,6 +866,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -975,6 +1003,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -1086,7 +1118,7 @@ export class OrgManagerAPI {
       try {
         const record = parsers.RsiCitizenParser.fromCreateRequest(req.body);
         this.databaseService.connection.query(
-          'INSERT INTO rsi_citizen (id, date, personnel_id, citizen_record, citizen_name, handle_name, enlisted_rank, enlistedDate, location, fluency, website, biography) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO rsi_citizen (id, date, personnel_id, citizen_record, citizen_name, handle_name, enlisted_rank, enlisted_date, location, fluency, website, biography) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           parsers.RsiCitizenParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
             if (err) {
@@ -1108,6 +1140,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -1125,7 +1161,7 @@ export class OrgManagerAPI {
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
         this.databaseService.connection.query(
-          'SELECT id, date, personnel_id, citizen_record, citizen_name, handle_name, enlisted_rank, enlistedDate, location, fluency, website, biography FROM rsi_citizen ' + filterStr + ' LIMIT ? OFFSET ?',
+          'SELECT id, date, personnel_id, citizen_record, citizen_name, handle_name, enlisted_rank, enlisted_date, location, fluency, website, biography FROM rsi_citizen ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
             if (err) {
@@ -1144,7 +1180,7 @@ export class OrgManagerAPI {
     router.get('/rsi-citizen/:id', (req, res, next) => {
       try {
         this.databaseService.connection.query(
-          'SELECT id, date, personnel_id, citizen_record, citizen_name, handle_name, enlisted_rank, enlistedDate, location, fluency, website, biography FROM rsi_citizen WHERE id=?',
+          'SELECT id, date, personnel_id, citizen_record, citizen_name, handle_name, enlisted_rank, enlisted_date, location, fluency, website, biography FROM rsi_citizen WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
             if (err) {
@@ -1170,7 +1206,7 @@ export class OrgManagerAPI {
           throw new Error('id mistmatch');
         }
         this.databaseService.connection.query(
-          'UPDATE rsi_citizen SET id=?, date=?, personnel_id=?, citizen_record=?, citizen_name=?, handle_name=?, enlisted_rank=?, enlistedDate=?, location=?, fluency=?, website=?, biography=? WHERE id=? LIMIT 1',
+          'UPDATE rsi_citizen SET id=?, date=?, personnel_id=?, citizen_record=?, citizen_name=?, handle_name=?, enlisted_rank=?, enlisted_date=?, location=?, fluency=?, website=?, biography=? WHERE id=? LIMIT 1',
           [...parsers.RsiCitizenParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
             if (err) {
@@ -1241,6 +1277,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -1374,6 +1414,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -1507,6 +1551,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -1640,6 +1688,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -1773,6 +1825,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');
@@ -1906,6 +1962,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');

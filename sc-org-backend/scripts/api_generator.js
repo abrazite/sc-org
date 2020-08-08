@@ -113,7 +113,7 @@ class APIDefinitions {
           'citizen_name',
           'handle_name',
           'enlisted_rank',
-          'enlistedDate',
+          'enlisted_date',
           'location',
           'fluency',
           'website',
@@ -979,6 +979,10 @@ export class OrgManagerAPI {
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
           filterStrs.push(sqlField + '=?');

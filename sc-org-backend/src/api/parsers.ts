@@ -490,7 +490,7 @@ export interface RsiCitizen {
   citizenName: string | null;
   handleName: string | null;
   enlistedRank: string | null;
-  enlisteddate: Date | null;
+  enlistedDate: Date | null;
   location: string | null;
   fluency: string | null;
   website: string | null;
@@ -510,7 +510,7 @@ export class RsiCitizenParser {
         citizenName: json.citizenName,
         handleName: json.handleName,
         enlistedRank: json.enlistedRank,
-        enlisteddate: json.enlisteddate ? new Date(Date.parse(json.enlisteddate)) : null,
+        enlistedDate: json.enlistedDate ? new Date(Date.parse(json.enlistedDate)) : null,
         location: json.location,
         fluency: json.fluency,
         website: json.website,
@@ -528,7 +528,7 @@ export class RsiCitizenParser {
         record.citizenName,
         record.handleName,
         record.enlistedRank,
-        record.enlisteddate,
+        record.enlistedDate,
         record.location,
         record.fluency,
         record.website,
@@ -546,7 +546,7 @@ export class RsiCitizenParser {
         citizenName: mysql.citizenName,
         handleName: mysql.handleName,
         enlistedRank: mysql.enlistedRank,
-        enlisteddate: new Date(Date.parse(mysql.enlistedDate)),
+        enlistedDate: new Date(Date.parse(mysql.enlisted_date)),
         location: mysql.location,
         fluency: mysql.fluency,
         website: mysql.website,

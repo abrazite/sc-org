@@ -1,10 +1,9 @@
-const users = require('./users-002.json');
 const v4 = require('uuid');
 const fetch = require('node-fetch');
 
 const API_SERVER = 'http://localhost:8081/api/1.0.0';
 
-function createTheIMC() {
+function createTheIMC(users) {
   const orgInfo = {
     id: '4b40e446-5ceb-4543-a6d8-fa4e28a00406',       // v4();
     adminId: '74844e1c-94f8-423c-a2cb-680fd3631e98',  // v4();
@@ -54,38 +53,38 @@ function createTheIMC() {
     })
     .then(() => {
       orgInfo.ranks = [
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'O6'), abbreviation: 'DIR', rank: 'Director'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'O2'), abbreviation: 'CDR', rank: 'Commander'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'O1'), abbreviation: 'LTCDR', rank: 'Lt. Commander'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E6'), abbreviation: 'MCSO', rank: 'Master Chief Space Warfare Operator'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E5'), abbreviation: 'SSPC-Z', rank: 'Senior Combat Specalist - Zulu'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E4'), abbreviation: 'SPC', rank: 'Combat Specialist'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E5'), abbreviation: 'CSO', rank: 'Chief Space Warfare Operator'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E4'), abbreviation: 'SO', rank: 'Space Warfare Operator'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E3'), abbreviation: 'SN', rank: 'Starman'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E2'), abbreviation: 'SA', rank: 'Starman Apprentice'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E1'), abbreviation: 'SR', rank: 'Starman Recruit'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'O6'), abbreviation: 'DIR', name: 'Director'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'O2'), abbreviation: 'CDR', name: 'Commander'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'O1'), abbreviation: 'LTCDR', name: 'Lt. Commander'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E6'), abbreviation: 'MCSO', name: 'Master Chief Space Warfare Operator'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E5'), abbreviation: 'SSPC-Z', name: 'Senior Combat Specalist - Zulu'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E4'), abbreviation: 'SPC', name: 'Combat Specialist'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E5'), abbreviation: 'CSO', name: 'Chief Space Warfare Operator'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E4'), abbreviation: 'SO', name: 'Space Warfare Operator'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E3'), abbreviation: 'SN', name: 'Starman'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E2'), abbreviation: 'SA', name: 'Starman Apprentice'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E1'), abbreviation: 'SR', name: 'Starman Recruit'},
       ];
       return Promise.all(orgInfo.ranks.map(e => createRank(e)))
         .then(ids => ids.forEach((id, i) => { orgInfo.ranks[i].id = id; }));
     })
     .then(() => {
       orgInfo.certifications = [
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'BG', rank: 'Basic Ground'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'CQB', rank: 'Close-Quarters Battle'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'HJ', rank: 'Helljumper Qualification'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'AG', rank: 'Advanced Ground Tactics'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'L', rank: 'Leadership'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'J'), abbreviation: 'F', rank: 'Fighter'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'VA'), abbreviation: 'TP', rank: 'Transport'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'SD'), abbreviation: 'TD', rank: 'Trade'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'I-BG', rank: 'Instructor - Basic Ground'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'I-CQB', rank: 'Instructor - Close-Quarters Battle'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'I-HJ', rank: 'Instructor - Helljumper Qualification'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'I-AG', rank: 'Instructor - Advanced Ground Tactics'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'J'), abbreviation: 'I-F', rank: 'Instructor - Fighter'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'VA'), abbreviation: 'I-TP', rank: 'Instructor - Transport'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'SD'), abbreviation: 'I-TD', rank: 'Instructor - Trade'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'BG', name: 'Basic Ground'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'CQB', name: 'Close-Quarters Battle'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'HJ', name: 'Helljumper Qualification'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'AG', name: 'Advanced Ground Tactics'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'L', name: 'Leadership'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'J'), abbreviation: 'F', name: 'Fighter'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'VA'), abbreviation: 'TP', name: 'Transport'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'SD'), abbreviation: 'TD', name: 'Trade'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'I-BG', name: 'Instructor - Basic Ground'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'I-CQB', name: 'Instructor - Close-Quarters Battle'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'I-HJ', name: 'Instructor - Helljumper Qualification'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'I-AG', name: 'Instructor - Advanced Ground Tactics'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'J'), abbreviation: 'I-F', name: 'Instructor - Fighter'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'VA'), abbreviation: 'I-TP', name: 'Instructor - Transport'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'SD'), abbreviation: 'I-TD', name: 'Instructor - Trade'},
       ];
       return Promise.all(orgInfo.certifications.map(e => createCertification(e)))
         .then(ids => ids.forEach((id, i) => { orgInfo.certifications[i].id = id; }));
@@ -343,4 +342,11 @@ function importUsers() {
   console.log(allRanks);
 }
 
-createTheIMC();
+async function createTheIMCForAllUsers() {
+  const users001 = require('./users-001.json');
+  const users002 = require('./users-002.json');
+  await createTheIMC(users001);
+  await createTheIMC(users002);
+}
+
+createTheIMCForAllUsers();
