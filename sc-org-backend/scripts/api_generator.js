@@ -3,7 +3,6 @@ const fs = require('fs');
 // todo: convert this file to ts and import environment.ts
 const environment = {
   apiPort: 8081,
-  apiPath: '/api/1.0.0',
 };
 
 class CodeGenerator {
@@ -286,11 +285,11 @@ class SwaggerGenerator extends Generator {
 openapi: 3.0.0
 servers:
   - description: Live
-    url: https://org-manager.space${environment.apiPath}
+    url: https://api.org-manager.space/1.0.0
   - description: Dev
-    url: http://localhost:${environment.apiPort}${environment.apiPath}
+    url: http://localhost:${environment.apiPort}/api/1.0.0
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/org-manager.space${environment.apiPath}
+    url: https://virtserver.swaggerhub.com/org-manager.space/api/1.0.0
 
 info:
   description: membership managment api
