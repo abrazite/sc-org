@@ -6,7 +6,6 @@ import * as core from "express-serve-static-core";
 import mysql from 'mysql';
 
 import { environment } from '../environments/environment';
-import * as schema from './schema';
 
 import { DatabaseService } from '../services/database.service';
 import * as parsers from './parsers';
@@ -186,9 +185,12 @@ export class OrgManagerViewsAPI {
           throw new Error('organizationId required');
         }
 
-        let organizationInfo: schema.OrganizationInfoRaw;
+        let organizationInfo: viewParsers.OrganizationInfoRaw;
 
-        const json: schema.PersonnelRaw = {};
+        const json: viewParsers.PersonnelRaw = {
+          personnelId,
+          organizationId
+        };
 
         // todo: add proper paging
         fetch(`${API_SERVER}/active-duty?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`)
@@ -312,19 +314,19 @@ export class OrgManagerViewsAPI {
           throw new Error('organizationId required');
         }
 
-        let organizationInfo: schema.OrganizationInfoRaw;
-        let json: schema.Personnel;
+        let organizationInfo: viewParsers.OrganizationInfoRaw;
+        let json: viewParsers.Personnel;
 
         // todo: add proper paging
         fetch(`${API_SERVER}/personnel/raw/${personnelId}?organizationId=${organizationId}`)
           .then(OrgManagerViewsAPI.checkStatusOrThrow)
           .then((record: Object) => {
-            json = record as schema.Personnel;
+            json = record as viewParsers.Personnel;
           })
           .then(() => fetch(`${API_SERVER}/organization-info/raw/${organizationId}`))
           .then(OrgManagerViewsAPI.checkStatusOrThrow)
           .then((r: Object) => {
-            organizationInfo = r as schema.OrganizationInfoRaw;
+            organizationInfo = r as viewParsers.OrganizationInfoRaw;
           })
           .then(() => {
             Object.keys(json).filter(key => key.endsWith('Records')).forEach(key => {
@@ -391,7 +393,7 @@ export class OrgManagerViewsAPI {
       try {
         const organizationId = req.params.id;
 
-        const json: schema.OrganizationInfoRaw = {
+        const json: viewParsers.OrganizationInfoRaw = {
           organizationId
         };
   

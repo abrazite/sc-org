@@ -1,5 +1,47 @@
 import * as parsers from './parsers';
 
+export interface Personnel {
+  personnelId: string;
+  organizationId: string;
+
+  activeDutyRecords?: any[];
+  certificationRecords?: any[];
+  discordRecords?: any[];
+  joinedOrganizationRecords?: any[];
+  noteRecords?: any[];
+  operationAttendenceRecords?: any[];
+  rankChangeRecords?: any[];
+  rsiCitizenRecords?: any[];
+  rsiCitizenOrganizationRecords?: any[];
+  statusRecords?: any[];
+}
+
+export interface PersonnelRaw {
+  personnelId: string;
+  organizationId: string;
+  
+  activeDutyRecords?: any[];
+  certificationRecords?: any[];
+  discordRecords?: any[];
+  joinedOrganizationRecords?: any[];
+  noteRecords?: any[];
+  operationAttendenceRecords?: any[];
+  rankChangeRecords?: any[];
+  rsiCitizenRecords?: any[];
+  rsiCitizenOrganizationRecords?: any[];
+  statusRecords?: any[];
+}
+
+export interface OrganizationInfoRaw {
+  organizationId: string;
+
+  branches?: any[];
+  grades?: any[];
+  ranks?: any[];
+
+  certifications?: any[];
+};
+
 export interface PersonnelSummary {
   personnelId: string | null;
   organizationId: string | null;
