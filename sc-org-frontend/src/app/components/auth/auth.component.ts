@@ -5,6 +5,7 @@ import { LocalStorageService } from 'angular-2-local-storage';
 import { Observable, Subject } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import { Membership } from '../../models/personnel.model';
 import { UserService } from '../../services/user.service';
 
 export interface IdentityResponse {
@@ -30,7 +31,6 @@ export class AuthComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('here');
     this.activatedRoute.queryParams.subscribe(params => {
       if (params.code) {
           this.getAccessToken(params.code, params.state);
@@ -62,10 +62,17 @@ export class AuthComponent implements OnInit {
       this.storage.set('refresh_token', tokenResponse.refresh_token);
       this.storage.set('token_type', tokenResponse.token_type);
 
-      this.getUserInfo().subscribe(() => this.userService.getUserByDiscord(this.discordHandle())
-        .subscribe(user => {
-          this.storage.set('user', user.toJson());
-          window.location.href = '/';
+      this.getUserInfo().subscribe(() => 
+        this.userService.getMembership({
+          username: this.identity.username,
+          discriminator: this.identity.discriminator,
+        })
+        .subscribe(membership => {
+          console.log(membership);
+          if (membership && membership.length > 0) {
+            this.storage.set('membership', membership[0]);
+            window.location.href = '/';
+          }
         }));
     });
     return observer;
@@ -80,16 +87,15 @@ export class AuthComponent implements OnInit {
     observer.subscribe(response => {
       const identityResponse = response as IdentityResponse;
       this.storage.set('identity', identityResponse);
-      this.storage.set('discordHandle', this.discordHandle());
     });
     return observer;
   }
 
-  discordHandle(): string | null {
-    const identity = this.storage.get('identity') as IdentityResponse;
-    if (identity) {
-      return `${identity.username}#${identity.discriminator}`;
-    }
-    return null;
+  get identity(): IdentityResponse {
+    return this.storage.get('identity');
+  }
+
+  get membership(): Membership {
+    return this.storage.get('membership');
   }
 }

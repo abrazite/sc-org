@@ -4,7 +4,7 @@ import { LocalStorageService } from 'angular-2-local-storage';
 import * as CryptoJS from 'crypto-js';
 
 import { environment } from '../../../environments/environment';
-import { User, UserSchema } from '../../models/user.model';
+import { Membership } from '../../models/personnel.model';
 
 @Component({
   selector: 'app-login',
@@ -12,17 +12,13 @@ import { User, UserSchema } from '../../models/user.model';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  user: User | null = null;
+  membership: Membership | null = null;
 
   constructor(private storage: LocalStorageService) {
   }
 
   ngOnInit(): void {
-    const userJson = this.storage.get('user') as UserSchema | null;
-    if (userJson) {
-      this.user = User.fromJson(userJson);
-      console.log(this.user.activeRankRecord);
-    }
+    this.membership = this.storage.get('membership') as Membership | null;
   }
 
   redirectToLoginPage(): void {
@@ -48,8 +44,8 @@ export class LoginComponent implements OnInit {
   }
 
   logout(): void {
-    this.user = null;
-    this.storage.set('user', null);
+    this.membership = null;
+    this.storage.set('membership', null);
     window.location.href = '/login';
   }
 }

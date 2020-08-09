@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { User } from '../../models/user.model';
-import { ServiceRecord, ServiceRecordKind } from '../../models/service-record.model';
+import { Personnel } from '../../models/personnel.model';
 
 @Component({
   selector: 'user-details',
@@ -8,14 +7,32 @@ import { ServiceRecord, ServiceRecordKind } from '../../models/service-record.mo
   styleUrls: ['./user-details.component.css']
 })
 export class UserDetailsComponent {
-  ServiceRecordKind = ServiceRecordKind;
-  @Input() user?: User;
+  @Input() personnel?: Personnel;
 
   constructor() {
   }
 
-  sortedRecordsByDate(): ServiceRecord[] {
-    return this.user && this.user.serviceRecords ?
-      this.user.serviceRecords.sort((a, b) => a.date!.getTime() - b.date!.getTime()) : [];
+  formatDate(d: string): string {
+    return (new Date(Date.parse(d))).toLocaleDateString();
+  }
+
+  get tag(): string {
+    let tag = '';
+    if (!this.personnel || !this.personnel.personnelSummary) {
+      return tag;
+    }
+
+    if (this.personnel.personnelSummary.branchAbbreviation) {
+      tag += this.personnel.personnelSummary?.branchAbbreviation + '-';
+    }
+
+    if (this.personnel.personnelSummary.gradeAbbreviation) {
+      tag += this.personnel.personnelSummary?.gradeAbbreviation + '-';
+    }
+
+    if (this.personnel.personnelSummary.rankAbbreviation) {
+      tag += this.personnel.personnelSummary?.rankAbbreviation;
+    }
+    return tag;
   }
 }

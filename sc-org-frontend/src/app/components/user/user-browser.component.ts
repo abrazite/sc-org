@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 // @ts-ignore
 import sleep from 'sleep-promise';
 
-import { User } from '../../models/user.model';
+import { Personnel, PersonnelSummary } from '../../models/personnel.model';
 import { UserService } from '../../services/user.service';
 
 @Component({
@@ -12,67 +12,54 @@ import { UserService } from '../../services/user.service';
   styleUrls: ['./user-browser.component.css'],
 })
 export class UserBrowserComponent {
-  userId = '';
+  searchTerm = '';
   error?: string;
-  user?: User;
-  users?: User[];
-  showOrgInUserList = false;
+  personnel?: Personnel;
+  allPersonnel?: PersonnelSummary[];
+  showOrgInList = false;
 
   constructor(
     private userService: UserService
   ) {}
 
-  selectUser(user: User) {
+  selectPersonnel(p: PersonnelSummary) {
     this.clearAll();
-    this.userId = user.uid!;
-    this.getUser();
+    this.searchTerm = `${p.username}#${p.discriminator}`;
+    this.findPersonnel();
   }
 
-  getUser() {
+  findPersonnel() {
     this.clearAll();
-    this.userService.getUser(this.userId).subscribe(
-      user => {
-        this.user = user;
-        console.log(this.user);
+    this.userService.getAllPersonnel().toPromise().then(allPersonnel => {
+      this.allPersonnel = this.sortAllPersonnel(allPersonnel);
+      return this.allPersonnel.find(p =>
+        p.personnelId === this.searchTerm ||
+        p.username === this.searchTerm ||
+        `${p.username}#${p.discriminator}` === this.searchTerm ||
+        p.citizenName === this.searchTerm ||
+        p.handleName === this.searchTerm ||
+        p.citizenRecord === this.searchTerm);
+    }).then((p?: PersonnelSummary) => {
+      if (p) {
+        return this.userService.getPersonnel(p.personnelId!).toPromise();
+      } 
+      return;
+    }).then((p?: Personnel) => {
+      if (p) {
+        this.personnel = p;
+        console.log(this.personnel);
+      } else {
+        this.error = 'could not find any matching personnel';
+      }
+    });
+  }
+
+  getAllPersonnel() {
+    this.clearAll();
+    this.userService.getAllPersonnel().subscribe(
+      allPersonnel => {
+        this.allPersonnel = this.sortAllPersonnel(allPersonnel);
       },
-      e => {
-        console.error(e);
-        this.error = (e as Error).message;
-      }
-    );
-  }
-
-  getAllUsers() {
-    this.clearAll();
-    this.userService.getAllUsers().subscribe(
-      users => this.users = users.sort((a, b) => a.uid!.localeCompare(b.uid!)),
-      e => {
-        console.error(e);
-        this.error = (e as Error).message;
-      }
-    );
-  }
-
-  getNonIMCUsers() {
-    this.clearAll();
-    this.showOrgInUserList = true;
-    this.userService.getAllUsers().subscribe(
-      users => this.users = users.sort((a, b) => a.uid!.localeCompare(b.uid!))
-        .filter(u => !u.activeOrganizationRecord || !u.activeOrganizationRecord.properties.rsiCitizen ||
-          (u.activeOrganizationRecord.properties.rsiCitizen && u.activeOrganizationRecord.properties.rsiCitizen?.mainOrganization.spectrumIdentification !== 'THEIMC')),
-      e => {
-        console.error(e);
-        this.error = (e as Error).message;
-      }
-    );
-  }
-
-  getOrgUsers(org: string) {
-    this.clearAll();
-    this.userService.getAllUsers().subscribe(
-      users => this.users = users.sort((a, b) => a.uid!.localeCompare(b.uid!))
-        .filter(u => u.activeOrganizationRecord &&
-          u.activeOrganizationRecord.properties.rsiCitizen && u.activeOrganizationRecord.properties.rsiCitizen?.mainOrganization.spectrumIdentification === org),
       e => {
         console.error(e);
         this.error = (e as Error).message;
@@ -82,43 +69,14 @@ export class UserBrowserComponent {
 
   clearAll() {
     delete this.error;
-    delete this.user;
-    delete this.users;
-    this.showOrgInUserList = false;
+    delete this.personnel;
+    delete this.allPersonnel;
+    this.showOrgInList = false;
   }
 
-  test() {
-    this.userService.getAllUsers().subscribe(
-      users => {
-        users = users.sort((a, b) => a.uid!.localeCompare(b.uid!));
-
-        // @ts-ignore
-        window.updatedUsersDict = {};
-        // @ts-ignore
-        window.updatedUsers = [];
-        users.forEach(async user => {
-          this.userService.getUser(user.name!).subscribe(
-            user => {
-              // @ts-ignore
-              window.updatedUsersDict[user.name] = user;
-              // @ts-ignore
-              window.updatedUsers.push(user);
-            },
-            // @ts-ignore
-            e => {
-              // @ts-ignore
-              window.updatedUsersDict[user.name] = user;
-              // @ts-ignore
-              window.updatedUsers.push(user);
-            }
-          );
-          await sleep(2000);
-        });
-      },
-      e => {
-        console.error(e);
-        this.error = (e as Error).message;
-      }
-    );
+  private sortAllPersonnel(allPersonnel: PersonnelSummary[]) {
+    return allPersonnel.sort((a, b) => 
+      (a.handleName ? a.handleName : a.username!).localeCompare(
+        (b.handleName ? b.handleName : b.username!)));
   }
 }

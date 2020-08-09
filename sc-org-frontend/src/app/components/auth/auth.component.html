@@ -1,2 +1,4 @@
-<p>Welcome {{discordHandle()}}</p>
-<p>Redirecting...</p>
+<div *ngIf="identity && identity.username">
+  <p>Welcome {{identity.username}}</p>
+  <p>Redirecting...</p>
+</div>

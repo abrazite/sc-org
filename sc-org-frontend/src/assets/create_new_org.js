@@ -267,20 +267,26 @@ function createJoinedOrgRecordsFromPersonnel(orgInfo, personnel) {
       organizationId: orgInfo.id,
       personnelId: personnel.id,
       issuerPersonnelId: orgInfo.adminId,
-      joinedOrganizationId: personnel.joinedOrganizationId ? personnel.joinedOrganizationId : orgInfo.id,
+      joinedOrganizationId: r.joinedOrganizationId ? r.joinedOrganizationId : orgInfo.id,
       recruitedByPersonnelId: personnel.recruitedByPersonnelId,
     }
 
-    return createJoinedOrgRecord(json);
+    if (personnel.uid === 'WarPhD')  {
+      console.log(json);
+      return createJoinedOrgRecord(json, true);
+    }
+
+    return createJoinedOrgRecord(json, false);
   }));
 }
 
-function createJoinedOrgRecord(json) {
+function createJoinedOrgRecord(json, log) {
   json.date.setUTCMilliseconds(0);
   return createRecord(
     `${API_SERVER}/joined-organization?organizationId=${json.organizationId}&date=${json.date.toISOString()}&personnelId=${json.personnelId}&joinedOrganizationId=${json.joinedOrganizationId}`,
     `${API_SERVER}/joined-organization`,
-    json
+    json,
+    log
   );
 }
 
@@ -382,7 +388,7 @@ function createNoteRecord(json) {
   );
 }
 
-function createRecord(getRoute, postRoute, json) {
+function createRecord(getRoute, postRoute, json, log=false) {
   return fetch(getRoute)
     .then(res => res.ok ? res.json() : { status: 'error' })
     .then(res => Array.isArray(res) && res.length > 0 ? res[0] : null)
@@ -401,14 +407,24 @@ function createRecord(getRoute, postRoute, json) {
       }
       return record;
     })
+    .then(record => {
+      if (log) {
+        console.log(getRoute);
+        console.log(postRoute);
+        console.log(record);
+      }
+      return record;
+    })
     .then(record => record.id);
 }
 
 async function createTheIMCForAllUsers() {
   const users001 = require('./users-001.json');
   const users002 = require('./users-002.json');
+  const users003 = require('./users-003.json');
   await createTheIMC(users001);
   await createTheIMC(users002);
+  await createTheIMC(users003);
 }
 
 createTheIMCForAllUsers();

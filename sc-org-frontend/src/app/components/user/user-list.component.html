@@ -1,12 +1,18 @@
-<div *ngIf="users">
-  <div *ngIf="users.length === 0">
-    <h3>No Users Found</h3>
+<div *ngIf="allPersonnel">
+  <div *ngIf="allPersonnel.length === 0">
+    <h3>No Personnel Found</h3>
   </div>
-  <div *ngIf="users.length > 0">
-    <h3>Users</h3>
+  <div *ngIf="allPersonnel.length > 0">
+    <h3>Personnel</h3>
     <ul>
-      <li *ngFor="let user of users">
-        <span *ngIf="showOrg && user.activeOrganizationRecord && user.activeOrganizationRecord.properties.rsiCitizen">[{{user.activeOrganizationRecord.properties.rsiCitizen!.mainOrganization.spectrumIdentification}}]&nbsp;</span><span (click)="selectUser(user)" style="cursor:pointer;">{{user.name}}</span>&nbsp;({{user.serviceRecords!.length}} service records)
+      <li *ngFor="let p of allPersonnel">
+        <span (click)="selectPersonnel(p)" style="cursor:pointer;">
+          <span *ngIf="tag(p) !== ''">[{{tag(p)}}] </span>
+          <span *ngIf="p.handleName">{{p.handleName}}</span>
+          <span *ngIf="!p.handleName">
+            <span *ngIf="p.username && p.discriminator">{{p.username}}{{p.discriminator}}</span>
+          </span>
+        </span>
       </li>
     </ul>
   </div>

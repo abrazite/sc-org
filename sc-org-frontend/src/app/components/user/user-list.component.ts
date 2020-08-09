@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { User } from '../../models/user.model';
+import { PersonnelSummary, Personnel } from '../../models/personnel.model';
 
 @Component({
   selector: 'user-list',
@@ -7,14 +7,34 @@ import { User } from '../../models/user.model';
   styleUrls: ['./user-list.component.css']
 })
 export class UserListComponent {
-  @Input() users?: User[];
+  @Input() allPersonnel?: PersonnelSummary[];
   @Input() showOrg = false;
-  @Output() onSelectUser: EventEmitter<User> = new EventEmitter();
+  @Output() onSelectPersonnel: EventEmitter<PersonnelSummary> = new EventEmitter();
 
   constructor() {
   }
 
-  selectUser(user: User) {
-    this.onSelectUser.emit(user);
+  selectPersonnel(personnel: PersonnelSummary) {
+    this.onSelectPersonnel.emit(personnel);
+  }
+
+  tag(personnel: PersonnelSummary): string {
+    let tag = '';
+    if (!personnel) {
+      return tag;
+    }
+
+    if (personnel.branchAbbreviation) {
+      tag += personnel?.branchAbbreviation + '-';
+    }
+
+    if (personnel.gradeAbbreviation) {
+      tag += personnel?.gradeAbbreviation + '-';
+    }
+
+    if (personnel.rankAbbreviation) {
+      tag += personnel?.rankAbbreviation;
+    }
+    return tag;
   }
 }

@@ -1,13 +1,43 @@
 import * as parsers from './parsers';
 
+export interface Membership {
+  personnelId: string | null;
+  organizationId: string | null;
+  username: string | null;
+  discriminator: string | null;
+  citizenRecord: string | null;
+  citizenName: string | null;
+  handleName: string | null;
+  joinedDate: Date;
+}
+
+export class MembershipParser {
+  static fromMySql(mysql: any): Membership {
+    const record = {
+      personnelId: parsers.fromBinaryUUID(mysql.personnel_id),
+      organizationId: parsers.fromBinaryUUID(mysql.organization_id),
+      username: mysql.username,
+      discriminator: mysql.discriminator,
+      citizenRecord: mysql.citizen_record,
+      citizenName: mysql.citizen_name,
+      handleName: mysql.handle_name,
+      joinedDate: new Date(Date.parse(mysql.joined_date)),
+    };
+    return record;
+  }
+}
+
 export interface Personnel {
   personnelId: string;
   organizationId: string;
+
+  personnelSummary?: PersonnelSummary;
 
   activeDutyRecords?: any[];
   certificationRecords?: any[];
   discordRecords?: any[];
   joinedOrganizationRecords?: any[];
+  leftOrganizationRecords?: any[];
   noteRecords?: any[];
   operationAttendenceRecords?: any[];
   rankChangeRecords?: any[];
@@ -19,11 +49,14 @@ export interface Personnel {
 export interface PersonnelRaw {
   personnelId: string;
   organizationId: string;
+
+  personnelSummary?: PersonnelSummary;
   
   activeDutyRecords?: any[];
   certificationRecords?: any[];
   discordRecords?: any[];
   joinedOrganizationRecords?: any[];
+  leftOrganizationRecords?: any[];
   noteRecords?: any[];
   operationAttendenceRecords?: any[];
   rankChangeRecords?: any[];

@@ -1,91 +1,40 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { LocalStorageService } from 'angular-2-local-storage';
 
-import { RSICitizenRecordSchema, ServiceRecordKind, ServiceRecord } from '../models/service-record.model';
-import { RSICitizenService } from './rsi-citizen.service';
-import { User, UserSchema } from '../models/user.model';
+import { Membership, Personnel, PersonnelSummary } from '../models/personnel.model';
+import { environment } from 'src/environments/environment';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private rsiCitizenService: RSICitizenService;
+  constructor(
+    private httpService: HttpClient,
+    private storage: LocalStorageService
+  ) {}
 
-  constructor(private httpService: HttpClient) {
-    this.rsiCitizenService = new RSICitizenService(httpService);
+  public getMembership(filterPairs: { [key: string]: string} ): Observable<Membership[]> {
+    return this.httpService.get<Membership[]>(`${environment.api}/membership?${UserService.createFilterStr(filterPairs)}&limit=1000`);
   }
 
-  public getUser(uid: string): Observable<User> {
-    return this.httpService.get<UserSchema[]>('/assets/users.json')
-      .pipe(map(data => {
-        const userJson = data.find(json => json.uid === uid);
-        if (!userJson) {
-          throw new Error('Could not find user');
-        }
-        return User.fromJson(userJson);
-      }))
-      .pipe(observable => {
-        const subject = new Subject<User>();
-        observable.subscribe(user => {
-          const observableUser = this.addRSICitizenRecord(user);
-          if (observableUser) {
-            observableUser.subscribe(subject);
-          } else {
-            subject.next(user);
-          }
-        });
-        return subject.asObservable();
-      });
+  public getAllPersonnel(): Observable<PersonnelSummary[]> {
+    const membership = this.storage.get('membership') as Personnel;
+    return this.httpService.get<PersonnelSummary[]>(`${environment.api}/personnel?organizationId=${membership.organizationId}&limit=1000`);
   }
 
-  public getUserByDiscord(discordHandle: string | null): Observable<User> {
-    return this.httpService.get<UserSchema[]>('/assets/users.json')
-      .pipe(map(data => {
-        const userJson = data.find(json => json.discord === discordHandle);
-        if (!userJson) {
-          throw new Error('Could not find user');
-        }
-        return User.fromJson(userJson);
-      }))
-      .pipe(observable => {
-        const subject = new Subject<User>();
-        observable.subscribe(user => {
-          const observableUser = this.addRSICitizenRecord(user);
-          if (observableUser) {
-            observableUser.subscribe(subject);
-          } else {
-            subject.next(user);
-          }
-        });
-        return subject.asObservable();
-      });
+  public getPersonnel(personnelId: string): Observable<Personnel> {
+    const membership = this.storage.get('membership') as Personnel;
+    return this.httpService.get<Personnel>(`${environment.api}/personnel/${personnelId}?organizationId=${membership.organizationId}`);
   }
 
-  public getAllUsers(): Observable<User[]> {
-    return this.httpService.get<UserSchema[]>('/assets/users.json').pipe(
-      map(data => data.map(json => User.fromJson(json)))
-    );
-  }
-
-  private addRSICitizenRecord(user: User): Observable<User> | undefined {
-    const subject = new Subject<User>();
-    if (user.serviceRecords && !user.activeRSICitizenRecord && user.name) {
-      this.rsiCitizenService.getCitizen(user.name).subscribe(record => {
-        if (record) {
-          user.serviceRecords.push(ServiceRecord.fromJson({
-            uid: `SR${user.serviceRecords.length}-${user.name}`,
-            date: new Date(),
-            issuer: 'sc-org',
-            kind: ServiceRecordKind[ServiceRecordKind.RsiCitizenRecord],
-            rsiCitizen: record
-          } as RSICitizenRecordSchema));
-        }
-        subject.next(user);
-      }, () => subject.next(user));
-    }
-    return;
+  private static createFilterStr(filterPairs: { [key: string]: string}): string {
+    const filterStrs: string[] = [];
+    Object.keys(filterPairs).forEach(key => {
+      filterStrs.push(`${key}=${filterPairs[key]}`);
+    });
+    return filterStrs.join('&');
   }
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {CanActivate, Router, RouterStateSnapshot, ActivatedRouteSnapshot} from '@angular/router';
 
 import { LocalStorageService } from 'angular-2-local-storage';
-import { User } from '../models/user.model';
+import { Personnel } from '../models/personnel.model';
 
 @Injectable()
 export class AuthGuardService implements CanActivate {
@@ -12,8 +12,8 @@ export class AuthGuardService implements CanActivate {
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    const user = this.storage.get('user') as User | null;
-    if (!user) {
+    const membership = this.storage.get('membership') as Personnel | null;
+    if (!membership) {
       this.router.navigate(['/login']);
       return false;
     } else {

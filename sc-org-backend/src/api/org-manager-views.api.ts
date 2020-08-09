@@ -75,6 +75,11 @@ export class OrgManagerViewsAPI {
 
     router.get('/personnel-summary', (req, res) => {
       try {
+        const organizationId = req.query.organizationId as string;
+        if (!organizationId) {
+          throw new Error('organizationId required');
+        }
+
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
@@ -130,8 +135,70 @@ export class OrgManagerViewsAPI {
       }
     });
 
+    router.get('/membership', (req, res) => {
+      try {
+        const organizationId = req.query.organizationId as string;
+        const peronnelId = req.query.peronnelId as string;
+        const username = req.query.username as string;
+        if (!organizationId && !peronnelId && !username) {
+          throw new Error('either an organizationId, a peronnelId, or a username is required');
+        }
+
+        const filterStrs: string[] = [];
+        const filterParams: any[] = [];
+        Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
+          const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+          const sqlField = keySplit.join('_');
+          filterStrs.push(sqlField + '=?');
+          if (keySplit.includes('id')) {
+            filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+          } else if (keySplit.includes('date')) {
+            filterParams.push(new Date(Date.parse(req.query[key] as string)));
+          } else {
+            filterParams.push(req.query[key]);
+          }
+        });
+        const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+        const page = req.query.page ? parseInt(req.query.page as string) : 0;
+
+        this.databaseService.connection.query(`SELECT
+            personnel_id,
+            organization_id,
+            username,
+            discriminator,
+            citizen_record,
+            citizen_name,
+            handle_name,
+            joined_date
+          FROM membership ${filterStr} LIMIT ? OFFSET ?;`,
+          [...filterParams, limit, limit * page],
+          (err: mysql.MysqlError | null, results?: any) => {
+            if (err) {
+              console.error(err);
+              res.status(500).json({ status: 'error', message: err.message });
+            } else {
+              res.status(200).json(results!.map((r: any) => viewParsers.MembershipParser.fromMySql(r)));
+            }
+          }
+        )
+      } catch(err) {
+        res.status(500).json({ status: 'error', message: err.message });
+      }
+    });
+
     router.get('/most-recent-certifications', (req, res, next) => {
       try {
+        const organizationId = req.query.organizationId as string;
+        if (!organizationId) {
+          throw new Error('organizationId required');
+        }
+
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
@@ -203,6 +270,13 @@ export class OrgManagerViewsAPI {
               });
             }
           })
+          .then(() => fetch(`${API_SERVER}/personnel?organizationId=${organizationId}&personnelId=${personnelId}&limit=1`))
+          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then((records: Object[]) => {
+            if (records.length === 1) {
+              json.personnelSummary = records[0] as viewParsers.PersonnelSummary;
+            }
+          })
           .then(() => fetch(`${API_SERVER}/certification?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
           .then(OrgManagerViewsAPI.checkStatusOrThrow)
           .then((records: Object[]) => {
@@ -230,6 +304,16 @@ export class OrgManagerViewsAPI {
               json.joinedOrganizationRecords = [];
               records.forEach(r => {
                 json.joinedOrganizationRecords!.push(r);
+              });
+            }
+          })
+          .then(() => fetch(`${API_SERVER}/left-organization?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
+          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then((records: Object[]) => {
+            if (records.length > 0) {
+              json.leftOrganizationRecords = [];
+              records.forEach(r => {
+                json.leftOrganizationRecords!.push(r);
               });
             }
           })
