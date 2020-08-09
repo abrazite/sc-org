@@ -566,6 +566,143 @@ export class OrgManagerAPI {
 
 
 
+    router.post('/left-organization', (req, res, next) => {
+      try {
+        const record = parsers.LeftOrganizationParser.fromCreateRequest(req.body);
+        this.databaseService.connection.query(
+          'INSERT INTO left_organization (id, date, organization_id, personnel_id, issuer_personnel_id, left_organization_id) VALUES (?, ?, ?, ?, ?, ?)',
+          parsers.LeftOrganizationParser.toMySql(record),
+          (err: mysql.MysqlError | null) => {
+            if (err) {
+              console.error(err);
+              res.status(500).json({ status: 'error', message: err.message });
+            } else {
+              console.log('POST left-organization ' + record.id);
+              res.status(200).json({ status: 'ok', id: record.id });
+            }
+          }
+        )
+      } catch(err) {
+        res.status(500).json({ status: 'error', message: err.message });
+      }
+    });
+
+    router.get('/left-organization', (req, res, next) => {
+      try {
+        const filterStrs: string[] = [];
+        const filterParams: any[] = [];
+        Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
+          const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+          const sqlField = keySplit.join('_');
+          filterStrs.push(sqlField + '=?');
+          if (keySplit.includes('id')) {
+            filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+          } else if (keySplit.includes('date')) {
+            filterParams.push(new Date(Date.parse(req.query[key] as string)));
+          } else {
+            filterParams.push(req.query[key]);
+          }
+        });
+        const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+        const page = req.query.page ? parseInt(req.query.page as string) : 0;
+
+        this.databaseService.connection.query(
+          'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, left_organization_id FROM left_organization ' + filterStr + ' LIMIT ? OFFSET ?',
+          [...filterParams, limit, limit * page],
+          (err: mysql.MysqlError | null, results?: any) => {
+            if (err) {
+              console.error(err);
+              res.status(500).json({ status: 'error', message: err.message });
+            } else {
+              res.status(200).json(results!.map((r: any) => parsers.LeftOrganizationParser.fromMySql(r)));
+            }
+          }
+        )
+      } catch(err) {
+        res.status(500).json({ status: 'error', message: err.message });
+      }
+    });
+
+    router.get('/left-organization/:id', (req, res, next) => {
+      try {
+        this.databaseService.connection.query(
+          'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, left_organization_id FROM left_organization WHERE id=?',
+          [parsers.toBinaryUUID(req.params.id)],
+          (err: mysql.MysqlError | null, results?: any) => {
+            if (err) {
+              console.error(err);
+              res.status(500).json({ status: 'error', message: err.message });
+            } else if (results && results.length > 0) {
+              res.status(200).json(results!.map((r: any) => parsers.LeftOrganizationParser.fromMySql(r)));
+            } else {
+              res.status(404).json({ status: 'error' });
+            }
+          }
+        )
+      } catch(err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: err.message });
+      }
+    });
+
+    router.put('/left-organization/:id', (req, res, next) => {
+      try {
+        const record = parsers.LeftOrganizationParser.fromCreateRequest(req.body);
+        if (record.id !== req.params.id) {
+          throw new Error('id mistmatch');
+        }
+        this.databaseService.connection.query(
+          'UPDATE left_organization SET id=?, date=?, organization_id=?, personnel_id=?, issuer_personnel_id=?, left_organization_id=? WHERE id=? LIMIT 1',
+          [...parsers.LeftOrganizationParser.toMySql(record), parsers.toBinaryUUID(record.id)],
+          (err: mysql.MysqlError | null, results?: any) => {
+            if (err) {
+              console.error(err);
+              res.status(500).json({ status: 'error', message: err.message });
+            } else if (results && results.affectedRows === 1) {
+              console.log('PUT left-organization ' + record.id);
+              res.status(200).json({ status: 'ok' });
+            } else {
+              res.status(404).json({ status: 'error' });
+            }
+          }
+        )
+      } catch(err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: err.message });
+      }
+    });
+
+    router.delete('/left-organization/:id', (req, res, next) => {
+      try {
+        this.databaseService.connection.query(
+          'DELETE FROM left_organization WHERE id=? LIMIT 1',
+          [parsers.toBinaryUUID(req.params.id)],
+          (err: mysql.MysqlError | null, results?: any) => {
+            if (err) {
+              console.error(err);
+              res.status(500).json({ status: 'error', message: err.message });
+            } else if (results && results.affectedRows === 1) {
+              console.log('DEL left-organization ' + req.params.id);
+              res.status(200).json({ status: 'ok' });
+            } else {
+              res.status(404).json({ status: 'error' });
+            }
+          }
+        )
+      } catch(err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: err.message });
+      }
+    });
+
+
+
     router.post('/note', (req, res, next) => {
       try {
         const record = parsers.NoteParser.fromCreateRequest(req.body);
@@ -981,7 +1118,7 @@ export class OrgManagerAPI {
       try {
         const record = parsers.StatusParser.fromCreateRequest(req.body);
         this.databaseService.connection.query(
-          'INSERT INTO status (id, date, organization_id, personnel_id, issuer_personnel_id, status_id) VALUES (?, ?, ?, ?, ?, ?)',
+          'INSERT INTO status (id, date, organization_id, personnel_id, issuer_personnel_id, status) VALUES (?, ?, ?, ?, ?, ?)',
           parsers.StatusParser.toMySql(record),
           (err: mysql.MysqlError | null) => {
             if (err) {
@@ -1024,7 +1161,7 @@ export class OrgManagerAPI {
         const page = req.query.page ? parseInt(req.query.page as string) : 0;
 
         this.databaseService.connection.query(
-          'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, status_id FROM status ' + filterStr + ' LIMIT ? OFFSET ?',
+          'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, status FROM status ' + filterStr + ' LIMIT ? OFFSET ?',
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
             if (err) {
@@ -1043,7 +1180,7 @@ export class OrgManagerAPI {
     router.get('/status/:id', (req, res, next) => {
       try {
         this.databaseService.connection.query(
-          'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, status_id FROM status WHERE id=?',
+          'SELECT id, date, organization_id, personnel_id, issuer_personnel_id, status FROM status WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
           (err: mysql.MysqlError | null, results?: any) => {
             if (err) {
@@ -1069,7 +1206,7 @@ export class OrgManagerAPI {
           throw new Error('id mistmatch');
         }
         this.databaseService.connection.query(
-          'UPDATE status SET id=?, date=?, organization_id=?, personnel_id=?, issuer_personnel_id=?, status_id=? WHERE id=? LIMIT 1',
+          'UPDATE status SET id=?, date=?, organization_id=?, personnel_id=?, issuer_personnel_id=?, status=? WHERE id=? LIMIT 1',
           [...parsers.StatusParser.toMySql(record), parsers.toBinaryUUID(record.id)],
           (err: mysql.MysqlError | null, results?: any) => {
             if (err) {

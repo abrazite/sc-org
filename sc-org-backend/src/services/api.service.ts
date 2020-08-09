@@ -19,7 +19,7 @@ export class APIService {
 
   constructor(databaseService: DatabaseService) {
     const orgManagerAPI = new OrgManagerAPI(databaseService);
-    const orgManagerViewsAPI = new OrgManagerViewsAPI();
+    const orgManagerViewsAPI = new OrgManagerViewsAPI(databaseService);
 
     this.app = express();
     this.app.use(cors());

@@ -11,6 +11,18 @@ CREATE TABLE `org_manager`.`joined_organization` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
 
+  CREATE TABLE `org_manager`.`left_organization` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
+  `personnel_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NULL,
+  `left_organization_id` BINARY(16) NOT NULL,
+  INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
+
 CREATE TABLE `org_manager`.`operation_attendence` (
   `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
   `date` DATETIME NULL DEFAULT NOW(),
@@ -53,7 +65,7 @@ CREATE TABLE `org_manager`.`status` (
   `organization_id` BINARY(16) NOT NULL,
   `personnel_id` BINARY(16) NOT NULL,
   `issuer_personnel_id` BINARY(16) NULL,
-  `status_id` BINARY(16) NOT NULL,
+  `status` VARCHAR(16) NOT NULL,
   INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
   INDEX `organization_id` (`organization_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
@@ -184,3 +196,147 @@ CREATE TABLE `org_manager`.`certifications` (
   INDEX `branch_id` (`branch_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE); 
+
+CREATE VIEW `most_recent_rsi_citizen` AS (SELECT t1.*
+FROM rsi_citizen AS t1
+LEFT OUTER JOIN rsi_citizen AS t2
+  ON t1.personnel_id = t2.personnel_id 
+        AND (t1.date < t2.date 
+         OR (t1.date = t2.date AND t1.Id < t2.Id))); 
+
+CREATE VIEW `most_recent_rank_change` AS (SELECT t1.*
+FROM rank_change AS t1
+LEFT OUTER JOIN rank_change AS t2
+  ON t1.personnel_id = t2.personnel_id AND t1.organization_id = t2.organization_id
+        AND (t1.date < t2.date 
+         OR (t1.date = t2.date AND t1.Id < t2.Id)));           
+
+CREATE VIEW `most_recent_discord` AS (SELECT t1.*
+FROM discord AS t1
+LEFT OUTER JOIN discord AS t2
+  ON t1.personnel_id = t2.personnel_id AND t1.organization_id = t2.organization_id
+        AND (t1.date < t2.date 
+         OR (t1.date = t2.date AND t1.Id < t2.Id)));       
+
+CREATE VIEW `most_recent_activity` AS (SELECT t1.*
+FROM active_duty AS t1
+LEFT OUTER JOIN active_duty AS t2
+  ON t1.personnel_id = t2.personnel_id AND t1.organization_id = t2.organization_id
+        AND (t1.date < t2.date 
+         OR (t1.date = t2.date AND t1.Id < t2.Id)));  
+
+
+CREATE VIEW `activity_dates` AS (SELECT 
+	t1.personnel_id AS 'personnel_id',
+  t1.organization_id AS 'organization_id',
+  GREATEST(
+    COALESCE(t2.date, 0),
+    COALESCE(t3.date, 0), 
+    COALESCE(t4.date, 0),
+    COALESCE(t5.date, 0), 
+    COALESCE(t6.date, 0)) AS 'last_date',
+  t2.date AS 'active_duty_date',
+  t3.date AS 'certification_date',
+  t4.date AS 'joined_organization_date',
+  t5.date AS 'operation_attendence_date',
+  t6.date AS 'rank_change_date'
+FROM discord AS t1
+LEFT JOIN (WITH summary AS (
+      SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.date DESC) AS rk
+      FROM active_duty t1)
+    SELECT s.*
+    FROM summary s
+    WHERE s.rk = 1) AS t2
+  ON t1.personnel_id = t2.personnel_id AND t1.organization_id = t2.organization_id
+LEFT JOIN (WITH summary AS (
+      SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.date DESC) AS rk
+      FROM certification t1)
+    SELECT s.*
+    FROM summary s
+    WHERE s.rk = 1) AS t3
+  ON t1.personnel_id = t3.personnel_id AND t1.organization_id = t3.organization_id               
+LEFT JOIN (WITH summary AS (
+      SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.date DESC) AS rk
+      FROM joined_organization t1)
+    SELECT s.*
+    FROM summary s
+    WHERE s.rk = 1) AS t4             
+  ON t1.personnel_id = t4.personnel_id AND t1.organization_id = t4.organization_id  
+LEFT JOIN (WITH summary AS (
+      SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.date DESC) AS rk
+      FROM operation_attendence t1)
+    SELECT s.*
+    FROM summary s
+    WHERE s.rk = 1) AS t5             
+  ON t1.personnel_id = t5.personnel_id AND t1.organization_id = t5.organization_id     
+LEFT JOIN (WITH summary AS (
+      SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.date DESC) AS rk
+      FROM rank_change t1)
+    SELECT s.*
+    FROM summary s
+    WHERE s.rk = 1) AS t6
+  ON t1.personnel_id = t6.personnel_id AND t1.organization_id = t6.organization_id);
+
+CREATE VIEW `most_recent_certifications` AS (SELECT 
+  t1.personnel_id, 
+  t1.organization_id,
+  t1.certification_id,
+  t2.abbreviation AS 'abbreviation',
+  MAX(t1.date) AS 'latest_date'
+FROM certification AS t1
+LEFT JOIN certifications AS t2
+	ON t2.id = t1.certification_id
+GROUP BY t1.personnel_id, t1.organization_id, t1.certification_id);
+
+CREATE VIEW `personnel_summary` AS (SELECT
+	t1.personnel_id,
+  t1.organization_id,
+  t1.username,
+  t1.discriminator,
+  t2.citizen_record,
+  t2.citizen_name,
+  t2.handle_name,
+  t3.date as 'rank_date',
+  t3.rank_id,
+  t4.grade_id,
+  t4.branch_id,
+  t6.abbreviation AS 'branch_abbreviation',
+  t5.abbreviation AS 'grade_abbreviation',
+  t4.abbreviation AS 'rank_abbreviation',
+  t7.last_date
+FROM most_recent_discord as t1
+LEFT JOIN most_recent_rsi_citizen as t2
+	ON t2.personnel_id = t1.personnel_id
+LEFT JOIN most_recent_rank_change as t3
+	ON t3.personnel_id = t1.personnel_id AND t3.organization_id = t1.organization_id
+LEFT JOIN ranks as t4
+	ON t4.id = t3.rank_id
+LEFT JOIN grades as t5
+	ON t5.id = t4.grade_id
+LEFT JOIN branches as t6
+	ON t6.id = t4.branch_id
+LEFT JOIN activity_dates as t7
+	ON t7.personnel_id = t1.personnel_id AND t7.organization_id = t1.organization_id);
+
+CREATE VIEW `personnel_summary_with_certifications` AS (SELECT
+  t1.personnel_id,
+  t1.organization_id,
+  t1.username,
+  t1.discriminator,
+  t1.citizen_record,
+  t1.citizen_name,
+  t1.handle_name,
+  t1.rank_date,
+  t1.rank_id,
+  t1.grade_id,
+  t1.branch_id,
+  t1.branch_abbreviation,
+  t1.grade_abbreviation,
+  t1.rank_abbreviation,
+  t1.last_date,
+  t2.certification_id,
+  t2.latest_date AS 'certification_date',
+  t2.abbreviation AS 'certification_abbreviation'
+FROM personnel_summary AS t1
+RIGHT JOIN most_recent_certifications AS t2
+	ON t1.personnel_id = t2.personnel_id AND t1.organization_id = t2.organization_id);

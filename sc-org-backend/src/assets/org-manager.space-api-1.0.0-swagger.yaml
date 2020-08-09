@@ -502,6 +502,125 @@ paths:
         '404':
           description: id not found
 
+  /left-organization:
+    post:
+      tags:
+        - leadership
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeftOrganizationRecord'
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRecordResponse'
+        '400':
+          description: bad input parameter
+        '500':
+          description: server error
+    get:
+      tags:
+        - personnel
+      parameters:
+        - in: query
+          name: searchString
+          description: pass an optional search string
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: page
+          description: number of pages to skip for pagination
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - in: query
+          name: limit
+          description: maximum number of records to return
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 50
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeftOrganizationRecord'
+  /left-organization/{id}:
+    get:
+      tags:
+        - personnel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+      responses:
+        '200':
+          description: record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeftOrganizationRecord'
+        '404':
+          description: id not found
+    put:
+      tags:
+        - admins
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeftOrganizationRecord'
+      responses:
+        '200':
+          description: object updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRecordResponse'
+        '400':
+          description: bad input parameter
+        '500':
+          description: server error
+    delete:
+      tags:
+        - admins
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 2a6b26d3-0018-4b72-82e5-f5162392ffc1
+      responses:
+        '200':
+          description: record deleted
+        '404':
+          description: id not found
+
   /note:
     post:
       tags:

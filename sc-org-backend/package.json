@@ -6,6 +6,7 @@
   "scripts": {
     "copy:assets": "ncp src/assets ./dist/assets",
     "build": "node scripts/api_generator.js && tsc && npm run copy:assets",
+    "postinstall": "node scripts/api_generator.js",
     "start": "npm run build && cd dist && node main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

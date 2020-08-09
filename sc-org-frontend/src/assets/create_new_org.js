@@ -2,6 +2,7 @@ const v4 = require('uuid');
 const fetch = require('node-fetch');
 
 const API_SERVER = 'http://localhost:8081/api/1.0.0';
+// const API_SERVER = 'https://org-manager.space/api/1.0.0';
 
 function createTheIMC(users) {
   const orgInfo = {
@@ -161,7 +162,10 @@ function createPersonnel(orgInfo, personnelJson, defaultDiscriminator) {
     .then(() => createRsiCitizenRecordsFromPersonnel(personnelJson))
     .then(() => createRankChangeRecordsFromPersonnel(orgInfo, personnelJson))
     .then(() => createJoinedOrgRecordsFromPersonnel(orgInfo, personnelJson))
-    .then(() => createCertificationRecordsFromPersonnel(orgInfo, personnelJson));
+    .then(() => createLeftOrgRecordsFromPersonnel(orgInfo, personnelJson))
+    .then(() => createCertificationRecordsFromPersonnel(orgInfo, personnelJson))
+    .then(() => createStatusRecordsFromPersonnel(orgInfo, personnelJson))
+    .then(() => createNoteRecordsFromPersonnel(orgInfo, personnelJson));
 }
 
 function createDiscordFromPersonnel(orgInfo, personnel, defaultDiscriminator) {
@@ -257,7 +261,7 @@ function createRankChangeRecord(json) {
 }
 
 function createJoinedOrgRecordsFromPersonnel(orgInfo, personnel) {
-  return Promise.all(personnel.serviceRecords.filter(r => r.kind === 'RankChangeRecord').map(r => {
+  return Promise.all(personnel.serviceRecords.filter(r => r.kind === 'JoinedOrgRecord').map(r => {
     const json = {
       date: r.date ? new Date(Date.parse(r.date)) : orgInfo.additionDate,
       organizationId: orgInfo.id,
@@ -276,6 +280,29 @@ function createJoinedOrgRecord(json) {
   return createRecord(
     `${API_SERVER}/joined-organization?organizationId=${json.organizationId}&date=${json.date.toISOString()}&personnelId=${json.personnelId}&joinedOrganizationId=${json.joinedOrganizationId}`,
     `${API_SERVER}/joined-organization`,
+    json
+  );
+}
+
+function createLeftOrgRecordsFromPersonnel(orgInfo, personnel) {
+  return Promise.all(personnel.serviceRecords.filter(r => r.kind === 'LeftOrganizationRecord').map(r => {
+    const json = {
+      date: r.date ? new Date(Date.parse(r.date)) : orgInfo.additionDate,
+      organizationId: orgInfo.id,
+      personnelId: personnel.id,
+      issuerPersonnelId: orgInfo.adminId,
+      leftOrganizationId: personnel.leftOrganizationId ? personnel.leftOrganizationId : orgInfo.id,
+    }
+
+    return createLeftOrgRecord(json);
+  }));
+}
+
+function createLeftOrgRecord(json) {
+  json.date.setUTCMilliseconds(0);
+  return createRecord(
+    `${API_SERVER}/left-organization?organizationId=${json.organizationId}&date=${json.date.toISOString()}&personnelId=${json.personnelId}&leftOrganizationId=${json.leftOrganizationId}`,
+    `${API_SERVER}/left-organization`,
     json
   );
 }
@@ -309,6 +336,52 @@ function createCertificationRecord(json) {
   );
 }
 
+function createStatusRecordsFromPersonnel(orgInfo, personnel) {
+  return Promise.all(personnel.serviceRecords.filter(r => r.kind === 'StatusRecord').map(r => {
+    const json = {
+      date: r.date ? new Date(Date.parse(r.date)) : orgInfo.additionDate,
+      organizationId: orgInfo.id,
+      personnelId: personnel.id,
+      issuerPersonnelId: orgInfo.adminId,
+      status: r.status
+    }
+
+    return createStatusRecord(json);
+  }));
+}
+
+function createStatusRecord(json) {
+  json.date.setUTCMilliseconds(0);
+  return createRecord(
+    `${API_SERVER}/status?organizationId=${json.organizationId}&date=${json.date.toISOString()}&personnelId=${json.personnelId}&status=${json.status}`,
+    `${API_SERVER}/status`,
+    json
+  );
+}
+
+function createNoteRecordsFromPersonnel(orgInfo, personnel) {
+  return Promise.all(personnel.serviceRecords.filter(r => r.kind === 'NoteRecord').map(r => {
+    const json = {
+      date: r.date ? new Date(Date.parse(r.date)) : orgInfo.additionDate,
+      organizationId: orgInfo.id,
+      personnelId: personnel.id,
+      issuerPersonnelId: orgInfo.adminId,
+      note: r.note
+    }
+
+    return createNoteRecord(json);
+  }));
+}
+
+function createNoteRecord(json) {
+  json.date.setUTCMilliseconds(0);
+  return createRecord(
+    `${API_SERVER}/note?organizationId=${json.organizationId}&date=${json.date.toISOString()}&personnelId=${json.personnelId}`,
+    `${API_SERVER}/note`,
+    json
+  );
+}
+
 function createRecord(getRoute, postRoute, json) {
   return fetch(getRoute)
     .then(res => res.ok ? res.json() : { status: 'error' })
@@ -329,17 +402,6 @@ function createRecord(getRoute, postRoute, json) {
       return record;
     })
     .then(record => record.id);
-}
-
-function importUsers() {
-  const allRanks = {};
-  users.forEach(user => {
-    user.serviceRecords.filter(t => t.kind === 'RankChangeRecord').forEach(t => {
-      allRanks[t.rank] = v4();
-    });
-  });
-
-  console.log(allRanks);
 }
 
 async function createTheIMCForAllUsers() {

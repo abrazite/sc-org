@@ -86,6 +86,11 @@ class APIDefinitions {
         fieldTypes: [...commonFieldTypes, 'uuid', 'uuid'],
         mysqlCreateFieldRequired: [...commonFieldRequired, true, false]
       }, {
+        route: 'left-organization',
+        mysqlFields: [...commonFields, 'left_organization_id'],
+        fieldTypes: [...commonFieldTypes, 'uuid'],
+        mysqlCreateFieldRequired: [...commonFieldRequired, true]
+      }, {
         route: 'note',
         mysqlFields: [...commonFields, 'note'],
         fieldTypes: [...commonFieldTypes, 'longtext'],
@@ -102,8 +107,8 @@ class APIDefinitions {
         mysqlCreateFieldRequired: [...commonFieldRequired, true]
       }, {
         route: 'status',
-        mysqlFields: [...commonFields, 'status_id'],
-        fieldTypes: [...commonFieldTypes, 'uuid'],
+        mysqlFields: [...commonFields, 'status'],
+        fieldTypes: [...commonFieldTypes, 'string-64'],
         mysqlCreateFieldRequired: [...commonFieldRequired, true]
       }, {
         route: 'rsi-citizen',
@@ -1170,62 +1175,62 @@ export class ${definition.parser} {
 `;
     });
     
-    template += '      const record = {\r';
+    template += '    const record = {\r';
     definition.jsonNames.forEach((e, i) => {
       if (e === 'id') {
-        template += '        id: json.id ? json.id : uuidv4(),\r';
+        template += '      id: json.id ? json.id : uuidv4(),\r';
       } else if (e === 'date') {
-        template += '        date: json.date ? new Date(Date.parse(json.date)) : new Date(),\r';
+        template += '      date: json.date ? new Date(Date.parse(json.date)) : new Date(),\r';
       } else {
         if (definition.fieldTypes[i] === 'Date') {
-          template += `        ${e}: json.${e} ? new Date(Date.parse(json.${e})) : null,
+          template += `      ${e}: json.${e} ? new Date(Date.parse(json.${e})) : null,
 `;
         } else {
-          template += `        ${e}: json.${e},
+          template += `      ${e}: json.${e},
 `;      
         }
       }
     });
-    template += `      }
-      return record;
-    }
+    template += `    }
+    return record;
+  }
     
-    static toMySql(record: ${definition.interfaceTag}): any {
-      const mysql = [
+  static toMySql(record: ${definition.interfaceTag}): any {
+    const mysql = [
 `
 definition.jsonNames.forEach((e, i) => {
       if (definition.fieldTypes[i] === 'uuid') {
-        template += `        toBinaryUUID(record.${e}),
+        template += `      toBinaryUUID(record.${e}),
 `;  
       } else {
-        template += `        record.${e},
+        template += `      record.${e},
 `;
       }
     });
-    template += `      ];
-      return mysql;
-    }
+    template += `    ];
+    return mysql;
+  }
     
-    static fromMySql(mysql: any): ${definition.interfaceTag} {
-      const record = {
+  static fromMySql(mysql: any): ${definition.interfaceTag} {
+    const record = {
 `;
     definition.jsonNames.forEach((e, i) => {
       if (definition.fieldTypes[i] === 'Date') {
-        template += `        ${e}: new Date(Date.parse(mysql.${definition.mysqlFields[i]})),
+        template += `      ${e}: new Date(Date.parse(mysql.${definition.mysqlFields[i]})),
 `;  
       } else if (definition.fieldTypes[i] === 'uuid') {
-        template += `        ${e}: fromBinaryUUID(mysql.${definition.mysqlFields[i]}),
+        template += `      ${e}: fromBinaryUUID(mysql.${definition.mysqlFields[i]}),
 `;  
       } else {
-        template += `        ${e}: mysql.${e},
+        template += `      ${e}: mysql.${e},
 `;
       }
     });
 
-    template += `      };
-      return record;
-    }
+    template += `    };
+    return record;
   }
+}
 `;
     return template;
   }
