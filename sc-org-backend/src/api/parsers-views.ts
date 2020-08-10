@@ -120,6 +120,37 @@ export class PersonnelSummaryParser {
   }
 }
 
+export interface RankDetails {
+  organizationId: string | null;
+  branchId: string | null;
+  gradeId: string | null;
+  rankId: string | null;
+  branchAbbreviation: string | null;
+  gradeAbbreviation: string | null;
+  rankAbbreviation: string | null;
+  branchName: string | null;
+  gradeName: string | null;
+  rankName: string | null;
+}
+
+export class RankDetailsParser {
+  static fromMySql(mysql: any): RankDetails {
+    const record = {
+      organizationId: parsers.fromBinaryUUID(mysql.organization_id),
+      branchId: parsers.fromBinaryUUID(mysql.branch_id),
+      gradeId: parsers.fromBinaryUUID(mysql.grade_id),
+      rankId: parsers.fromBinaryUUID(mysql.rank_id),
+      branchAbbreviation: mysql.branch_abbreviation,
+      gradeAbbreviation: mysql.grade_abbreviation,
+      rankAbbreviation: mysql.rank_abbreviation,
+      branchName: mysql.branch_name,
+      gradeName: mysql.grade_name,
+      rankName: mysql.rank_name,
+    };
+    return record;
+  }
+}
+
 export interface PersonnelSummaryWithCertifications {
   personnelId: string | null;
   organizationId: string | null;

@@ -135,6 +135,63 @@ export class OrgManagerViewsAPI {
       }
     });
 
+    router.get('/ranks-details', (req, res) => {
+      try {
+        const organizationId = req.query.organizationId as string;
+        if (!organizationId) {
+          throw new Error('organizationId required');
+        }
+
+        const filterStrs: string[] = [];
+        const filterParams: any[] = [];
+        Object.keys(req.query).forEach(key => {
+          if (key === 'limit' || key ==='page') {
+            return;
+          }
+
+          const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
+          const sqlField = keySplit.join('_');
+          filterStrs.push(sqlField + '=?');
+          if (keySplit.includes('id')) {
+            filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
+          } else if (keySplit.includes('date')) {
+            filterParams.push(new Date(Date.parse(req.query[key] as string)));
+          } else {
+            filterParams.push(req.query[key]);
+          }
+        });
+        const filterStr = filterStrs.length > 0 ? 'WHERE ' + filterStrs.join(' AND ') : '';
+
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+        const page = req.query.page ? parseInt(req.query.page as string) : 0;
+
+        this.databaseService.connection.query(`SELECT
+            organization_id,
+            branch_id,
+            grade_id,
+            rank_id,
+            branch_abbreviation,
+            grade_abbreviation,
+            rank_abbreviation,
+            branch_name,
+            grade_name,
+            rank_name
+          FROM ranks_details ${filterStr} LIMIT ? OFFSET ?;`,
+          [...filterParams, limit, limit * page],
+          (err: mysql.MysqlError | null, results?: any) => {
+            if (err) {
+              console.error(err);
+              res.status(500).json({ status: 'error', message: err.message });
+            } else {
+              res.status(200).json(results!.map((r: any) => viewParsers.RankDetailsParser.fromMySql(r)));
+            }
+          }
+        )
+      } catch(err) {
+        res.status(500).json({ status: 'error', message: err.message });
+      }
+    });
+
     router.get('/membership', (req, res) => {
       try {
         const organizationId = req.query.organizationId as string;
