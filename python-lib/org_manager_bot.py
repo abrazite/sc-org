@@ -1,8 +1,7 @@
-#Imports the discord api & MySQL into python
 import discord
 from discord.ext import commands, tasks
-from flask import jsonify
-import json
+import org_manager_api
+import secrets
 
 # API Server
 API_SERVER = 'https://li1958-117.members.linode.com/1.0.0/'
@@ -39,7 +38,7 @@ async def is_member(ctx, personnel_str):
     membership = api.membership(personnel_str)
     if membership:
         # todo(James): format date :)
-        await ctx.send(f'joined {membership.joinedDate}')
+        await ctx.send(f'joined {membership["joinedDate"]}')
     else:
         await ctx.send('no membership found')
 
@@ -47,7 +46,7 @@ async def is_member(ctx, personnel_str):
 # Provide basic info on personnel
 @client.command()
 async def whois(ctx, personnel_str):
-    if name:
+    if personnel_str:
         personnel = api.personnel_summary(personnel_str)
     else:
         personnel = api.personnel_summary(f'{ctx.author.name}#{ctx.author.discriminator}')
@@ -75,10 +74,29 @@ async def whois(ctx, personnel_str):
 @client.command()
 async def change_rank(ctx, personnel_str, rank_str):
     record_id = api.change_rank(f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, rank_str)
+
+    personnel = api.personnel_summary('abrazite')
+
+    member = ctx.message.channel.guild.get_member_named(f'{personnel["username"]}#{personnel["discriminator"]}')
+    if member is None:
+        await ctx.send('error: could not change rank, no discord member found in guild')
+        return
+
+    name = personnel["handleName"] if personnel["handleName"] else personnel["username"]
+    formatted_nick = f'[{personnel["rankAbbreviation"]}] {name}'
+
+    await member.edit(nick=formatted_nick)
     if record_id:
         await ctx.send('rank changed')
     else:
         await ctx.send('error: could not change rank')
 
-CLIENT_KEY = ''
-client.run(CLIENT_KEY)
+@client.command()
+async def change_nick(ctx, personnel_str, nick):
+    member = ctx.message.channel.guild.get_member_named(personnel_str)
+    if member is None:
+        await ctx.send('error: could not change nickname, no discord member found in guild')
+        return
+    await member.edit(nick=nick)
+
+client.run(secrets.CLIENT_KEY)

@@ -37,6 +37,12 @@ class OrgManagerAPI:
             url = f'/personnel/{personnel_id}?organizationId={self.organization_id}'
             return self.api_get(url)
 
+    def rank(self, rank_str: str):
+        rank_id = self.find_rank_id(rank_str)
+        if rank_id:
+            url = f'/ranks-details?organizationId={self.organization_id}&rank_id={rank_id}'
+            return self.api_get(url)
+
     def change_rank(self, issuer_str: str, personnel_str: str, rank_str: str) -> NewRecordId:
         issuer_id = self.find_personnel_id(issuer_str)
         personnel_id = self.find_personnel_id(personnel_str)

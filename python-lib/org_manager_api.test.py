@@ -3,8 +3,8 @@ import time
 
 import org_manager_api
 
-# API_SERVER = 'https://li1958-117.members.linode.com/1.0.0/'
-API_SERVER = 'http://localhost:8081/api/1.0.0/'
+API_SERVER = 'https://li1958-117.members.linode.com/1.0.0/'
+# API_SERVER = 'http://localhost:8081/api/1.0.0/'
 ORGANIZATION_ID = '4b40e446-5ceb-4543-a6d8-fa4e28a00406'
 
 
@@ -23,6 +23,21 @@ class TestMembership(unittest.TestCase):
         membership = self.api.membership('1443936')
         self.assertIsNotNone(personnel)
         self.assertIsNone(membership)
+
+
+class TestRank(unittest.TestCase):
+    api = None
+
+    def setUp(self):
+        self.api = org_manager_api.OrgManagerAPI(API_SERVER, ORGANIZATION_ID)
+
+    def test_query(self):
+        rank = self.api.rank('HJ-SA')
+        self.assertIsNotNone(rank)
+
+    def test_non_existant_query(self):
+        rank = self.api.rank('3465jklhasd89fgq2')
+        self.assertIsNone(rank)        
 
 
 class TestChangeRank(unittest.TestCase):
