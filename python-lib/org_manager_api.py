@@ -21,7 +21,7 @@ class OrgManagerAPI:
     def membership(self, personnel_str: str):
         personnel_id = self.find_personnel_id(personnel_str)
         if personnel_id:
-            url = f'/membership?organizationId={self.organization_id}&personnelId={personnel_id}?'
+            url = f'/membership?organizationId={self.organization_id}&personnelId={personnel_id}'
             results = self.api_get(url)
             if len(results) > 0:
                 return results[0]
@@ -29,10 +29,14 @@ class OrgManagerAPI:
     def personnel_summary(self, personnel_str: str):
         personnel_id = self.find_personnel_id(personnel_str)
         if personnel_id:
-            url = f'/personnel-summary?organizationId={self.organization_id}&personnelId={personnel_id}?'
+            url = f'/personnel-summary?organizationId={self.organization_id}&personnelId={personnel_id}'
             results = self.api_get(url)
-            if len(results) > 0:
+            if results and len(results) > 0:
                 return results[0]
+
+    def personnel_summary_all(self):
+        url = f'/personnel-summary?organizationId={self.organization_id}?limit=1000' # todo(abrazite) add paging
+        return self.api_get(url)
 
     def personnel(self, personnel_str: str):
         personnel_id = self.find_personnel_id(personnel_str)

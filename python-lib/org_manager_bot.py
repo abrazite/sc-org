@@ -129,8 +129,8 @@ async def list_ranks(ctx, page=0):
             ranks_str += rank["gradeAbbreviation"] + '-'
         if rank["rankAbbreviation"]:
             ranks_str += rank["rankAbbreviation"]
-        if rank["name"]:
-            ranks_str += '\t' + rank["name"]
+        if rank["rankName"]:
+            ranks_str += '\t' + rank["rankName"]
         ranks_strs += ranks_str + '\r'
 
     await ctx.send(ranks_strs)
@@ -273,7 +273,7 @@ async def list_note_records(ctx, personnel_str: str = None, page: int = 0):
 @client.command(brief='Create a new org branch')
 async def create_branch(ctx, abbreviation: str, branch: str = None):
     record_id = api.create_branch(abbreviation, branch)
-    if record_id != '':
+    if record_id:
         await ctx.send(f'created branch {abbreviation}')
     else:
         await ctx.send('error: no branch created')
@@ -282,7 +282,7 @@ async def create_branch(ctx, abbreviation: str, branch: str = None):
 @client.command(brief='Create a new org grade')
 async def create_grade(ctx, abbreviation: str, grade: str = None):
     record_id = api.create_grade(abbreviation, grade)
-    if record_id != '':
+    if record_id:
         await ctx.send(f'created grade {abbreviation}')
     else:
         await ctx.send('error: no grade created')
@@ -291,7 +291,7 @@ async def create_grade(ctx, abbreviation: str, grade: str = None):
 @client.command(brief='Create a new org grade')
 async def create_rank(ctx, abbreviation: str, rank: str = None, branch_str: str = None, grade_str: str = None):
     record_id = api.create_rank(abbreviation, rank, branch_str, grade_str)
-    if record_id != '':
+    if record_id:
         await ctx.send(f'created rank {abbreviation}')
     else:
         await ctx.send('error: no rank created')
@@ -417,5 +417,42 @@ async def change_nick(ctx, personnel_str, nick):
         await ctx.send('error: could not change nickname, no discord member found in guild')
         return
     await member.edit(nick=nick)
+
+
+@client.command(brief='Checks discord tags against database')
+async def check_tags(ctx, correct_tags: bool = False):
+    report_users = ''
+
+    all_personnel = api.personnel_summary_all()
+    if all_personnel is None:
+        await ctx.send('error: could not lookup personnel')
+        return
+
+    for personnel in all_personnel:
+        personnel_str = f'{personnel["username"]}#{personnel["discriminator"]}'
+        member = ctx.message.channel.guild.get_member_named(personnel_str)
+
+        if member:
+            member_nick = member.nick if member.nick else member.display_name
+            tag = personnel["rankAbbreviation"]
+            if personnel['handleName']:
+                handle = personnel['handleName']
+            else:
+                handle = personnel['username']
+            nick = f'[{tag}] {handle}'
+
+            if member_nick != nick:
+                report_users += f'{member_nick}\t -> \t {nick}'
+                if correct_tags:
+                    try:
+                        member.edit(nick=nick)
+                    except:
+                        report_users += '\tE'
+                report_users += '\r'
+
+    if len(report_users) > 0:
+        await ctx.send(report_users)
+    else:
+        await ctx.send('all member tags are correct')
 
 client.run(secrets.CLIENT_KEY)
