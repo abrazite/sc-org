@@ -26,8 +26,7 @@ async def clear(ctx, amount=5):
     await ctx.send(f'{amount} Posts have been cleared')
 
 
-# Command to check if member is in the Database
-@client.command()
+@client.command(brief='Reports when user joined the org')
 async def is_member(ctx, personnel_str):
     membership = api.membership(personnel_str)
     if membership:
@@ -37,8 +36,7 @@ async def is_member(ctx, personnel_str):
         await ctx.send('no membership found')
 
 
-# Provide basic info on personnel
-@client.command()
+@client.command(brief='Shows basic personnel info')
 async def whois(ctx, *, personnel_str=None):
     if personnel_str:
         personnel = api.personnel_summary(personnel_str)
@@ -58,14 +56,27 @@ async def whois(ctx, *, personnel_str=None):
         else:
             handle = personnel['username']
 
-        await ctx.send(f'[{tag}] {handle}')
+        message_str = f'[{tag}] {handle}\r'
+        if personnel['username']:
+            message_str += f'\rdiscord:\t {personnel["username"]}#{personnel["discriminator"]}'
+        if personnel['citizenRecord']:
+            message_str += f'\rcitizenRecord:\t {personnel["citizenRecord"]}'
+        if personnel['citizenName']:
+            message_str += f'\rcitizenName:\t {personnel["citizenName"]}'
+        if personnel['handleName']:
+            message_str += f'\rhandleName:\t {personnel["handleName"]}'
+        message_str += '\r'
+
+        if personnel['rankDate']:
+            message_str += f'\rrankDate:\t {personnel["rankDate"]}'
+
+        await ctx.send(message_str)
 
     else:
         await ctx.send('error: record not found')
 
 
-# Show all ranks
-@client.command()
+@client.command(brief='Lists all org branches')
 async def list_branches(ctx, page=0):
     LIMIT = 10
     branches = api.branches(limit=LIMIT, page=page)
@@ -83,8 +94,7 @@ async def list_branches(ctx, page=0):
     await ctx.send(branches_strs)
 
 
-# Show all grades
-@client.command()
+@client.command(brief='Lists all org grades')
 async def list_grades(ctx, page=0):
     LIMIT = 10
     grades = api.grades(limit=LIMIT, page=page)
@@ -102,8 +112,7 @@ async def list_grades(ctx, page=0):
     await ctx.send(grades_strs)
 
 
-# Show all ranks
-@client.command()
+@client.command(brief='Lists all org ranks')
 async def list_ranks(ctx, page=0):
     LIMIT = 10
     ranks = api.ranks(limit=LIMIT, page=page)
@@ -127,9 +136,8 @@ async def list_ranks(ctx, page=0):
     await ctx.send(ranks_strs)
 
 
-# Show all certifications
-@client.command()
-async def list_certifications(ctx, page=0):
+@client.command(brief='Lists all org certifications')
+async def list_certifications(ctx, page: int = 0):
     LIMIT = 10
     certifications = api.certifications(limit=LIMIT, page=page)
     certifications_strs = ''
@@ -146,30 +154,151 @@ async def list_certifications(ctx, page=0):
     await ctx.send(certifications_strs)
 
 
-# list all ops attended by personnel
-@client.command()
-async def list_op_attendence(ctx, personnel_str: str = None):
+@client.command(brief='Lists all rank change records')
+async def list_rank_records(ctx, personnel_str: str = None, page: int = 0):
+    LIMIT = 10
+
     if personnel_str:
         personnel = api.personnel(personnel_str)
     else:
         personnel = api.personnel(f'{ctx.author.name}#{ctx.author.discriminator}')
 
-    if personnel is None:
+    if personnel is None or 'rankChangeRecords' not in personnel:
         await ctx.send('error: no records found')
         return
 
-    op_str = ''
-    for op in personnel['operationAttendenceRecords']:
-        op_str += op['date']
-        if op['name']:
-            op_str += '\t' + op['name']
-        op_str += '\r'
+    records = personnel['rankChangeRecords']
 
-    await ctx.send(op_str)
+    record_str = ''
+    if len(records) == LIMIT or page > 0:
+        record_str += f'(page {page})\r\r'
 
-# Change a users rank and record the discord member who issued it
-@client.command()
-async def add_op_attendence(ctx, personnel_or_channel_str: str, *, op_name: str = None):
+    for i, record in enumerate(records):
+        if page * LIMIT <= i < (page + 1) * LIMIT:
+            record_str += record['date']
+            if record['abbreviation']:
+                record_str += '\t' + record['abbreviation']
+            record_str += '\r'
+
+    await ctx.send(record_str)
+
+
+@client.command(brief='Lists all certification records')
+async def list_cert_records(ctx, personnel_str: str = None, page: int = 0):
+    LIMIT = 10
+
+    if personnel_str:
+        personnel = api.personnel(personnel_str)
+    else:
+        personnel = api.personnel(f'{ctx.author.name}#{ctx.author.discriminator}')
+
+    if personnel is None or 'certificationRecords' not in personnel:
+        await ctx.send('error: no records found')
+        return
+
+    records = personnel['certificationRecords']
+
+    record_str = ''
+    if len(records) == LIMIT or page > 0:
+        record_str += f'(page {page})\r\r'
+
+    for i, record in enumerate(records):
+        if page * LIMIT <= i < (page + 1) * LIMIT:
+            record_str += record['date']
+            if record['abbreviation']:
+                record_str += '\t' + record['abbreviation']
+            record_str += '\r'
+
+    await ctx.send(record_str)
+
+
+@client.command(brief='Lists all ops attended by personnel')
+async def list_op_records(ctx, personnel_str: str = None, page: int = 0):
+    LIMIT = 10
+
+    if personnel_str:
+        personnel = api.personnel(personnel_str)
+    else:
+        personnel = api.personnel(f'{ctx.author.name}#{ctx.author.discriminator}')
+
+    if personnel is None or 'operationAttendenceRecords' not in personnel:
+        await ctx.send('error: no records found')
+        return
+
+    records = personnel['operationAttendenceRecords']
+
+    record_str = ''
+    if len(records) == LIMIT or page > 0:
+        record_str += f'(page {page})\r\r'
+
+    for i, record in enumerate(records):
+        if page * LIMIT <= i < (page + 1) * LIMIT:
+            record_str += record['date']
+            if record['name']:
+                record_str += '\t' + record['name']
+            record_str += '\r'
+
+    await ctx.send(record_str)
+
+
+@client.command(brief='Lists all notes for personnel')
+async def list_note_records(ctx, personnel_str: str = None, page: int = 0):
+    LIMIT = 10
+
+    if personnel_str:
+        personnel = api.personnel(personnel_str)
+    else:
+        personnel = api.personnel(f'{ctx.author.name}#{ctx.author.discriminator}')
+
+    if personnel is None or 'noteRecords' not in personnel:
+        await ctx.send('error: no records found')
+        return
+
+    records = personnel['noteRecords']
+
+    record_str = ''
+    if len(records) == LIMIT or page > 0:
+        record_str += f'(page {page})\r\r'
+
+    for i, record in enumerate(records):
+        if page * LIMIT <= i < (page + 1) * LIMIT:
+            record_str += record['date']
+            if record['note']:
+                record_str += '\t' + record['note']
+            record_str += '\r'
+
+    await ctx.send(record_str)
+
+
+@client.command(brief='Create a new org branch')
+async def create_branch(ctx, abbreviation: str, branch: str = None):
+    record_id = api.create_branch(abbreviation, branch)
+    if record_id != '':
+        await ctx.send(f'created branch {abbreviation}')
+    else:
+        await ctx.send('error: no branch created')
+
+
+@client.command(brief='Create a new org grade')
+async def create_grade(ctx, abbreviation: str, grade: str = None):
+    record_id = api.create_grade(abbreviation, grade)
+    if record_id != '':
+        await ctx.send(f'created grade {abbreviation}')
+    else:
+        await ctx.send('error: no grade created')
+
+
+@client.command(brief='Create a new org grade')
+async def create_rank(ctx, abbreviation: str, rank: str = None, branch_str: str = None, grade_str: str = None):
+    record_id = api.create_rank(abbreviation, rank, branch_str, grade_str)
+    if record_id != '':
+        await ctx.send(f'created rank {abbreviation}')
+    else:
+        await ctx.send('error: no rank created')
+
+
+@client.command(brief='Records certification')
+async def record_cert(ctx, personnel_or_channel_str: str, *, certification_str: str = None):
     members = None
     for channel in ctx.message.channel.guild.voice_channels:
         if channel.name == personnel_or_channel_str:
@@ -187,7 +316,7 @@ async def add_op_attendence(ctx, personnel_or_channel_str: str, *, op_name: str 
     records_str = ''
     for member in members:
         personnel_str = f'{member["username"]}#{member["discriminator"]}'
-        record_id = api.add_op_attendence(f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, op_name)
+        record_id = api.record_cert(f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, certification_str)
         if record_id:
             name = member["handleName"] if member["handleName"] else member["username"]
             records_str += f'updated {name}\r'
@@ -198,8 +327,67 @@ async def add_op_attendence(ctx, personnel_or_channel_str: str, *, op_name: str 
         await ctx.send('warning: no records updated')
 
 
-# Change a users rank and record the discord member who issued it
-@client.command()
+@client.command(brief='Records operation attendance')
+async def record_op(ctx, personnel_or_channel_str: str, *, op_name: str = None):
+    members = None
+    for channel in ctx.message.channel.guild.voice_channels:
+        if channel.name == personnel_or_channel_str:
+            members = []
+            for member in channel.members:
+                personnel_str = f'{member.name}#{member.discriminator}'
+                personnel = api.personnel_summary(personnel_str)
+                if personnel:
+                    members.append(personnel)
+
+    if members is None:
+        personnel = api.personnel_summary(personnel_or_channel_str)
+        members = [personnel]
+
+    records_str = ''
+    for member in members:
+        personnel_str = f'{member["username"]}#{member["discriminator"]}'
+        record_id = api.record_op(f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, op_name)
+        if record_id:
+            name = member["handleName"] if member["handleName"] else member["username"]
+            records_str += f'updated {name}\r'
+
+    if records_str != '':
+        await ctx.send(records_str)
+    else:
+        await ctx.send('warning: no records updated')
+
+
+@client.command(brief='Records note')
+async def record_note(ctx, personnel_or_channel_str: str, *, note: str):
+    members = None
+    for channel in ctx.message.channel.guild.voice_channels:
+        if channel.name == personnel_or_channel_str:
+            members = []
+            for member in channel.members:
+                personnel_str = f'{member.name}#{member.discriminator}'
+                personnel = api.personnel_summary(personnel_str)
+                if personnel:
+                    members.append(personnel)
+
+    if members is None:
+        personnel = api.personnel_summary(personnel_or_channel_str)
+        members = [personnel]
+
+    records_str = ''
+    for member in members:
+        personnel_str = f'{member["username"]}#{member["discriminator"]}'
+        record_id = api.record_note(f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, note)
+        if record_id:
+            name = member["handleName"] if member["handleName"] else member["username"]
+            records_str += f'updated {name}\r'
+
+    if records_str != '':
+        await ctx.send(records_str)
+    else:
+        await ctx.send('warning: no records updated')
+
+
+@client.command(brief='Changes users rank, grade, and branch')
 async def change_rank(ctx, personnel_str, rank_str):
     record_id = api.change_rank(f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, rank_str)
 
@@ -212,14 +400,17 @@ async def change_rank(ctx, personnel_str, rank_str):
     name = personnel["handleName"] if personnel["handleName"] else personnel["username"]
     formatted_nick = f'[{personnel["rankAbbreviation"]}] {name}'
 
-    await member.edit(nick=formatted_nick)
     if record_id:
-        await ctx.send('rank changed')
+        try:
+            await member.edit(nick=formatted_nick)
+            await ctx.send('rank changed')
+        except:
+            await ctx.send('rank changed, could not update nickname')
     else:
         await ctx.send('error: could not change rank')
 
 
-@client.command()
+@client.command(brief='Changes user nickname - testing')
 async def change_nick(ctx, personnel_str, nick):
     member = ctx.message.channel.guild.get_member_named(personnel_str)
     if member is None:

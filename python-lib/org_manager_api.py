@@ -80,7 +80,63 @@ class OrgManagerAPI:
         url = f'/certifications?organizationId={self.organization_id}&limit={limit}&page={page}'
         return self.api_get(url)
 
-    def add_op_attendence(self, issuer_str: str, personnel_str: str, op_name: str) -> NewRecordId:
+    def create_branch(self, abbreviation: str, branch: str = None) -> BranchId:
+        url = '/branches'
+        body = {
+            'organizationId': self.organization_id,
+            'abbreviation': abbreviation
+        }
+        if branch:
+            body['branch'] = branch
+        return self.api_post(url, body)
+
+    def create_grade(self, abbreviation: str, grade: str = None) -> BranchId:
+        url = '/grades'
+        body = {
+            'organizationId': self.organization_id,
+            'abbreviation': abbreviation
+        }
+        if grade:
+            body['grade'] = grade
+        return self.api_post(url, body)
+
+    def create_rank(self, abbreviation: str, rank: str = None, branch_str: str = None, grade_str: str = None) -> BranchId:
+        branch_id = self.find_branch_id(branch_str)
+        grade_id = self.find_grade_id(grade_str)
+
+        if branch_str and branch_id is None:
+            return
+        if grade_str and grade_id is None:
+            return
+
+        url = '/ranks'
+        body = {
+            'organizationId': self.organization_id,
+            'abbreviation': abbreviation
+        }
+        if rank:
+            body['name'] = rank
+        if branch_id:
+            body['branchId'] = branch_id
+        if grade_id:
+            body['gradeId'] = grade_id
+        return self.api_post(url, body)
+
+    def record_cert(self, issuer_str: str, personnel_str: str, certification_str: str) -> NewRecordId:
+        issuer_id = self.find_personnel_id(issuer_str)
+        personnel_id = self.find_personnel_id(personnel_str)
+        certification_id = self.find_certification_id(certification_str)
+        if issuer_id and personnel_id and certification_id:
+            url = '/certification'
+            body = {
+                'organizationId': self.organization_id,
+                'issuerPersonnelId': issuer_id,
+                'personnelId': personnel_id,
+                'certificationId': certification_id
+            }
+            return self.api_post(url, body)
+
+    def record_op(self, issuer_str: str, personnel_str: str, op_name: str) -> NewRecordId:
         issuer_id = self.find_personnel_id(issuer_str)
         personnel_id = self.find_personnel_id(personnel_str)
         if issuer_id and personnel_id:
@@ -92,6 +148,19 @@ class OrgManagerAPI:
             }
             if op_name:
                 body['name'] = op_name
+            return self.api_post(url, body)
+
+    def record_note(self, issuer_str: str, personnel_str: str, note: str) -> NewRecordId:
+        issuer_id = self.find_personnel_id(issuer_str)
+        personnel_id = self.find_personnel_id(personnel_str)
+        if issuer_id and personnel_id and note:
+            url = '/note'
+            body = {
+                'organizationId': self.organization_id,
+                'issuerPersonnelId': issuer_id,
+                'personnelId': personnel_id,
+                'note': note
+            }
             return self.api_post(url, body)
 
     def change_rank(self, issuer_str: str, personnel_str: str, rank_str: str) -> NewRecordId:
