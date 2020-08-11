@@ -169,7 +169,7 @@ async def list_op_attendence(ctx, personnel_str: str = None):
 
 # Change a users rank and record the discord member who issued it
 @client.command()
-async def add_op_attendence(ctx, personnel_or_channel_str: str, op_name: str = None):
+async def add_op_attendence(ctx, personnel_or_channel_str: str, *, op_name: str = None):
     members = None
     for channel in ctx.message.channel.guild.voice_channels:
         if channel.name == personnel_or_channel_str:

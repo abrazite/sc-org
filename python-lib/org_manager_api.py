@@ -91,7 +91,7 @@ class OrgManagerAPI:
                 'personnelId': personnel_id
             }
             if op_name:
-                body['op_name'] = op_name
+                body['name'] = op_name
             return self.api_post(url, body)
 
     def change_rank(self, issuer_str: str, personnel_str: str, rank_str: str) -> NewRecordId:
