@@ -60,10 +60,6 @@ class APIDefinitions {
     let commonFieldTypes = ['uuid', 'Date', 'uuid', 'uuid', 'uuid'];
     let commonFieldRequired = [false, false, true, true, true];
 
-    let rsiCommonFields = ['id', 'date', 'personnel_id'];
-    let rsiCommonFieldTypes = ['uuid', 'Date', 'uuid'];
-    let rsiCommonFieldRequired = [false, false, true];
-
     const definitions = [{
         route: 'active-duty',
         mysqlFields: [...commonFields, 'description'],
@@ -112,7 +108,7 @@ class APIDefinitions {
       }, {
         route: 'rsi-citizen',
         mysqlFields: [
-          ...rsiCommonFields,
+          ...commonFields,
           'citizen_record',
           'citizen_name',
           'handle_name',
@@ -124,7 +120,7 @@ class APIDefinitions {
           'biography',
         ],
         fieldTypes: [
-          ...rsiCommonFieldTypes,
+          ...commonFieldTypes,
           'number',
           'string-64',
           'string-64',
@@ -136,7 +132,7 @@ class APIDefinitions {
           'longtext',
         ],
         mysqlCreateFieldRequired: [
-          ...rsiCommonFieldRequired,
+          ...commonFieldRequired,
           false,
           false,
           true,
@@ -149,15 +145,17 @@ class APIDefinitions {
         ]
       }, {
         route: 'rsi-citizen-organization',
-        mysqlFields: [...rsiCommonFields, 'organization_id', 'main'],
-        fieldTypes: [...rsiCommonFieldTypes, 'uuid', 'boolean'],
-        mysqlCreateFieldRequired: [...rsiCommonFieldRequired, true, true, false]
+        mysqlFields: [...commonFields, 'main'],
+        fieldTypes: [...commonFieldTypes, 'boolean'],
+        mysqlCreateFieldRequired: [...commonFieldRequired, true, false]
       }, {
         route: 'rsi-organization',
         mysqlFields: [
           'id', 
           'date',
           'organization_id',
+          'issuer_personnel_id',
+          'rsi_organization_id',
           'name',
           'sid',
           'member_count',
@@ -174,6 +172,8 @@ class APIDefinitions {
           'uuid',
           'Date',
           'uuid',
+          'uuid',
+          'uuid',
           'string-64',
           'string-32',
           'number',
@@ -189,6 +189,8 @@ class APIDefinitions {
         mysqlCreateFieldRequired: [
           false,
           false,
+          true,
+          true,
           true,
           false,
           true,

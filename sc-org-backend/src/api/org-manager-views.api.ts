@@ -10,6 +10,7 @@ import { environment } from '../environments/environment';
 import { DatabaseService } from '../services/database.service';
 import * as parsers from './parsers';
 import * as viewParsers from './parsers-views';
+import { RSICitizenSchema } from '../models/rsi-citizen.model';
 
 const API_SERVER = `${environment.apiHost}${environment.apiPath}`;
 
@@ -20,6 +21,97 @@ export class OrgManagerViewsAPI {
     const router = express.Router();
     router.use(cors());
     router.use(bodyParser.json());
+
+    
+    router.get('/rsi-citizen-record', (req, res) => {
+      try {
+        const organizationId = req.query.organizationId as string;
+        if (!organizationId) {
+          throw new Error('organizationId required');
+        }
+
+        const handleName = req.query.handleName as string;
+        if (!handleName) {
+          throw new Error('handleName required');
+        }
+
+        const personnelId = req.query.personnelId as string;
+        if (!personnelId) {
+          throw new Error('personnelId required');
+        }
+
+        let rsi_citizen_record: RSICitizenSchema;
+        let rsi_record: parsers.RsiCitizen | null = null;
+        const rsi_organizations: parsers.RsiOrganization[] = [];
+        const rsi_citizen_organizations: parsers.RsiCitizenOrganization[] = [];
+
+        fetch(`${API_SERVER}/rsi/citizen/${handleName}`)
+          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then((json: Object) => {
+            rsi_citizen_record = json as RSICitizenSchema;
+          })
+          .then(() => fetch(`${API_SERVER}/rsi-citizen?handleName=${handleName}`))
+          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then((json: Object) => {
+            const rsi_records = json as parsers.RsiCitizen[];
+            rsi_records.sort((a, b) => b.date && a.date ? b.date.getTime() - a.date.getTime() : (b.date !== null ? 1 :  -1));
+            if (rsi_records.length > 0) {
+              rsi_record = rsi_records[0];
+            }
+          })
+          .then(() => {
+            let promise = Promise.resolve();     
+            if (rsi_citizen_record.mainOrganization.spectrumIdentification) {
+              promise = promise
+                .then(() => fetch(`${API_SERVER}/rsi-organization?sid=${rsi_citizen_record.mainOrganization.spectrumIdentification}`))
+                .then(OrgManagerViewsAPI.checkStatusOrThrow)
+                .then((json: Object) => {
+                  const rsi_organization = json as parsers.RsiOrganization[];
+                  rsi_organization.sort((a, b) => b.date && a.date ? b.date.getTime() - a.date.getTime() : (b.date !== null ? 1 :  -1));
+                  if (rsi_organization.length > 0) {
+                    rsi_organizations.push(rsi_organization[0]);
+                  }
+                });
+            }
+            return promise;
+          })
+          .then(() => fetch(`${API_SERVER}/rsi-citizen-organization?personnelId=${personnelId}`))
+          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then((json: Object) => {
+            const rsi_records = json as parsers.RsiCitizenOrganization[];
+            rsi_records.forEach(r => {
+              rsi_citizen_organizations.push(r);
+            });
+          })
+          .then(() => {
+            const isCitizenRecordDifferent = 
+              rsi_record?.citizenRecord !== rsi_citizen_record.citizenName &&
+              rsi_record?.citizenName !== rsi_citizen_record.citizenName &&
+              rsi_record?.handleName !== rsi_citizen_record.handleName &&
+              rsi_record?.enlistedDate !== rsi_citizen_record.enlisted &&
+              rsi_record?.enlistedRank !== rsi_citizen_record.enlistedRank &&
+              rsi_record?.handleName !== rsi_citizen_record.handleName &&
+              rsi_record?.location !== rsi_citizen_record.location &&
+              rsi_record?.fluency !== rsi_citizen_record.fluency &&
+              rsi_record?.biography !== rsi_citizen_record.bio;
+
+            // const isOrganizationDifferent = 
+            // rsi_organizations.rsi_citizen_record.mainOrganization.name;
+
+            // if (rsi_record?.citizenRecord);
+
+            res.json([rsi_record!, rsi_citizen_record, rsi_organizations, rsi_citizen_organizations]);
+          })
+          .catch(err => {
+            console.error(err);
+            res.status(500).json({ status: 'error', message: err.message });
+          });
+
+      } catch(err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: err.message });
+      }
+    });
 
     router.get('/personnel', (req, res) => {
       try {
@@ -590,6 +682,17 @@ export class OrgManagerViewsAPI {
         console.error(err);
         res.status(500).json({ status: 'error', message: err.message });
       }
+    });
+
+    router.use(function(req, res, next) {
+      if (!req.headers.authorization) {
+        return res.status(403).json({ error: 'No credentials sent!' });
+      }
+      next();
+    });
+
+    router.get('/debug/headers', (req, res) => {
+      res.json(JSON.stringify(req.headers));
     });
 
     return router;

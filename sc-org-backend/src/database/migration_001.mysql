@@ -111,7 +111,9 @@ CREATE TABLE `org_manager`.`discord` (
 CREATE TABLE `org_manager`.`rsi_citizen` (
   `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
   `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
   `personnel_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NOT NULL,
   `citizen_record` INT NULL,
   `citizen_name` VARCHAR(64) NULL,
   `handle_name` VARCHAR(64) NULL,
@@ -122,6 +124,7 @@ CREATE TABLE `org_manager`.`rsi_citizen` (
   `website` VARCHAR(512) NULL,
   `biography` LONGTEXT NULL,
   INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);    
 
@@ -129,6 +132,8 @@ CREATE TABLE `org_manager`.`rsi_organization` (
   `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
   `date` DATETIME NULL DEFAULT NOW(),
   `organization_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NOT NULL,
+  `rsi_organization_id` BINARY(16) NOT NULL,
   `name` VARCHAR(64) NULL,
   `sid` VARCHAR(32) NULL,
   `member_count` INT NULL,
@@ -147,8 +152,9 @@ CREATE TABLE `org_manager`.`rsi_organization` (
 CREATE TABLE `org_manager`.`rsi_citizen_organization` (
   `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
   `date` DATETIME NULL DEFAULT NOW(),
-  `personnel_id` BINARY(16) NOT NULL,
   `organization_id` BINARY(16) NOT NULL,
+  `personnel_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NOT NULL,
   `main` BOOLEAN NULL,
   INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
   INDEX `organization_id` (`organization_id` ASC) VISIBLE,
