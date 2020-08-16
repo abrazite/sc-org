@@ -24,17 +24,27 @@ export class AuthAPI {
 
     router.get('/validate', (req, res) => {
       // populated by vouch-proxy and discord claims
-      const id: string = req.headers['x-vouch-idp-claims-id'] as string;
-      const username: string = req.headers['x-vouch-idp-claims-username'] as string;
-      const discriminator: string = req.headers['x-vouch-idp-claims-discriminator'] as string;
-      const accesstoken: string = req.headers['x-vouch-idp-accesstoken'] as string;
+      const authorization: string = req.headers['authorization'] as string
 
-      if (id === undefined || username === undefined || discriminator === undefined || accesstoken === undefined) {
+      const user: {[key: string]: string} = {};
+      if (authorization === undefined) {
         res.status(403).json({ error: 'Invalid credentials sent' });
         return
       }
 
-      fetch(`${API_SERVER}/membership?username=${username}&discriminator=${discriminator}`)
+      fetch(environment.userInfoUrl, {
+        headers: {
+          'authorization': req.headers['authorization']!
+        }
+      })
+      .then(APIUtils.checkStatusOrThrow)
+      .then((res: any) => {
+        console.log(JSON.stringify(res));
+        user.username = res.username;
+        user.discriminator = res.discriminator;
+        user.id = res.id;
+      })
+      .then(() => fetch(`${API_SERVER}/membership?username=${user.username}&discriminator=${user.discriminator}`))
       .then(APIUtils.checkStatusOrThrow)
       .then((records: Object[]) => {
         const memberships = records as viewParsers.Membership[];
@@ -81,6 +91,10 @@ export class AuthAPI {
 
     router.get('/debug/headers', (req, res) => {
       res.json(JSON.stringify(req.headers));
+    });
+
+    router.get('/debug/cookies', (req, res) => {
+      res.json(JSON.stringify(req.cookies));
     });
 
     return router;
