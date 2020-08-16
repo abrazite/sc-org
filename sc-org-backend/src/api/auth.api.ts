@@ -3,16 +3,21 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import fetch from 'node-fetch';
 import * as core from "express-serve-static-core";
-import mysql from 'mysql';
 
 import { environment } from '../environments/environment';
 
 import { APIUtils } from './api-utils';
-import * as parsers from './parsers';
 import * as viewParsers from './parsers-views';
-import { RSICitizenSchema } from '../models/rsi-citizen.model';
 
 const API_SERVER = `${environment.apiHost}${environment.apiPath}`;
+
+
+export enum APISecurityLevel {
+  None = 0,
+  OwnRecords = 1,
+  BranchRecords = 2,
+  OrgRecords = 3
+}
 
 export class AuthAPI {
   constructor() {}
@@ -77,6 +82,11 @@ export class AuthAPI {
             res.setHeader('x-org-manager-handle-name', handleName);
           }
           res.setHeader('x-org-manager-organizations', organizations);
+          res.setHeader('x-org-manager-get-security-level', APISecurityLevel.OrgRecords);
+          res.setHeader('x-org-manager-post-security-level', APISecurityLevel.OrgRecords);
+          res.setHeader('x-org-manager-put-security-level', APISecurityLevel.OrgRecords);
+          res.setHeader('x-org-manager-del-security-level', APISecurityLevel.OrgRecords);
+          res.setHeader('x-org-manager-proxy-security-level', APISecurityLevel.OrgRecords);
           res.status(200).json({ status: 200 });
 
         } else {
@@ -98,5 +108,77 @@ export class AuthAPI {
     });
 
     return router;
+  }
+
+  static checkAuthHeaders(options?: {
+    get?: APISecurityLevel,
+    post?: APISecurityLevel,
+    put?: APISecurityLevel,
+    del?: APISecurityLevel
+  }) : (req: core.Request, res: core.Response, next?: core.NextFunction) => boolean {
+    return (req: core.Request, res: core.Response, next?: core.NextFunction) => {
+      const personnelId: string = req.headers['x-org-manager-personnel-id'] as string;
+      const organizations: string[] = req.headers['x-org-manager-organizations'] as string[];
+      
+      let proxySecurityLevel: number = parseInt(req.headers['x-org-manager-proxy-security-level'] as string);
+      if (isNaN(proxySecurityLevel)) {
+        proxySecurityLevel = APISecurityLevel.None;
+        req.headers['x-org-manager-proxy-security-level'] = proxySecurityLevel.toString();
+      }
+
+
+      // todo(abrazite): add more granular org levels
+      if (req.body.issuerPersonnelId && req.body.issuerPersonnelId !== personnelId && proxySecurityLevel < APISecurityLevel.OrgRecords) {
+        res.status(403).json({ error: 'issuer id must match authenticated personnel id' });
+        return false;
+      }
+
+      if (req.body.organizationId && !organizations.includes(req.body.organizationId)) {
+        res.status(403).json({ error: 'organizationId not included in authorized organizations' });
+        return false;
+      }
+
+      if (req.query.organizationId && !organizations.includes(req.query.organizationId as string)) {
+        res.status(403).json({ error: 'organizationId not included in authorized organizations' });
+        return false;
+      }
+
+      if (options && options.get) {
+        const securityLevel = parseInt(req.headers['x-org-manager-get-security-level'] as string);
+        if (isNaN(securityLevel) || securityLevel < options.get) {
+          res.status(403).json({ error: 'insufficient get security level' });
+          return false;
+        }
+      }
+
+      if (options && options.post) {
+        const securityLevel = parseInt(req.headers['x-org-manager-post-security-level'] as string);
+        if (isNaN(securityLevel) || securityLevel < options.post) {
+          res.status(403).json({ error: 'insufficient post security level' });
+          return false;
+        }
+      }
+
+      if (options && options.put) {
+        const securityLevel = parseInt(req.headers['x-org-manager-put-security-level'] as string);
+        if (isNaN(securityLevel) || securityLevel < options.put) {
+          res.status(403).json({ error: 'insufficient put security level' });
+          return false;
+        }
+      }
+
+      if (options && options.del) {
+        const securityLevel = parseInt(req.headers['x-org-manager-del-security-level'] as string);
+        if (isNaN(securityLevel) || securityLevel < options.del) {
+          res.status(403).json({ error: 'insufficient del security level' });
+          return false;
+        }
+      }
+
+      if (next) {
+        next();
+      }
+      return true;
+    };
   }
 }

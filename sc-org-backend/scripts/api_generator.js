@@ -942,6 +942,7 @@ import bodyParser from 'body-parser';
 import * as core from "express-serve-static-core";
 import mysql from 'mysql';
 
+import { APISecurityLevel, AuthAPI } from './auth.api';
 import { DatabaseService } from '../services/database.service';
 import * as parsers from './parsers';
 
@@ -961,6 +962,11 @@ export class OrgManagerAPI {
 
     router.post('/${definition.route}', (req, res, next) => {
       try {
+        // todo(abrazite): add more granular org levels
+        if (!AuthAPI.checkAuthHeaders({ post: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         const record = parsers.${definition.parser}.fromCreateRequest(req.body);
         this.databaseService.connection.query(
           'INSERT INTO ${definition.mysqlTable} (${definition.insertFieldNames}) VALUES (${definition.insertFieldParams})',
@@ -982,6 +988,11 @@ export class OrgManagerAPI {
 
     router.get('/${definition.route}', (req, res, next) => {
       try {
+        // todo(abrazite): add more granular org levels
+        if (!AuthAPI.checkAuthHeaders({ get: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         const filterStrs: string[] = [];
         const filterParams: any[] = [];
         Object.keys(req.query).forEach(key => {
@@ -1024,6 +1035,11 @@ export class OrgManagerAPI {
 
     router.get('/${definition.route}/:id', (req, res, next) => {
       try {
+        // todo(abrazite): add more granular org levels
+        if (!AuthAPI.checkAuthHeaders({ get: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         this.databaseService.connection.query(
           'SELECT ${definition.insertFieldNames} FROM ${definition.mysqlTable} WHERE id=?',
           [parsers.toBinaryUUID(req.params.id)],
@@ -1046,6 +1062,11 @@ export class OrgManagerAPI {
 
     router.put('/${definition.route}/:id', (req, res, next) => {
       try {
+        // todo(abrazite): add more granular org levels
+        if (!AuthAPI.checkAuthHeaders({ put: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         const record = parsers.${definition.parser}.fromCreateRequest(req.body);
         if (record.id !== req.params.id) {
           throw new Error('id mistmatch');
@@ -1073,6 +1094,11 @@ export class OrgManagerAPI {
 
     router.delete('/${definition.route}/:id', (req, res, next) => {
       try {
+        // todo(abrazite): add more granular org levels
+        if (!AuthAPI.checkAuthHeaders({ del: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         this.databaseService.connection.query(
           'DELETE FROM ${definition.mysqlTable} WHERE id=? LIMIT 1',
           [parsers.toBinaryUUID(req.params.id)],
