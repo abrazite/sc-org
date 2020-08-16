@@ -2,6 +2,7 @@ import sys
 from typing import NewType
 import urllib.request
 import json
+import uuid
 
 
 OrganizationId = NewType('OrganizationId', str)
@@ -104,7 +105,7 @@ class OrgManagerAPI:
             body['grade'] = grade
         return self.api_post(url, body)
 
-    def create_rank(self, abbreviation: str, rank: str = None, branch_str: str = None, grade_str: str = None) -> BranchId:
+    def create_rank(self, abbreviation: str, rank: str = None, branch_str: str = None, grade_str: str = None) -> RankId:
         branch_id = self.find_branch_id(branch_str)
         grade_id = self.find_grade_id(grade_str)
 
@@ -125,6 +126,37 @@ class OrgManagerAPI:
         if grade_id:
             body['gradeId'] = grade_id
         return self.api_post(url, body)
+
+    def add_member(self, issuer_str: str, discord_handle: str, sc_handle_name: str, rank_str: str) -> NewRecordId:
+        issuer_id = self.find_personnel_id(issuer_str)
+        discord_id = self.find_personnel_id(discord_handle)
+        sc_handle_id = self.find_personnel_id(sc_handle_name)
+        rank_id = self.find_rank_id(rank_str)
+
+        discord_split = discord_handle.split('#')
+        personnel_id = uuid.uuid()
+
+        if not discord_id and not sc_handle_id and len(discord_split) != 2:
+            return
+
+        if issuer_id and rank_id and str(discord_split[1]) == str(int(discord_split[1])):
+            url = '/discord'
+            body = {
+                'issuerPersonnelId': issuer_id,
+                'personnelId': personnel_id,
+                'username': discord_split[0],
+                'discriminator': int(discord_split[1])
+            }
+            discord_record_id = self.api_post(url, body)
+
+            url = '/rsi-citizen'
+            body = {
+                'personnelId': personnel_id,
+                'username': discord_split[0],
+                'discriminator': int(discord_split[1])
+            }
+            discord_record_id = self.api_post(url, body)
+            rank_change_id = self.change_rank(issuer_id, personnel_id, rank_str)
 
     def record_cert(self, issuer_str: str, personnel_str: str, certification_str: str) -> NewRecordId:
         issuer_id = self.find_personnel_id(issuer_str)

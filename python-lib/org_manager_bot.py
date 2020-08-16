@@ -11,12 +11,21 @@ api = org_manager_api.OrgManagerAPI(API_SERVER, ORGANIZATION_ID)
 # Prefix for calling bot in discord
 client = commands.Bot(command_prefix = '.')
 
-
 # Runs on start to show bot is online
 @client.event
 async def on_ready():
     await client.change_presence(status=discord.Status.online, activity=discord.Game('.help'))
     print("Bot is ready")
+
+    app_info = await client.application_info()
+    print(f'https://discord.com/oauth2/authorize?client_id={app_info.id}&bot')
+
+
+@client.command()
+async def test(ctx):
+    members = ctx.message.channel.guild.members
+    for member in members:
+        print(f'{member.nick}\t\t{member.name}#{member.discriminator}\t{member.joined_at}')
 
 
 # Clear messages in chat
