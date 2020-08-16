@@ -7,6 +7,7 @@ import mysql from 'mysql';
 
 import { environment } from '../environments/environment';
 
+import { AuthAPI, APISecurityLevel } from './auth.api';
 import { APIUtils } from './api-utils';
 import { DatabaseService } from '../services/database.service';
 import * as parsers from './parsers';
@@ -26,6 +27,10 @@ export class OrgManagerViewsAPI {
     
     router.get('/rsi-citizen-record', (req, res) => {
       try {
+        if (!AuthAPI.checkAuthHeaders({ get: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         const organizationId = req.query.organizationId as string;
         if (!organizationId) {
           throw new Error('organizationId required');
@@ -116,6 +121,10 @@ export class OrgManagerViewsAPI {
 
     router.get('/personnel', (req, res) => {
       try {
+        if (!AuthAPI.checkAuthHeaders({ get: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         const organizationId = req.query.organizationId as string;
         if (!organizationId) {
           throw new Error('organizationId required');
@@ -168,6 +177,10 @@ export class OrgManagerViewsAPI {
 
     router.get('/personnel-summary', (req, res) => {
       try {
+        if (!AuthAPI.checkAuthHeaders({ get: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         const organizationId = req.query.organizationId as string;
         if (!organizationId) {
           throw new Error('organizationId required');
@@ -230,6 +243,10 @@ export class OrgManagerViewsAPI {
 
     router.get('/ranks-details', (req, res) => {
       try {
+        if (!AuthAPI.checkAuthHeaders({ get: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         const organizationId = req.query.organizationId as string;
         if (!organizationId) {
           throw new Error('organizationId required');
@@ -287,6 +304,10 @@ export class OrgManagerViewsAPI {
 
     router.get('/membership', (req, res) => {
       try {
+        if (!AuthAPI.checkAuthHeaders({ get: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         const organizationId = req.query.organizationId as string;
         const peronnelId = req.query.peronnelId as string;
         const username = req.query.username as string;
@@ -344,6 +365,10 @@ export class OrgManagerViewsAPI {
 
     router.get('/most-recent-certifications', (req, res, next) => {
       try {
+        if (!AuthAPI.checkAuthHeaders({ get: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         const organizationId = req.query.organizationId as string;
         if (!organizationId) {
           throw new Error('organizationId required');
@@ -396,6 +421,10 @@ export class OrgManagerViewsAPI {
 
     router.get('/personnel/raw/:id', (req, res) => {
       try {
+        if (!AuthAPI.checkAuthHeaders({ get: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         const personnelId = req.params.id;
         const organizationId = req.query.organizationId as string;
         if (!organizationId) {
@@ -542,6 +571,10 @@ export class OrgManagerViewsAPI {
 
     router.get('/personnel/:id', (req, res) => {
       try {
+        if (!AuthAPI.checkAuthHeaders({ get: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         const personnelId = req.params.id;
         const organizationId = req.query.organizationId as string;
         if (!organizationId) {
@@ -625,6 +658,10 @@ export class OrgManagerViewsAPI {
 
     router.get('/organization-info/raw/:id', (req, res) => {
       try {
+        if (!AuthAPI.checkAuthHeaders({ get: APISecurityLevel.OrgRecords })(req, res)) {
+          return;
+        }
+
         const organizationId = req.params.id;
 
         const json: viewParsers.OrganizationInfoRaw = {
@@ -683,17 +720,6 @@ export class OrgManagerViewsAPI {
         console.error(err);
         res.status(500).json({ status: 'error', message: err.message });
       }
-    });
-
-    router.use(function(req, res, next) {
-      if (!req.headers.authorization) {
-        return res.status(403).json({ error: 'No credentials sent!' });
-      }
-      next();
-    });
-
-    router.get('/debug/headers', (req, res) => {
-      res.json(JSON.stringify(req.headers));
     });
 
     return router;
