@@ -44,12 +44,15 @@ export class AuthAPI {
       })
       .then(APIUtils.checkStatusOrThrow)
       .then((res: any) => {
-        console.log(JSON.stringify(res));
         user.username = res.username;
         user.discriminator = res.discriminator;
         user.id = res.id;
       })
-      .then(() => fetch(`${API_SERVER}/membership?username=${user.username}&discriminator=${user.discriminator}`))
+      .then(() => fetch(`${API_SERVER}/membership?username=${user.username}&discriminator=${user.discriminator}`, {
+        headers: {
+          'x-org-manager-get-security-level': APISecurityLevel.OrgRecords.toString()
+        }
+      }))
       .then(APIUtils.checkStatusOrThrow)
       .then((records: Object[]) => {
         const memberships = records as viewParsers.Membership[];
