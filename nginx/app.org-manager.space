@@ -1,40 +1,63 @@
 server {
-  root /var/www/org-manager.space/html/;
-
   # Add index.php to the list if you are using PHP
   index index.html index.htm index.nginx-debian.html;
 
   server_name app.org-manager.space;
 
-  auth_request /vouch-validate;
-  auth_request_set $auth_user $upstream_http_x_vouch_user;
+  auth_request /validate;
 
-  location / {
-    alias   /var/www/org-manager.space/html/;
-    try_files $uri$args $uri$args/ $uri/ /index.html =404;
-  }
-
-  location = /vouch-validate {
-    # This address is where Vouch will be listening on
+  location = /validate {
+    # forward the /validate request to Vouch Proxy
     proxy_pass http://127.0.0.1:9090/validate;
-    proxy_pass_request_body off; # no need to send the POST body
 
+    # be sure to pass the original host header
+    proxy_set_header Host $http_host;
+
+    # Vouch Proxy only acts on the request headers
+    proxy_pass_request_body off;
     proxy_set_header Content-Length "";
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header Remote-User $auth_user;
 
-    # these return values are passed to the @error401 call
+    auth_request_set $auth_resp_x_vouch_user $upstream_http_x_vouch_user;
+    auth_request_set $auth_resp_x_vouch_idp_claims_id $upstream_http_x_vouch_idp_claims_id;
+    auth_request_set $auth_resp_x_vouch_idp_claims_username $upstream_http_x_vouch_idp_claims_username;
+    auth_request_set $auth_resp_x_vouch_idp_claims_discriminator $upstream_http_x_vouch_idp_claims_discriminator;
+    auth_request_set $auth_resp_x_vouch_idp_accesstoken $upstream_http_x_vouch_idp_accesstoken;
+
+    # these return values are used by the @error401 call
     auth_request_set $auth_resp_jwt $upstream_http_x_vouch_jwt;
     auth_request_set $auth_resp_err $upstream_http_x_vouch_err;
     auth_request_set $auth_resp_failcount $upstream_http_x_vouch_failcount;
   }
 
+  # if validate returns `401 not authorized` then forward the request to the error401block
   error_page 401 = @error401;
 
-  # If the user is not logged in, redirect them to Vouch's login URL
   location @error401 {
-    return 302 https://login.avocado.lol/login?url=https://$http_host$request_uri&vouch-failcount=$auth_resp_failcount&X-Vouch-Token=$auth_resp_jwt&error=$auth_resp_err;
+      # redirect to Vouch Proxy for login
+      return 302 https://login.org-manager.space/login?url=$scheme://$http_host$request_uri&vouch-failcount=$auth_resp_failcount&X-Vouch-Token=$auth_resp_jwt&error=$auth_resp_err;
   }
+
+  
+  location / {
+    proxy_pass http://127.0.0.1:8082;
+    proxy_set_header Host $http_host;
+
+    auth_request_set $auth_resp_x_vouch_user $upstream_http_x_vouch_user;
+    auth_request_set $auth_resp_x_vouch_idp_claims_id $upstream_http_x_vouch_idp_claims_id;
+    auth_request_set $auth_resp_x_vouch_idp_claims_username $upstream_http_x_vouch_idp_claims_username;
+    auth_request_set $auth_resp_x_vouch_idp_claims_discriminator $upstream_http_x_vouch_idp_claims_discriminator;
+    auth_request_set $auth_resp_x_vouch_idp_accesstoken $upstream_http_x_vouch_idp_accesstoken;
+
+    proxy_set_header X-Vouch-User $auth_resp_x_vouch_user;
+    proxy_set_header X-Vouch-IdP-Claims-Id $auth_resp_x_vouch_idp_claims_id;
+    proxy_set_header X-Vouch-IdP-Claims-Username $auth_resp_x_vouch_idp_claims_username;
+    proxy_set_header X-Vouch-IdP-Claims-Discriminator $auth_resp_x_vouch_idp_claims_discriminator;
+    proxy_set_header X-Vouch-IdP-AccessToken $auth_resp_x_vouch_idp_accesstoken;
+  }
+
+  listen 443 ssl; # managed by Certbot
+  ssl_certificate /etc/letsencrypt/live/app.org-manager.space/fullchain.pem; # managed by Certbot
+  ssl_certificate_key /etc/letsencrypt/live/app.org-manager.space/privkey.pem; # managed by Certbot
+  include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 }
