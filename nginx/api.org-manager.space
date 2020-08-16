@@ -1,9 +1,7 @@
 server {
   server_name api.org-manager.space;
 
-  auth_request /validate;
-
-  location = /validate {
+  location = /validate-discord {
     # forward the /validate request to Vouch Proxy
     proxy_pass http://127.0.0.1:9090/validate;
 
@@ -34,18 +32,18 @@ server {
       return 302 https://login.org-manager.space/login?url=$scheme://$http_host$request_uri&vouch-failcount=$auth_resp_failcount&X-Vouch-Token=$auth_resp_jwt&error=$auth_resp_err;
   }
 
-  location / {
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  location = /validate-org-manager {
+    auth_request /validate-discord;
+    
+     # forward the /validate request to Vouch Proxy
+    proxy_pass http://localhost:8081/api/1.0.0/validate;
+
+    # be sure to pass the original host header
     proxy_set_header Host $http_host;
-    proxy_set_header X-NginX-Proxy true;
 
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-
-    proxy_pass http://localhost:8081/api/;
-    proxy_redirect off;
+    # proxy only acts on the request headers
+    proxy_pass_request_body off;
+    proxy_set_header Content-Length "";
 
     auth_request_set $auth_resp_x_vouch_user $upstream_http_x_vouch_user;
     auth_request_set $auth_resp_x_vouch_idp_claims_id $upstream_http_x_vouch_idp_claims_id;
@@ -58,6 +56,45 @@ server {
     proxy_set_header X-Vouch-IdP-Claims-Username $auth_resp_x_vouch_idp_claims_username;
     proxy_set_header X-Vouch-IdP-Claims-Discriminator $auth_resp_x_vouch_idp_claims_discriminator;
     proxy_set_header X-Vouch-IdP-AccessToken $auth_resp_x_vouch_idp_accesstoken;
+
+    auth_request_set $auth_resp_x_org_manager_personnel_id $upstream_http_x_org_manager_personnel_id;
+    auth_request_set $auth_resp_x_org_manager_organizations $upstream_http_x_org_manager_organizations;
+    auth_request_set $auth_resp_x_org_manager_citizen_record $upstream_http_x_org_manager_citizen_record;
+    auth_request_set $auth_resp_x_org_manager_citizen_name $upstream_http_x_org_manager_citizen_name;
+    auth_request_set $auth_resp_x_org_manager_handle_name $upstream_http_x_org_manager_handle_name;
+
+    # these return values are used by the @error401 call
+    auth_request_set $auth_resp_jwt $upstream_http_x_vouch_jwt;
+    auth_request_set $auth_resp_err $upstream_http_x_vouch_err;
+    auth_request_set $auth_resp_failcount $upstream_http_x_vouch_failcount;
+  }
+
+  location / {
+    auth_request /validate/org-manager;
+
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-NginX-Proxy true;
+
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+
+    proxy_pass http://localhost:8081/api/;
+    proxy_redirect off;
+
+    auth_request_set $auth_resp_x_org_manager_personnel_id $upstream_http_x_org_manager_personnel_id;
+    auth_request_set $auth_resp_x_org_manager_organizations $upstream_http_x_org_manager_organizations;
+    auth_request_set $auth_resp_x_org_manager_citizen_record $upstream_http_x_org_manager_citizen_record;
+    auth_request_set $auth_resp_x_org_manager_citizen_name $upstream_http_x_org_manager_citizen_name;
+    auth_request_set $auth_resp_x_org_manager_handle_name $upstream_http_x_org_manager_handle_name;
+
+    proxy_set_header X-Personnel-Id $auth_resp_x_org_manager_personnel_id;
+    proxy_set_header X-Organization-Ids $auth_resp_x_org_manager_organizations;
+    proxy_set_header X-Citizen-Record $auth_resp_x_org_manager_citizen_record;
+    proxy_set_header X-Citizen-Name $auth_resp_x_org_manager_citizen_name;
+    proxy_set_header X-Handle-Name $auth_resp_x_org_manager_handle_name;
   }
 
   location /docs {

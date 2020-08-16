@@ -17,9 +17,6 @@ vouch:
        - avatar
        - guilds
      accesstoken: X-Vouch-IdP-AccessToken
-     username: X-Vouch_IdP-UserName
-     idtoken: X-Vouch-IdP-IdToken
-     id: X-Vouch-IdP-Id
 
 oauth:
   provider: oidc

@@ -5,7 +5,6 @@ server {
   server_name app.org-manager.space;
 
   auth_request /validate;
-
   location = /validate {
     # forward the /validate request to Vouch Proxy
     proxy_pass http://127.0.0.1:9090/validate;
