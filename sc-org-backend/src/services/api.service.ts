@@ -12,12 +12,14 @@ import { OrgManagerAPI } from '../api/org-manager.api';
 import { OrgManagerViewsAPI } from '../api/org-manager-views.api';
 import { RSICitizenAPI } from '../api/rsi-citizen.api';
 import { DatabaseService } from './database.service';
+import { AuthAPI } from '../api/auth.api';
 
 export class APIService {
   public readonly app: core.Express;
   public readonly server: http.Server;
 
   constructor(databaseService: DatabaseService) {
+    const authAPI = new AuthAPI();
     const orgManagerAPI = new OrgManagerAPI(databaseService);
     const orgManagerViewsAPI = new OrgManagerViewsAPI(databaseService);
 
@@ -33,10 +35,11 @@ export class APIService {
     const swaggerDocument = YAML.load('./assets/org-manager.space-api-1.0.0-swagger.yaml');
     this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+    this.app.use(environment.apiPath, authAPI.createRouter());
     this.app.use(environment.apiPath, orgManagerAPI.createRouter());
     this.app.use(environment.apiPath, orgManagerViewsAPI.createRouter());
 
-    this.app.use('/rsi/citizen', RSICitizenAPI.createRouter());
+    this.app.use(`${environment.apiPath}/rsi/citizen`, RSICitizenAPI.createRouter());
     this.server = this.app.listen(environment.apiPort, () => {
       const host = (this.server.address() as net.AddressInfo).address;
       const port = (this.server.address() as net.AddressInfo).port;

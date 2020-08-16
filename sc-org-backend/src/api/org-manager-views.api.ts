@@ -7,6 +7,7 @@ import mysql from 'mysql';
 
 import { environment } from '../environments/environment';
 
+import { APIUtils } from './api-utils';
 import { DatabaseService } from '../services/database.service';
 import * as parsers from './parsers';
 import * as viewParsers from './parsers-views';
@@ -46,12 +47,12 @@ export class OrgManagerViewsAPI {
         const rsi_citizen_organizations: parsers.RsiCitizenOrganization[] = [];
 
         fetch(`${API_SERVER}/rsi/citizen/${handleName}`)
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((json: Object) => {
             rsi_citizen_record = json as RSICitizenSchema;
           })
           .then(() => fetch(`${API_SERVER}/rsi-citizen?handleName=${handleName}`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((json: Object) => {
             const rsi_records = json as parsers.RsiCitizen[];
             rsi_records.sort((a, b) => b.date && a.date ? b.date.getTime() - a.date.getTime() : (b.date !== null ? 1 :  -1));
@@ -64,7 +65,7 @@ export class OrgManagerViewsAPI {
             if (rsi_citizen_record.mainOrganization.spectrumIdentification) {
               promise = promise
                 .then(() => fetch(`${API_SERVER}/rsi-organization?sid=${rsi_citizen_record.mainOrganization.spectrumIdentification}`))
-                .then(OrgManagerViewsAPI.checkStatusOrThrow)
+                .then(APIUtils.checkStatusOrThrow)
                 .then((json: Object) => {
                   const rsi_organization = json as parsers.RsiOrganization[];
                   rsi_organization.sort((a, b) => b.date && a.date ? b.date.getTime() - a.date.getTime() : (b.date !== null ? 1 :  -1));
@@ -76,7 +77,7 @@ export class OrgManagerViewsAPI {
             return promise;
           })
           .then(() => fetch(`${API_SERVER}/rsi-citizen-organization?personnelId=${personnelId}`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((json: Object) => {
             const rsi_records = json as parsers.RsiCitizenOrganization[];
             rsi_records.forEach(r => {
@@ -129,13 +130,13 @@ export class OrgManagerViewsAPI {
         const certifications: { [personnelId: string]: viewParsers.MostRecentCertifications[] } = {};
 
         fetch(`${API_SERVER}/personnel-summary?${queryStr}`)
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((json: Object[]) => {
             personnel = json as viewParsers.PersonnelSummary[];
           })
           // todo: add proper paging
           .then(() => fetch(`${API_SERVER}/most-recent-certifications?organizationId=${organizationId}&limit=10000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((json: Object[]) => {
             json.forEach(r => {
               const certification = r as viewParsers.MostRecentCertifications;
@@ -410,7 +411,7 @@ export class OrgManagerViewsAPI {
 
         // todo: add proper paging
         fetch(`${API_SERVER}/active-duty?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`)
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
               json.activeDutyRecords = [];
@@ -420,14 +421,14 @@ export class OrgManagerViewsAPI {
             }
           })
           .then(() => fetch(`${API_SERVER}/personnel?organizationId=${organizationId}&personnelId=${personnelId}&limit=1`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length === 1) {
               json.personnelSummary = records[0] as viewParsers.PersonnelSummary;
             }
           })
           .then(() => fetch(`${API_SERVER}/certification?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
               json.certificationRecords = [];
@@ -437,7 +438,7 @@ export class OrgManagerViewsAPI {
             }
           })
           .then(() => fetch(`${API_SERVER}/discord?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
               json.discordRecords = [];
@@ -447,7 +448,7 @@ export class OrgManagerViewsAPI {
             }
           })
           .then(() => fetch(`${API_SERVER}/joined-organization?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
               json.joinedOrganizationRecords = [];
@@ -457,7 +458,7 @@ export class OrgManagerViewsAPI {
             }
           })
           .then(() => fetch(`${API_SERVER}/left-organization?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
               json.leftOrganizationRecords = [];
@@ -467,7 +468,7 @@ export class OrgManagerViewsAPI {
             }
           })
           .then(() => fetch(`${API_SERVER}/note?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
               json.noteRecords = [];
@@ -477,7 +478,7 @@ export class OrgManagerViewsAPI {
             }
           })
           .then(() => fetch(`${API_SERVER}/operation-attendence?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
               json.operationAttendenceRecords = [];
@@ -487,7 +488,7 @@ export class OrgManagerViewsAPI {
             }
           })
           .then(() => fetch(`${API_SERVER}/rank-change?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
               json.rankChangeRecords = [];
@@ -497,7 +498,7 @@ export class OrgManagerViewsAPI {
             }
           })
           .then(() => fetch(`${API_SERVER}/rsi-citizen?personnelId=${personnelId}&limit=1000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
               json.rsiCitizenRecords = [];
@@ -507,7 +508,7 @@ export class OrgManagerViewsAPI {
             }
           })
           .then(() => fetch(`${API_SERVER}/rsi-citizen-organization?personnelId=${personnelId}&limit=1000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
               json.rsiCitizenOrganizationRecords = [];
@@ -517,7 +518,7 @@ export class OrgManagerViewsAPI {
             }
           })
           .then(() => fetch(`${API_SERVER}/status?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
               json.statusRecords = [];
@@ -552,12 +553,12 @@ export class OrgManagerViewsAPI {
 
         // todo: add proper paging
         fetch(`${API_SERVER}/personnel/raw/${personnelId}?organizationId=${organizationId}`)
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((record: Object) => {
             json = record as viewParsers.Personnel;
           })
           .then(() => fetch(`${API_SERVER}/organization-info/raw/${organizationId}`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((r: Object) => {
             organizationInfo = r as viewParsers.OrganizationInfoRaw;
           })
@@ -632,7 +633,7 @@ export class OrgManagerViewsAPI {
   
         // todo: add proper paging
         fetch(`${API_SERVER}/branches?organizationId=${organizationId}&limit=1000`)
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((branches: Object[]) => {
             if (branches.length > 0) {
               json.branches = [];
@@ -642,7 +643,7 @@ export class OrgManagerViewsAPI {
             }
           })
           .then(() => fetch(`${API_SERVER}/grades?organizationId=${organizationId}&limit=1000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((grades: Object[]) => {
             if (grades.length > 0) {
               json.grades = [];
@@ -652,7 +653,7 @@ export class OrgManagerViewsAPI {
             }
           })
           .then(() => fetch(`${API_SERVER}/ranks?organizationId=${organizationId}&limit=1000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((ranks: Object[]) => {
             if (ranks.length > 0) {
               json.ranks = [];
@@ -662,7 +663,7 @@ export class OrgManagerViewsAPI {
             }
           })
           .then(() => fetch(`${API_SERVER}/certifications?organizationId=${organizationId}&limit=1000`))
-          .then(OrgManagerViewsAPI.checkStatusOrThrow)
+          .then(APIUtils.checkStatusOrThrow)
           .then((certifications: Object[]) => {
             if (certifications.length > 0) {
               json.certifications = [];
@@ -696,14 +697,5 @@ export class OrgManagerViewsAPI {
     });
 
     return router;
-  }
-  
-  static checkStatusOrThrow(res: any): Promise<Object[]> {
-    if (res.ok) {
-      return res.json();
-    }
-    return res.json().then((e: Object) => { 
-      throw new Error(JSON.stringify(e));
-    });
   }
 }
