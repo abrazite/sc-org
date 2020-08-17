@@ -50,6 +50,7 @@ export class AuthAPI {
       })
       .then(() => fetch(`${API_SERVER}/membership?username=${user.username}&discriminator=${user.discriminator}`, {
         headers: {
+          'authorization': req.headers['authorization']!,
           'x-org-manager-get-security-level': APISecurityLevel.OrgRecords.toString()
         }
       }))
