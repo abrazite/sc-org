@@ -31,10 +31,20 @@ export class AuthAPI {
       try {
         // populated by vouch-proxy and discord claims
         const authorization: string = req.headers['authorization'] as string
+        const organizationId: string = req.headers['x-org-manager-organization-id'] as string
+
+        // todo(abrazite): add org-id as required header
+        // - premissions are org based
+        // - create discord bot user
 
         const user: {[key: string]: string} = {};
         if (authorization === undefined) {
           res.status(403).json({ error: 'Invalid credentials sent' });
+          return
+        }
+
+        if (organizationId === undefined) {
+          res.status(403).json({ error: 'Missing organizationId header' });
           return
         }
 
@@ -52,6 +62,7 @@ export class AuthAPI {
         .then(() => fetch(`${API_SERVER}/membership?username=${user.username}&discriminator=${user.discriminator}`, {
           headers: {
             'authorization': req.headers['authorization']!,
+            'x-org-manager-organization-id': organizationId,
             'x-org-manager-get-security-level': APISecurityLevel.OrgRecords.toString()
           }
         }))
@@ -108,7 +119,8 @@ export class AuthAPI {
             if (handleName !== null) {
               res.setHeader('x-org-manager-handle-name', handleName);
             }
-            res.setHeader('x-org-manager-organizations', organizations);
+            res.setHeader('x-org-manager-organization-id', organizationId);
+            res.setHeader('x-org-manager-organization-ids', organizations);
             res.setHeader('x-org-manager-get-security-level', membership.get);
             res.setHeader('x-org-manager-post-security-level', membership.post);
             res.setHeader('x-org-manager-put-security-level', membership.put);
@@ -149,20 +161,20 @@ export class AuthAPI {
   }) : (req: core.Request, res: core.Response, next?: core.NextFunction) => boolean {
     return (req: core.Request, res: core.Response, next?: core.NextFunction) => {
       const personnelId: string = req.headers['x-org-manager-personnel-id'] as string;
-      const organizations: string[] = req.headers['x-org-manager-organizations'] as string[];
+      const organizationId: string = req.headers['x-org-manager-organization-id'] as string;
 
       if (req.body.issuerPersonnelId && req.body.issuerPersonnelId !== personnelId) {
         res.status(403).json({ error: 'issuer id must match authenticated personnel id' });
         return false;
       }
 
-      if (req.body.organizationId && !organizations.includes(req.body.organizationId)) {
-        res.status(403).json({ error: 'organizationId not included in authorized organizations' });
+      if (req.body.organizationId && req.body.organizationId !== organizationId) {
+        res.status(403).json({ error: 'organization id must match authenticated organization id' });
         return false;
       }
 
-      if (req.query.organizationId && !organizations.includes(req.query.organizationId as string)) {
-        res.status(403).json({ error: 'organizationId not included in authorized organizations' });
+      if (req.query.organizationId && req.query.organizationId !== organizationId) {
+        res.status(403).json({ error: 'organization id must match authenticated organization id' });
         return false;
       }
 
