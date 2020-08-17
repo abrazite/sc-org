@@ -3,7 +3,7 @@ import time
 
 import org_manager_api
 
-API_SERVER = 'https://li1958-117.members.linode.com/1.0.0/'
+API_SERVER = 'https://api.org-manager.space/1.0.0/'
 # API_SERVER = 'http://localhost:8081/api/1.0.0/'
 ORGANIZATION_ID = '4b40e446-5ceb-4543-a6d8-fa4e28a00406'
 
