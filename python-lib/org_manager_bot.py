@@ -4,9 +4,8 @@ import org_manager_api
 import secrets
 
 # API Server
-API_SERVER = 'https://li1958-117.members.linode.com/1.0.0/'
-ORGANIZATION_ID = '4b40e446-5ceb-4543-a6d8-fa4e28a00406'
-api = org_manager_api.OrgManagerAPI(API_SERVER, ORGANIZATION_ID)
+API_SERVER = 'https://api.org-manager.space/1.0.0/'
+api = org_manager_api.OrgManagerAPI(API_SERVER, secrets.ORGANIZATION_ID)
 
 # Prefix for calling bot in discord
 client = commands.Bot(command_prefix = '.')
@@ -37,7 +36,7 @@ async def clear(ctx, amount=5):
 
 @client.command(brief='Reports when user joined the org')
 async def is_member(ctx, personnel_str):
-    membership = api.membership(personnel_str)
+    membership = api.membership(create_api_context(ctx), personnel_str)
     if membership:
         # todo(James): format date :)
         await ctx.send(f'joined {membership["joinedDate"]}')
@@ -48,9 +47,9 @@ async def is_member(ctx, personnel_str):
 @client.command(brief='Shows basic personnel info')
 async def whois(ctx, *, personnel_str=None):
     if personnel_str:
-        personnel = api.personnel_summary(personnel_str)
+        personnel = api.personnel_summary(create_api_context(ctx), personnel_str)
     else:
-        personnel = api.personnel_summary(f'{ctx.author.name}#{ctx.author.discriminator}')
+        personnel = api.personnel_summary(create_api_context(ctx), f'{ctx.author.name}#{ctx.author.discriminator}')
 
     if personnel:
         tag = ''
@@ -88,7 +87,7 @@ async def whois(ctx, *, personnel_str=None):
 @client.command(brief='Lists all org branches')
 async def list_branches(ctx, page=0):
     LIMIT = 10
-    branches = api.branches(limit=LIMIT, page=page)
+    branches = api.branches(create_api_context(ctx), limit=LIMIT, page=page)
     branches_strs = ''
 
     if len(branches) == LIMIT or page > 0:
@@ -106,7 +105,7 @@ async def list_branches(ctx, page=0):
 @client.command(brief='Lists all org grades')
 async def list_grades(ctx, page=0):
     LIMIT = 10
-    grades = api.grades(limit=LIMIT, page=page)
+    grades = api.grades(create_api_context(ctx), limit=LIMIT, page=page)
     grades_strs = ''
 
     if len(grades) == LIMIT or page > 0:
@@ -124,7 +123,7 @@ async def list_grades(ctx, page=0):
 @client.command(brief='Lists all org ranks')
 async def list_ranks(ctx, page=0):
     LIMIT = 10
-    ranks = api.ranks(limit=LIMIT, page=page)
+    ranks = api.ranks(create_api_context(ctx), limit=LIMIT, page=page)
     ranks_strs = ''
 
     if len(ranks) == LIMIT or page > 0:
@@ -148,7 +147,7 @@ async def list_ranks(ctx, page=0):
 @client.command(brief='Lists all org certifications')
 async def list_certifications(ctx, page: int = 0):
     LIMIT = 10
-    certifications = api.certifications(limit=LIMIT, page=page)
+    certifications = api.certifications(create_api_context(ctx), limit=LIMIT, page=page)
     certifications_strs = ''
 
     if len(certifications) == LIMIT or page > 0:
@@ -168,9 +167,9 @@ async def list_rank_records(ctx, personnel_str: str = None, page: int = 0):
     LIMIT = 10
 
     if personnel_str:
-        personnel = api.personnel(personnel_str)
+        personnel = api.personnel(create_api_context(ctx), personnel_str)
     else:
-        personnel = api.personnel(f'{ctx.author.name}#{ctx.author.discriminator}')
+        personnel = api.personnel(create_api_context(ctx), f'{ctx.author.name}#{ctx.author.discriminator}')
 
     if personnel is None or 'rankChangeRecords' not in personnel:
         await ctx.send('error: no records found')
@@ -197,9 +196,9 @@ async def list_cert_records(ctx, personnel_str: str = None, page: int = 0):
     LIMIT = 10
 
     if personnel_str:
-        personnel = api.personnel(personnel_str)
+        personnel = api.personnel(create_api_context(ctx), personnel_str)
     else:
-        personnel = api.personnel(f'{ctx.author.name}#{ctx.author.discriminator}')
+        personnel = api.personnel(create_api_context(ctx), f'{ctx.author.name}#{ctx.author.discriminator}')
 
     if personnel is None or 'certificationRecords' not in personnel:
         await ctx.send('error: no records found')
@@ -226,9 +225,9 @@ async def list_op_records(ctx, personnel_str: str = None, page: int = 0):
     LIMIT = 10
 
     if personnel_str:
-        personnel = api.personnel(personnel_str)
+        personnel = api.personnel(create_api_context(ctx), personnel_str)
     else:
-        personnel = api.personnel(f'{ctx.author.name}#{ctx.author.discriminator}')
+        personnel = api.personnel(create_api_context(ctx), f'{ctx.author.name}#{ctx.author.discriminator}')
 
     if personnel is None or 'operationAttendenceRecords' not in personnel:
         await ctx.send('error: no records found')
@@ -255,9 +254,9 @@ async def list_note_records(ctx, personnel_str: str = None, page: int = 0):
     LIMIT = 10
 
     if personnel_str:
-        personnel = api.personnel(personnel_str)
+        personnel = api.personnel(create_api_context(ctx), personnel_str)
     else:
-        personnel = api.personnel(f'{ctx.author.name}#{ctx.author.discriminator}')
+        personnel = api.personnel(create_api_context(ctx), f'{ctx.author.name}#{ctx.author.discriminator}')
 
     if personnel is None or 'noteRecords' not in personnel:
         await ctx.send('error: no records found')
@@ -281,7 +280,7 @@ async def list_note_records(ctx, personnel_str: str = None, page: int = 0):
 
 @client.command(brief='Create a new org branch')
 async def create_branch(ctx, abbreviation: str, branch: str = None):
-    record_id = api.create_branch(abbreviation, branch)
+    record_id = api.create_branch(create_api_context(ctx), abbreviation, branch)
     if record_id:
         await ctx.send(f'created branch {abbreviation}')
     else:
@@ -290,7 +289,7 @@ async def create_branch(ctx, abbreviation: str, branch: str = None):
 
 @client.command(brief='Create a new org grade')
 async def create_grade(ctx, abbreviation: str, grade: str = None):
-    record_id = api.create_grade(abbreviation, grade)
+    record_id = api.create_grade(create_api_context(ctx), abbreviation, grade)
     if record_id:
         await ctx.send(f'created grade {abbreviation}')
     else:
@@ -299,7 +298,7 @@ async def create_grade(ctx, abbreviation: str, grade: str = None):
 
 @client.command(brief='Create a new org grade')
 async def create_rank(ctx, abbreviation: str, rank: str = None, branch_str: str = None, grade_str: str = None):
-    record_id = api.create_rank(abbreviation, rank, branch_str, grade_str)
+    record_id = api.create_rank(create_api_context(ctx), abbreviation, rank, branch_str, grade_str)
     if record_id:
         await ctx.send(f'created rank {abbreviation}')
     else:
@@ -314,18 +313,18 @@ async def record_cert(ctx, personnel_or_channel_str: str, *, certification_str: 
             members = []
             for member in channel.members:
                 personnel_str = f'{member.name}#{member.discriminator}'
-                personnel = api.personnel_summary(personnel_str)
+                personnel = api.personnel_summary(create_api_context(ctx), personnel_str)
                 if personnel:
                     members.append(personnel)
 
     if members is None:
-        personnel = api.personnel_summary(personnel_or_channel_str)
+        personnel = api.personnel_summary(create_api_context(ctx), personnel_or_channel_str)
         members = [personnel]
 
     records_str = ''
     for member in members:
         personnel_str = f'{member["username"]}#{member["discriminator"]}'
-        record_id = api.record_cert(f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, certification_str)
+        record_id = api.record_cert(create_api_context(ctx), f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, certification_str)
         if record_id:
             name = member["handleName"] if member["handleName"] else member["username"]
             records_str += f'updated {name}\r'
@@ -344,18 +343,18 @@ async def record_op(ctx, personnel_or_channel_str: str, *, op_name: str = None):
             members = []
             for member in channel.members:
                 personnel_str = f'{member.name}#{member.discriminator}'
-                personnel = api.personnel_summary(personnel_str)
+                personnel = api.personnel_summary(create_api_context(ctx), personnel_str)
                 if personnel:
                     members.append(personnel)
 
     if members is None:
-        personnel = api.personnel_summary(personnel_or_channel_str)
+        personnel = api.personnel_summary(create_api_context(ctx), personnel_or_channel_str)
         members = [personnel]
 
     records_str = ''
     for member in members:
         personnel_str = f'{member["username"]}#{member["discriminator"]}'
-        record_id = api.record_op(f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, op_name)
+        record_id = api.record_op(create_api_context(ctx), f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, op_name)
         if record_id:
             name = member["handleName"] if member["handleName"] else member["username"]
             records_str += f'updated {name}\r'
@@ -374,18 +373,18 @@ async def record_note(ctx, personnel_or_channel_str: str, *, note: str):
             members = []
             for member in channel.members:
                 personnel_str = f'{member.name}#{member.discriminator}'
-                personnel = api.personnel_summary(personnel_str)
+                personnel = api.personnel_summary(create_api_context(ctx), personnel_str)
                 if personnel:
                     members.append(personnel)
 
     if members is None:
-        personnel = api.personnel_summary(personnel_or_channel_str)
+        personnel = api.personnel_summary(create_api_context(ctx), personnel_or_channel_str)
         members = [personnel]
 
     records_str = ''
     for member in members:
         personnel_str = f'{member["username"]}#{member["discriminator"]}'
-        record_id = api.record_note(f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, note)
+        record_id = api.record_note(create_api_context(ctx), f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, note)
         if record_id:
             name = member["handleName"] if member["handleName"] else member["username"]
             records_str += f'updated {name}\r'
@@ -398,9 +397,9 @@ async def record_note(ctx, personnel_or_channel_str: str, *, note: str):
 
 @client.command(brief='Changes users rank, grade, and branch')
 async def change_rank(ctx, personnel_str, rank_str):
-    record_id = api.change_rank(f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, rank_str)
+    record_id = api.change_rank(create_api_context(ctx), f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, rank_str)
 
-    personnel = api.personnel_summary(personnel_str)
+    personnel = api.personnel_summary(create_api_context(ctx), personnel_str)
     member = ctx.message.channel.guild.get_member_named(f'{personnel["username"]}#{personnel["discriminator"]}')
     if member is None:
         await ctx.send('error: could not change rank, no discord member found in guild')
@@ -432,7 +431,7 @@ async def change_nick(ctx, personnel_str, nick):
 async def check_tags(ctx, correct_tags: bool = False):
     report_users = ''
 
-    all_personnel = api.personnel_summary_all()
+    all_personnel = api.personnel_summary_all(create_api_context(ctx), )
     if all_personnel is None:
         await ctx.send('error: could not lookup personnel')
         return
@@ -463,5 +462,19 @@ async def check_tags(ctx, correct_tags: bool = False):
         await ctx.send(report_users)
     else:
         await ctx.send('all member tags are correct')
+
+
+@client.command(brief='Validates user credentials')
+async def validate(ctx):
+    response = api.validate(create_api_context(ctx))
+    await ctx.send(response)
+
+
+def create_api_context(ctx) -> org_manager_api.APIContext:
+    return org_manager_api.APIContext(
+        ctx.author.name,
+        ctx.author.discriminator
+    )
+
 
 client.run(secrets.CLIENT_KEY)

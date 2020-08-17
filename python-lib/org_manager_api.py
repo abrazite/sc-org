@@ -1,8 +1,11 @@
+import requests
 import sys
-from typing import NewType
+import time
+from typing import NewType, NamedTuple
 import urllib.request
-import json
 import uuid
+
+import secrets
 
 
 OrganizationId = NewType('OrganizationId', str)
@@ -11,81 +14,87 @@ BranchId = NewType('BranchId', str)
 RankId = NewType('RankId', str)
 CertificationId = NewType('CertificationId', str)
 NewRecordId = NewType('NewRecordId', str)
+APIContext = NamedTuple('APIContext', [('username', str), ('discriminator', str)])
 
 
 class OrgManagerAPI:
     def __init__(self, api_server: str, organization_id: OrganizationId):
         self.api_server = api_server
         self.organization_id = organization_id
-        self.auth_token = ''  # todo(abrazite): add auth token support
+        self.auth_state = uuid.uuid4()
+        self.access_token = None
+        self.token_type = None
+        self.expires_in = None
+        self.token_start_time = None
+        self.api_get_token()
 
-    def membership(self, personnel_str: str):
-        personnel_id = self.find_personnel_id(personnel_str)
+    def membership(self, ctx: APIContext, personnel_str: str):
+        personnel_id = self.find_personnel_id(ctx, personnel_str)
         if personnel_id:
             url = f'/membership?organizationId={self.organization_id}&personnelId={personnel_id}'
-            results = self.api_get(url)
+            results = self.api_get(ctx, url)
             if len(results) > 0:
                 return results[0]
 
-    def personnel_summary(self, personnel_str: str):
-        personnel_id = self.find_personnel_id(personnel_str)
+    def personnel_summary(self, ctx: APIContext, personnel_str: str):
+        personnel_id = self.find_personnel_id(ctx, personnel_str)
         if personnel_id:
             url = f'/personnel-summary?organizationId={self.organization_id}&personnelId={personnel_id}'
-            results = self.api_get(url)
+            results = self.api_get(ctx, url)
             if results and len(results) > 0:
                 return results[0]
 
-    def personnel_summary_all(self):
+    def personnel_summary_all(self, ctx: APIContext):
         url = f'/personnel-summary?organizationId={self.organization_id}?limit=1000' # todo(abrazite) add paging
-        return self.api_get(url)
+        return self.api_get(ctx, url)
 
-    def personnel(self, personnel_str: str):
-        personnel_id = self.find_personnel_id(personnel_str)
+    def personnel(self, ctx: APIContext, personnel_str: str):
+        personnel_id = self.find_personnel_id(ctx, personnel_str)
         if personnel_id:
             url = f'/personnel/{personnel_id}?organizationId={self.organization_id}'
-            return self.api_get(url)
+            return self.api_get(ctx, url)
 
-    def branch(self, branch_str: str):
-        branch_id = self.find_branch_id(branch_str)
+    def branch(self, ctx: APIContext, branch_str: str):
+        branch_id = self.find_branch_id(ctx, branch_str)
         if branch_id:
             url = f'/branches?organizationId={self.organization_id}&id={branch_id}'
-            return self.api_get(url)
+            return self.api_get(ctx, url)
 
-    def branches(self, limit: int, page: int):
+    def branches(self, ctx: APIContext, limit: int, page: int):
         url = f'/branches?organizationId={self.organization_id}&limit={limit}&page={page}'
-        return self.api_get(url)
+        return self.api_get(ctx, url)
 
-    def grade(self, grade_str: str):
-        grade_id = self.find_grade_id(grade_str)
+    def grade(self, ctx: APIContext, grade_str: str):
+        grade_id = self.find_grade_id(ctx, grade_str)
         if grade_id:
             url = f'/grades?organizationId={self.organization_id}&id={grade_id}'
-            return self.api_get(url)
+            return self.api_get(ctx, url)
 
-    def grades(self, limit: int, page: int):
+    def grades(self, ctx: APIContext, limit: int, page: int):
         url = f'/grades?organizationId={self.organization_id}&limit={limit}&page={page}'
-        return self.api_get(url)
+        return self.api_get(ctx, url)
 
-    def rank(self, rank_str: str):
-        rank_id = self.find_rank_id(rank_str)
+    def rank(self, ctx: APIContext, rank_str: str):
+        rank_id = self.find_rank_id(ctx, rank_str)
         if rank_id:
             url = f'/ranks-details?organizationId={self.organization_id}&rank_id={rank_id}'
-            return self.api_get(url)
+            return self.api_get(ctx, url)
 
-    def ranks(self, limit: int, page: int):
+    def ranks(self, ctx: APIContext, limit: int, page: int):
         url = f'/ranks-details?organizationId={self.organization_id}&limit={limit}&page={page}'
-        return self.api_get(url)
+        return self.api_get(ctx, url)
 
-    def certification(self, certification_str: str):
+    def certification(self, ctx: APIContext, certification_str: str):
         certification_id = self.find_certification_id(certification_str)
         if certification_id:
             url = f'/certifications?organizationId={self.organization_id}&id={certification_id}'
-            return self.api_get(url)
+            return self.api_get(ctx, url)
 
-    def certifications(self, limit: int, page: int):
+    def certifications(self, ctx: APIContext, limit: int, page: int):
         url = f'/certifications?organizationId={self.organization_id}&limit={limit}&page={page}'
-        return self.api_get(url)
+        return self.api_get(ctx, url)
 
-    def create_branch(self, abbreviation: str, branch: str = None) -> BranchId:
+    def create_branch(self, ctx: APIContext, abbreviation: str, branch: str = None) -> BranchId:
         url = '/branches'
         body = {
             'organizationId': self.organization_id,
@@ -93,9 +102,9 @@ class OrgManagerAPI:
         }
         if branch:
             body['branch'] = branch
-        return self.api_post(url, body)
+        return self.api_post(ctx, url, body)
 
-    def create_grade(self, abbreviation: str, grade: str = None) -> BranchId:
+    def create_grade(self, ctx: APIContext, abbreviation: str, grade: str = None) -> BranchId:
         url = '/grades'
         body = {
             'organizationId': self.organization_id,
@@ -103,11 +112,11 @@ class OrgManagerAPI:
         }
         if grade:
             body['grade'] = grade
-        return self.api_post(url, body)
+        return self.api_post(ctx, url, body)
 
-    def create_rank(self, abbreviation: str, rank: str = None, branch_str: str = None, grade_str: str = None) -> RankId:
-        branch_id = self.find_branch_id(branch_str)
-        grade_id = self.find_grade_id(grade_str)
+    def create_rank(self, ctx: APIContext, abbreviation: str, rank: str = None, branch_str: str = None, grade_str: str = None) -> RankId:
+        branch_id = self.find_branch_id(ctx, branch_str)
+        grade_id = self.find_grade_id(ctx, grade_str)
 
         if branch_str and branch_id is None:
             return
@@ -125,13 +134,13 @@ class OrgManagerAPI:
             body['branchId'] = branch_id
         if grade_id:
             body['gradeId'] = grade_id
-        return self.api_post(url, body)
+        return self.api_post(ctx, url, body)
 
-    def add_member(self, issuer_str: str, discord_handle: str, sc_handle_name: str, rank_str: str) -> NewRecordId:
-        issuer_id = self.find_personnel_id(issuer_str)
-        discord_id = self.find_personnel_id(discord_handle)
-        sc_handle_id = self.find_personnel_id(sc_handle_name)
-        rank_id = self.find_rank_id(rank_str)
+    def add_member(self, ctx: APIContext, issuer_str: str, discord_handle: str, sc_handle_name: str, rank_str: str) -> NewRecordId:
+        issuer_id = self.find_personnel_id(ctx, issuer_str)
+        discord_id = self.find_personnel_id(ctx, discord_handle)
+        sc_handle_id = self.find_personnel_id(ctx, sc_handle_name)
+        rank_id = self.find_rank_id(ctx, rank_str)
 
         discord_split = discord_handle.split('#')
         personnel_id = uuid.uuid()
@@ -147,7 +156,7 @@ class OrgManagerAPI:
                 'username': discord_split[0],
                 'discriminator': int(discord_split[1])
             }
-            discord_record_id = self.api_post(url, body)
+            discord_record_id = self.api_post(ctx, url, body)
 
             url = '/rsi-citizen'
             body = {
@@ -155,13 +164,13 @@ class OrgManagerAPI:
                 'username': discord_split[0],
                 'discriminator': int(discord_split[1])
             }
-            discord_record_id = self.api_post(url, body)
-            rank_change_id = self.change_rank(issuer_id, personnel_id, rank_str)
+            discord_record_id = self.api_post(ctx, url, body)
+            rank_change_id = self.change_rank(ctx, issuer_id, personnel_id, rank_str)
 
-    def record_cert(self, issuer_str: str, personnel_str: str, certification_str: str) -> NewRecordId:
-        issuer_id = self.find_personnel_id(issuer_str)
-        personnel_id = self.find_personnel_id(personnel_str)
-        certification_id = self.find_certification_id(certification_str)
+    def record_cert(self, ctx: APIContext, issuer_str: str, personnel_str: str, certification_str: str) -> NewRecordId:
+        issuer_id = self.find_personnel_id(ctx, issuer_str)
+        personnel_id = self.find_personnel_id(ctx, personnel_str)
+        certification_id = self.find_certification_id(ctx, certification_str)
         if issuer_id and personnel_id and certification_id:
             url = '/certification'
             body = {
@@ -170,11 +179,11 @@ class OrgManagerAPI:
                 'personnelId': personnel_id,
                 'certificationId': certification_id
             }
-            return self.api_post(url, body)
+            return self.api_post(ctx, url, body)
 
-    def record_op(self, issuer_str: str, personnel_str: str, op_name: str) -> NewRecordId:
-        issuer_id = self.find_personnel_id(issuer_str)
-        personnel_id = self.find_personnel_id(personnel_str)
+    def record_op(self, ctx: APIContext, issuer_str: str, personnel_str: str, op_name: str) -> NewRecordId:
+        issuer_id = self.find_personnel_id(ctx, issuer_str)
+        personnel_id = self.find_personnel_id(ctx, personnel_str)
         if issuer_id and personnel_id:
             url = '/operation-attendence'
             body = {
@@ -184,11 +193,11 @@ class OrgManagerAPI:
             }
             if op_name:
                 body['name'] = op_name
-            return self.api_post(url, body)
+            return self.api_post(ctx, url, body)
 
-    def record_note(self, issuer_str: str, personnel_str: str, note: str) -> NewRecordId:
-        issuer_id = self.find_personnel_id(issuer_str)
-        personnel_id = self.find_personnel_id(personnel_str)
+    def record_note(self, ctx: APIContext, issuer_str: str, personnel_str: str, note: str) -> NewRecordId:
+        issuer_id = self.find_personnel_id(ctx, issuer_str)
+        personnel_id = self.find_personnel_id(ctx, personnel_str)
         if issuer_id and personnel_id and note:
             url = '/note'
             body = {
@@ -197,12 +206,12 @@ class OrgManagerAPI:
                 'personnelId': personnel_id,
                 'note': note
             }
-            return self.api_post(url, body)
+            return self.api_post(ctx, url, body)
 
-    def change_rank(self, issuer_str: str, personnel_str: str, rank_str: str) -> NewRecordId:
-        issuer_id = self.find_personnel_id(issuer_str)
-        personnel_id = self.find_personnel_id(personnel_str)
-        rank_id = self.find_rank_id(rank_str)
+    def change_rank(self, ctx: APIContext, issuer_str: str, personnel_str: str, rank_str: str) -> NewRecordId:
+        issuer_id = self.find_personnel_id(ctx, issuer_str)
+        personnel_id = self.find_personnel_id(ctx, personnel_str)
+        rank_id = self.find_rank_id(ctx, rank_str)
 
         if issuer_id and personnel_id and rank_id:
             url = '/rank-change'
@@ -212,14 +221,14 @@ class OrgManagerAPI:
                 'personnelId': personnel_id,
                 'rankId': rank_id,
             }
-            return self.api_post(url, body)
+            return self.api_post(ctx, url, body)
 
-    def find_personnel_id(self, personnel_str: str) -> PersonnelId:
+    def find_personnel_id(self, ctx: APIContext, personnel_str: str) -> PersonnelId:
         search_str = urllib.parse.quote(personnel_str, safe='')
 
         # try id lookup
         url = f'/personnel-summary?organizationId={self.organization_id}&personnelId={search_str}'
-        personnel = self.api_get(url)
+        personnel = self.api_get(ctx, url)
         if len(personnel) > 0:
             return personnel[0]['personnelId']
 
@@ -230,39 +239,39 @@ class OrgManagerAPI:
             discriminator = urllib.parse.quote(split[1], safe='')
 
             url = f'/personnel-summary?organizationId={self.organization_id}&username={username}&discriminator={discriminator}'
-            personnel = self.api_get(url)
+            personnel = self.api_get(ctx, url)
             if len(personnel) > 0:
                 return personnel[0]['personnelId']
         else:
             # try handleName lookup
             url = f'/personnel-summary?organizationId={self.organization_id}&handleName={search_str}'
-            personnel = self.api_get(url)
+            personnel = self.api_get(ctx, url)
             if len(personnel) > 0:
                 return personnel[0]['personnelId']
 
             # try citizenName lookup
             url = f'/personnel-summary?organizationId={self.organization_id}&citizenName={search_str}'
-            personnel = self.api_get(url)
+            personnel = self.api_get(ctx, url)
             if len(personnel) > 0:
                 return personnel[0]['personnelId']
 
             # try citizenRecord lookup
             url = f'/personnel-summary?organizationId={self.organization_id}&citizenRecord={search_str}'
-            personnel = self.api_get(url)
+            personnel = self.api_get(ctx, url)
             if len(personnel) > 0:
                 return personnel[0]['personnelId']
 
             # try username lookup
             url = f'/personnel-summary?organizationId={self.organization_id}&username={search_str}'
-            personnel = self.api_get(url)
+            personnel = self.api_get(ctx, url)
             if len(personnel) > 0:
                 return personnel[0]['personnelId']
 
         return
 
-    def find_branch_id(self, branch_str: str) -> BranchId:
+    def find_branch_id(self, ctx: APIContext, branch_str: str) -> BranchId:
         url = f'/branches?organizationId={self.organization_id}&limit=1000'  # todo(abrazite): add paging
-        branches = self.api_get(url)
+        branches = self.api_get(ctx, url)
 
         # try id
         for branch in branches:
@@ -291,9 +300,9 @@ class OrgManagerAPI:
         elif len(matches) > 1:
             return
 
-    def find_grade_id(self, grade_str: str) -> BranchId:
+    def find_grade_id(self, ctx: APIContext, grade_str: str) -> BranchId:
         url = f'/grades?organizationId={self.organization_id}&limit=1000'  # todo(abrazite): add paging
-        grades = self.api_get(url)
+        grades = self.api_get(ctx, url)
 
         # try id
         for grade in grades:
@@ -322,9 +331,9 @@ class OrgManagerAPI:
         elif len(matches) > 1:
             return
 
-    def find_rank_id(self, rank_str: str) -> RankId:
+    def find_rank_id(self, ctx: APIContext, rank_str: str) -> RankId:
         url = f'/ranks-details?organizationId={self.organization_id}&limit=1000'  # todo(abrazite): add paging
-        ranks = self.api_get(url)
+        ranks = self.api_get(ctx, url)
 
         # try id
         for rank in ranks:
@@ -376,9 +385,9 @@ class OrgManagerAPI:
         elif len(matches) > 1:
             return
 
-    def find_certification_id(self, certification_str: str) -> CertificationId:
+    def find_certification_id(self, ctx: APIContext, certification_str: str) -> CertificationId:
         url = f'/certifications?organizationId={self.organization_id}&limit=1000'  # todo(abrazite): add paging
-        certifications = self.api_get(url)
+        certifications = self.api_get(ctx, url)
 
         # try id
         for certification in certifications:
@@ -407,23 +416,63 @@ class OrgManagerAPI:
         elif len(matches) > 1:
             return
 
-    def api_get(self, url: str):
+    def validate(self, ctx: APIContext):
+        url = '/validate'
+        return self.api_get(ctx, url)
+
+    def api_get(self, ctx: APIContext, url: str):
         try:
-            # todo(abrazite): add auth headers here
-            response = urllib.request.urlopen(f'{self.api_server}{url}')
-            return json.loads(response.read().decode())
+            if time.time() - self.token_start_time > self.expires_in - 86400:
+                self.api_get_token()
+
+            r = requests.get(f'{self.api_server}{url}', headers={
+                'authorization': f'{self.token_type} {self.access_token}',
+                'x-proxy-username': ctx.username,
+                'x-proxy-discriminator': ctx.discriminator,
+                'x-proxy-organization': self.organization_id,
+            })
+
+            r.raise_for_status()
+            return r.json()
         except:
             print(sys.exc_info()[0])
             return
 
-    def api_post(self, url: str, body):
+    def api_post(self, ctx: APIContext, url: str, body):
         try:
-            # todo(abrazite): add auth headers here
-            response = urllib.request.urlopen(urllib.request.Request(
+            if time.time() - self.token_start_time > self.expires_in - 86400:
+                self.api_get_token()
+
+            r = requests.post(urllib.request.Request(
                 url=f'{self.api_server}{url}',
-                data=json.dumps(body).encode(),
-                headers={'Content-Type': 'application/json'}))
-            return json.loads(response.read().decode())
+                data=body,
+                headers={
+                    'Content-Type': 'application/json',
+                    'authorization': f'{self.token_type} {self.access_token}',
+                    'x-proxy-username': ctx.username,
+                    'x-proxy-discriminator': ctx.discriminator,
+                    'x-proxy-organization': self.organization_id,
+                }))
+            r.raise_for_status()
+            return r.json()
         except:
             print(sys.exc_info()[0])
             return
+
+    def api_get_token(self):
+        API_ENDPOINT = 'https://discord.com/api/v6'
+
+        data = {
+            'grant_type': 'client_credentials',
+            'scope': 'identify guilds'
+        }
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        r = requests.post('%s/oauth2/token' % API_ENDPOINT, data=data, headers=headers, auth=(secrets.CLIENT_ID, secrets.CLIENT_SECRET))
+        r.raise_for_status()
+        data = r.json()
+        self.token_start_time = time.time()
+        self.access_token = data['access_token']
+        self.token_type = data['token_type']
+        self.expires_in = data['expires_in']
