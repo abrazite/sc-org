@@ -55,6 +55,31 @@ export class AuthAPI {
       }))
       .then(APIUtils.checkStatusOrThrow)
       .then((records: Object[]) => {
+        const proxyUsername = req.headers['x-proxy-username'];
+        const proxyDiscriminator = req.headers['x-proxy-discriminator'];
+        const proxyOrganization = req.headers['x-proxy-organization'];
+
+        if (proxyUsername && proxyDiscriminator && proxyOrganization) {
+          // todo(abrazite): lookup permissions from membership table
+          // res.setHeader('x-org-manager-proxy-security-level', APISecurityLevel.OrgRecords);
+
+          const memberships = records as viewParsers.Membership[];
+          const membership = memberships.find(r => r.organizationId === proxyOrganization);
+          if (!membership) {
+            throw new Error(`Insufficient permissions to proxy ${proxyOrganization}`);
+          }
+          return fetch(`${API_SERVER}/membership?username=${proxyUsername}&discriminator=${proxyDiscriminator}`, {
+            headers: {
+              'x-org-manager-get-security-level': APISecurityLevel.OrgRecords.toString()
+            }
+          }).then(APIUtils.checkStatusOrThrow);
+        } else if (proxyUsername || proxyDiscriminator || proxyOrganization) {
+          throw new Error('For proxy a username, discriminator, and organization must be present');
+        }
+
+        return records;
+      })
+      .then((records: Object[]) => {
         const memberships = records as viewParsers.Membership[];
 
         if (memberships.length > 0 && memberships[0].personnelId !== null) {
@@ -89,7 +114,6 @@ export class AuthAPI {
           res.setHeader('x-org-manager-post-security-level', APISecurityLevel.OrgRecords);
           res.setHeader('x-org-manager-put-security-level', APISecurityLevel.OrgRecords);
           res.setHeader('x-org-manager-del-security-level', APISecurityLevel.OrgRecords);
-          res.setHeader('x-org-manager-proxy-security-level', APISecurityLevel.OrgRecords);
           res.status(200).json({ status: 200 });
 
         } else {
@@ -122,16 +146,8 @@ export class AuthAPI {
     return (req: core.Request, res: core.Response, next?: core.NextFunction) => {
       const personnelId: string = req.headers['x-org-manager-personnel-id'] as string;
       const organizations: string[] = req.headers['x-org-manager-organizations'] as string[];
-      
-      let proxySecurityLevel: number = parseInt(req.headers['x-org-manager-proxy-security-level'] as string);
-      if (isNaN(proxySecurityLevel)) {
-        proxySecurityLevel = APISecurityLevel.None;
-        req.headers['x-org-manager-proxy-security-level'] = proxySecurityLevel.toString();
-      }
 
-
-      // todo(abrazite): add more granular org levels
-      if (req.body.issuerPersonnelId && req.body.issuerPersonnelId !== personnelId && proxySecurityLevel < APISecurityLevel.OrgRecords) {
+      if (req.body.issuerPersonnelId && req.body.issuerPersonnelId !== personnelId) {
         res.status(403).json({ error: 'issuer id must match authenticated personnel id' });
         return false;
       }
