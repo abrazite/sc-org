@@ -17,7 +17,8 @@ server {
     proxy_set_header Content-Length "";
 
     auth_request_set $auth_resp_x_org_manager_personnel_id $upstream_http_x_org_manager_personnel_id;
-    auth_request_set $auth_resp_x_org_manager_organizations $upstream_http_x_org_manager_organizations;
+    auth_request_set $auth_resp_x_org_manager_organization_id $upstream_http_x_org_manager_organization_id;
+    auth_request_set $auth_resp_x_org_manager_organization_ids $upstream_http_x_org_manager_organization_ids;
     auth_request_set $auth_resp_x_org_manager_citizen_record $upstream_http_x_org_manager_citizen_record;
     auth_request_set $auth_resp_x_org_manager_citizen_name $upstream_http_x_org_manager_citizen_name;
     auth_request_set $auth_resp_x_org_manager_handle_name $upstream_http_x_org_manager_handle_name;
@@ -50,7 +51,8 @@ server {
     proxy_redirect off;
 
     auth_request_set $auth_resp_x_org_manager_personnel_id $upstream_http_x_org_manager_personnel_id;
-    auth_request_set $auth_resp_x_org_manager_organizations $upstream_http_x_org_manager_organizations;
+    auth_request_set $auth_resp_x_org_manager_organization_id $upstream_http_x_org_manager_organization_id;
+    auth_request_set $auth_resp_x_org_manager_organization_ids $upstream_http_x_org_manager_organization_ids;
     auth_request_set $auth_resp_x_org_manager_citizen_record $upstream_http_x_org_manager_citizen_record;
     auth_request_set $auth_resp_x_org_manager_citizen_name $upstream_http_x_org_manager_citizen_name;
     auth_request_set $auth_resp_x_org_manager_handle_name $upstream_http_x_org_manager_handle_name;
@@ -60,7 +62,8 @@ server {
     auth_request_set $auth_resp_x_org_manager_del_security_level $upstream_http_x_org_manager_del_security_level;
 
     proxy_set_header X-Org-Manager-Personnel-Id $auth_resp_x_org_manager_personnel_id;
-    proxy_set_header X-Org-Manager-Organizations $auth_resp_x_org_manager_organizations;
+    proxy_set_header X-Org-Manager-Organization-Id $auth_resp_x_org_manager_organization_id;
+    proxy_set_header X-Org-Manager-Organization-Ids $auth_resp_x_org_manager_organization_ids;
     proxy_set_header X-Org-Manager-Citizen-Record $auth_resp_x_org_manager_citizen_record;
     proxy_set_header X-Org-Manager-Citizen-Name $auth_resp_x_org_manager_citizen_name;
     proxy_set_header X-Org-Manager-Handle-Name $auth_resp_x_org_manager_handle_name;
