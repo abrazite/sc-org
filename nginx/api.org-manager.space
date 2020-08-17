@@ -1,3 +1,7 @@
+proxy_cache_path /home/webadmin/cache/validate levels=1:2 keys_zone=validate:10m max_size=1g;
+proxy_cache_path /home/webadmin/cache/api levels=1:2 keys_zone=api:10m max_size=1g;
+
+
 server {
   server_name api.org-manager.space;
 
@@ -12,23 +16,22 @@ server {
     proxy_pass_request_body off;
     proxy_set_header Content-Length "";
 
-    auth_request_set $auth_resp_x_vouch_user $upstream_http_x_vouch_user;
-    auth_request_set $auth_resp_x_vouch_idp_claims_id $upstream_http_x_vouch_idp_claims_id;
-    auth_request_set $auth_resp_x_vouch_idp_claims_username $upstream_http_x_vouch_idp_claims_username;
-    auth_request_set $auth_resp_x_vouch_idp_claims_discriminator $upstream_http_x_vouch_idp_claims_discriminator;
-    auth_request_set $auth_resp_x_vouch_idp_accesstoken $upstream_http_x_vouch_idp_accesstoken;
-
-    proxy_set_header X-Vouch-User $auth_resp_x_vouch_user;
-    proxy_set_header X-Vouch-IdP-Claims-Id $auth_resp_x_vouch_idp_claims_id;
-    proxy_set_header X-Vouch-IdP-Claims-Username $auth_resp_x_vouch_idp_claims_username;
-    proxy_set_header X-Vouch-IdP-Claims-Discriminator $auth_resp_x_vouch_idp_claims_discriminator;
-    proxy_set_header X-Vouch-IdP-AccessToken $auth_resp_x_vouch_idp_accesstoken;
-
     auth_request_set $auth_resp_x_org_manager_personnel_id $upstream_http_x_org_manager_personnel_id;
     auth_request_set $auth_resp_x_org_manager_organizations $upstream_http_x_org_manager_organizations;
     auth_request_set $auth_resp_x_org_manager_citizen_record $upstream_http_x_org_manager_citizen_record;
     auth_request_set $auth_resp_x_org_manager_citizen_name $upstream_http_x_org_manager_citizen_name;
     auth_request_set $auth_resp_x_org_manager_handle_name $upstream_http_x_org_manager_handle_name;
+    auth_request_set $auth_resp_x_org_manager_get_security_level $upstream_http_x_org_manager_get_security_level;
+    auth_request_set $auth_resp_x_org_manager_post_security_level $upstream_http_x_org_manager_post_security_level;
+    auth_request_set $auth_resp_x_org_manager_put_security_level $upstream_http_x_org_manager_put_security_level;
+    auth_request_set $auth_resp_x_org_manager_del_security_level $upstream_http_x_org_manager_del_security_level;
+
+    proxy_cache validate;
+    proxy_cache_lock on;
+    proxy_cache_valid 200 10m;
+    proxy_cache_valid 500 501 502 503 504 505 1s;
+    proxy_cache_valid 401 402 403 404 1s;
+    proxy_cache_key $http_authorization$scheme$proxy_host$uri$is_args$args;
   }
 
   location / {
@@ -51,12 +54,27 @@ server {
     auth_request_set $auth_resp_x_org_manager_citizen_record $upstream_http_x_org_manager_citizen_record;
     auth_request_set $auth_resp_x_org_manager_citizen_name $upstream_http_x_org_manager_citizen_name;
     auth_request_set $auth_resp_x_org_manager_handle_name $upstream_http_x_org_manager_handle_name;
+    auth_request_set $auth_resp_x_org_manager_get_security_level $upstream_http_x_org_manager_get_security_level;
+    auth_request_set $auth_resp_x_org_manager_post_security_level $upstream_http_x_org_manager_post_security_level;
+    auth_request_set $auth_resp_x_org_manager_put_security_level $upstream_http_x_org_manager_put_security_level;
+    auth_request_set $auth_resp_x_org_manager_del_security_level $upstream_http_x_org_manager_del_security_level;
 
-    proxy_set_header X-Personnel-Id $auth_resp_x_org_manager_personnel_id;
-    proxy_set_header X-Organization-Ids $auth_resp_x_org_manager_organizations;
-    proxy_set_header X-Citizen-Record $auth_resp_x_org_manager_citizen_record;
-    proxy_set_header X-Citizen-Name $auth_resp_x_org_manager_citizen_name;
-    proxy_set_header X-Handle-Name $auth_resp_x_org_manager_handle_name;
+    proxy_set_header X-Org-Manager-Personnel-Id $auth_resp_x_org_manager_personnel_id;
+    proxy_set_header X-Org-Manager-Organizations $auth_resp_x_org_manager_organizations;
+    proxy_set_header X-Org-Manager-Citizen-Record $auth_resp_x_org_manager_citizen_record;
+    proxy_set_header X-Org-Manager-Citizen-Name $auth_resp_x_org_manager_citizen_name;
+    proxy_set_header X-Org-Manager-Handle-Name $auth_resp_x_org_manager_handle_name;
+    proxy_set_header X-Org-Manager-Get-Security-Level $auth_resp_x_org_manager_get_security_level;
+    proxy_set_header X-Org-Manager-Post-Security-Level $auth_resp_x_org_manager_post_security_level;
+    proxy_set_header X-Org-Manager-Put-Security-Level $auth_resp_x_org_manager_put_security_level;
+    proxy_set_header X-Org-Manager-Del-Security-Level $auth_resp_x_org_manager_del_security_level;
+
+    proxy_cache api;
+    proxy_cache_lock on;
+    proxy_cache_valid 200 1s;
+    proxy_cache_valid 500 501 502 503 504 505 10s;
+    proxy_cache_valid 401 402 403 404 10s;
+    proxy_cache_key $http_authorization$scheme$proxy_host$uri$is_args$args;
   }
 
   location /docs {

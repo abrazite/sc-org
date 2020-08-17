@@ -6,5 +6,7 @@ export const environment = {
   mysqlHost: 'localhost',
   mysqlUser: 'org-manager-dev',
   mysqlPassword: '',
-  mysqlDatabase: 'org_manager'
+  mysqlDatabase: 'org_manager',
+  userInfoUrl: 'https://discord.com/api/users/@me',
+  userTeamUrl: 'https://discord.com/api/users/@me/guilds'
 };
