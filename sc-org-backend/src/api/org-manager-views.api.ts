@@ -346,7 +346,18 @@ export class OrgManagerViewsAPI {
             citizen_record,
             citizen_name,
             handle_name,
-            joined_date
+            joined_date,
+            branch_id,
+            grade_id,
+            rank_id,
+            branch_abbreviation,
+            grade_abbreviation,
+            rank_abbreviation,
+            \`get\`,
+            post,
+            put,
+            del,
+            proxy
           FROM membership ${filterStr} LIMIT ? OFFSET ?;`,
           [...filterParams, limit, limit * page],
           (err: mysql.MysqlError | null, results?: any) => {
