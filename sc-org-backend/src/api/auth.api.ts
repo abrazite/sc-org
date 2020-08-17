@@ -28,104 +28,109 @@ export class AuthAPI {
     router.use(bodyParser.json());
 
     router.get('/validate', (req, res) => {
-      // populated by vouch-proxy and discord claims
-      const authorization: string = req.headers['authorization'] as string
+      try {
+        // populated by vouch-proxy and discord claims
+        const authorization: string = req.headers['authorization'] as string
 
-      const user: {[key: string]: string} = {};
-      if (authorization === undefined) {
-        res.status(403).json({ error: 'Invalid credentials sent' });
-        return
-      }
-
-      fetch(environment.userInfoUrl, {
-        headers: {
-          'authorization': req.headers['authorization']!
+        const user: {[key: string]: string} = {};
+        if (authorization === undefined) {
+          res.status(403).json({ error: 'Invalid credentials sent' });
+          return
         }
-      })
-      .then(APIUtils.checkStatusOrThrow)
-      .then((res: any) => {
-        user.username = res.username;
-        user.discriminator = res.discriminator;
-        user.id = res.id;
-      })
-      .then(() => fetch(`${API_SERVER}/membership?username=${user.username}&discriminator=${user.discriminator}`, {
-        headers: {
-          'authorization': req.headers['authorization']!,
-          'x-org-manager-get-security-level': APISecurityLevel.OrgRecords.toString()
-        }
-      }))
-      .then(APIUtils.checkStatusOrThrow)
-      .then((records: Object[]) => {
-        const proxyUsername = req.headers['x-proxy-username'];
-        const proxyDiscriminator = req.headers['x-proxy-discriminator'];
-        const proxyOrganization = req.headers['x-proxy-organization'];
 
-        if (proxyUsername && proxyDiscriminator && proxyOrganization) {
-          // todo(abrazite): lookup permissions from membership table
-          // res.setHeader('x-org-manager-proxy-security-level', APISecurityLevel.OrgRecords);
-
-          const memberships = records as viewParsers.Membership[];
-          const membership = memberships.find(r => r.organizationId === proxyOrganization);
-          if (!membership) {
-            throw new Error(`Insufficient permissions to proxy ${proxyOrganization}`);
+        fetch(environment.userInfoUrl, {
+          headers: {
+            'authorization': req.headers['authorization']!
           }
-          return fetch(`${API_SERVER}/membership?username=${proxyUsername}&discriminator=${proxyDiscriminator}`, {
-            headers: {
-              'x-org-manager-get-security-level': APISecurityLevel.OrgRecords.toString()
+        })
+        .then(APIUtils.checkStatusOrThrow)
+        .then((res: any) => {
+          user.username = res.username;
+          user.discriminator = res.discriminator;
+          user.id = res.id;
+        })
+        .then(() => fetch(`${API_SERVER}/membership?username=${user.username}&discriminator=${user.discriminator}`, {
+          headers: {
+            'authorization': req.headers['authorization']!,
+            'x-org-manager-get-security-level': APISecurityLevel.OrgRecords.toString()
+          }
+        }))
+        .then(APIUtils.checkStatusOrThrow)
+        .then((records: Object[]) => {
+          const proxyUsername = req.headers['x-proxy-username'];
+          const proxyDiscriminator = req.headers['x-proxy-discriminator'];
+          const proxyOrganization = req.headers['x-proxy-organization'];
+
+          if (proxyUsername && proxyDiscriminator && proxyOrganization) {
+            // todo(abrazite): lookup permissions from membership table
+            // res.setHeader('x-org-manager-proxy-security-level', APISecurityLevel.OrgRecords);
+
+            const memberships = records as viewParsers.Membership[];
+            const membership = memberships.find(r => r.organizationId === proxyOrganization);
+            if (!membership) {
+              throw new Error(`Insufficient permissions to proxy ${proxyOrganization}`);
             }
-          }).then(APIUtils.checkStatusOrThrow);
-        } else if (proxyUsername || proxyDiscriminator || proxyOrganization) {
-          throw new Error('For proxy a username, discriminator, and organization must be present');
-        }
-
-        return records;
-      })
-      .then((records: Object[]) => {
-        const memberships = records as viewParsers.Membership[];
-
-        if (memberships.length > 0 && memberships[0].personnelId !== null) {
-
-          const [membership] = memberships;
-          const personnelId = membership.personnelId;
-          const citizenRecord = membership.citizenRecord;
-          const citizenName = membership.citizenName;
-          const handleName = membership.handleName;
-          const organizations: string[] = [];
-
-
-          memberships
-            .filter(r => r.personnelId === membership.personnelId)
-            .filter(r => r.organizationId !== null)
-              .forEach(r => {
-              organizations.push(r.organizationId!);
-            });
-
-          res.setHeader('x-org-manager-personnel-id', personnelId!);
-          if (citizenRecord !== null) {
-            res.setHeader('x-org-manager-citizen-record', citizenRecord);
+            return fetch(`${API_SERVER}/membership?username=${proxyUsername}&discriminator=${proxyDiscriminator}`, {
+              headers: {
+                'x-org-manager-get-security-level': APISecurityLevel.OrgRecords.toString()
+              }
+            }).then(APIUtils.checkStatusOrThrow);
+          } else if (proxyUsername || proxyDiscriminator || proxyOrganization) {
+            throw new Error('For proxy a username, discriminator, and organization must be present');
           }
-          if (citizenName !== null) {
-            res.setHeader('x-org-manager-citizen-name', citizenName);
-          }
-          if (handleName !== null) {
-            res.setHeader('x-org-manager-handle-name', handleName);
-          }
-          res.setHeader('x-org-manager-organizations', organizations);
-          res.setHeader('x-org-manager-get-security-level', APISecurityLevel.OrgRecords);
-          res.setHeader('x-org-manager-post-security-level', APISecurityLevel.OrgRecords);
-          res.setHeader('x-org-manager-put-security-level', APISecurityLevel.OrgRecords);
-          res.setHeader('x-org-manager-del-security-level', APISecurityLevel.OrgRecords);
-          res.status(200).json({ status: 200 });
 
-        } else {
-          res.status(403).json({ error: 'No membership records found' });
-        }
-      })
-      .catch(err => {
+          return records;
+        })
+        .then((records: Object[]) => {
+          const memberships = records as viewParsers.Membership[];
+
+          if (memberships.length > 0 && memberships[0].personnelId !== null) {
+
+            const [membership] = memberships;
+            const personnelId = membership.personnelId;
+            const citizenRecord = membership.citizenRecord;
+            const citizenName = membership.citizenName;
+            const handleName = membership.handleName;
+            const organizations: string[] = [];
+
+
+            memberships
+              .filter(r => r.personnelId === membership.personnelId)
+              .filter(r => r.organizationId !== null)
+                .forEach(r => {
+                organizations.push(r.organizationId!);
+              });
+
+            res.setHeader('x-org-manager-personnel-id', personnelId!);
+            if (citizenRecord !== null) {
+              res.setHeader('x-org-manager-citizen-record', citizenRecord);
+            }
+            if (citizenName !== null) {
+              res.setHeader('x-org-manager-citizen-name', citizenName);
+            }
+            if (handleName !== null) {
+              res.setHeader('x-org-manager-handle-name', handleName);
+            }
+            res.setHeader('x-org-manager-organizations', organizations);
+            res.setHeader('x-org-manager-get-security-level', APISecurityLevel.OrgRecords);
+            res.setHeader('x-org-manager-post-security-level', APISecurityLevel.OrgRecords);
+            res.setHeader('x-org-manager-put-security-level', APISecurityLevel.OrgRecords);
+            res.setHeader('x-org-manager-del-security-level', APISecurityLevel.OrgRecords);
+            res.status(200).json({ status: 200 });
+
+          } else {
+            res.status(403).json({ error: 'No membership records found' });
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          res.status(500).json({ status: 'error', message: err.message });
+        });
+      } catch(err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: err.message });
-      });
-    })
+      }
+    });
 
     router.get('/debug/headers', (req, res) => {
       res.json(JSON.stringify(req.headers));
