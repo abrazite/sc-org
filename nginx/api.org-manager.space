@@ -29,8 +29,8 @@ server {
     proxy_cache validate;
     proxy_cache_lock on;
     proxy_cache_valid 200 10m;
-    proxy_cache_valid 500 501 502 503 504 505 1s;
-    proxy_cache_valid 401 402 403 404 1s;
+    proxy_cache_valid 500 501 502 503 504 505 30s;
+    proxy_cache_valid 401 402 403 404 30s;
     proxy_cache_key $http_authorization$scheme$proxy_host$uri$is_args$args;
   }
 
