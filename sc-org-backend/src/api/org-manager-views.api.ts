@@ -135,16 +135,22 @@ export class OrgManagerViewsAPI {
           queryStr += `${key}=${req.query[key]}&`;
         });
   
+        const headers = OrgManagerViewsAPI.makeHeader(req);
+
         let personnel: viewParsers.PersonnelSummary[];
         const certifications: { [personnelId: string]: viewParsers.MostRecentCertifications[] } = {};
 
-        fetch(`${API_SERVER}/personnel-summary?${queryStr}`)
+        fetch(`${API_SERVER}/personnel-summary?${queryStr}`, {
+          headers
+        })
           .then(APIUtils.checkStatusOrThrow)
           .then((json: Object[]) => {
             personnel = json as viewParsers.PersonnelSummary[];
           })
           // todo: add proper paging
-          .then(() => fetch(`${API_SERVER}/most-recent-certifications?organizationId=${organizationId}&limit=10000`))
+          .then(() => fetch(`${API_SERVER}/most-recent-certifications?organizationId=${organizationId}&limit=10000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((json: Object[]) => {
             json.forEach(r => {
@@ -442,6 +448,8 @@ export class OrgManagerViewsAPI {
           throw new Error('organizationId required');
         }
 
+        const headers = OrgManagerViewsAPI.makeHeader(req);
+
         let organizationInfo: viewParsers.OrganizationInfoRaw;
 
         const json: viewParsers.PersonnelRaw = {
@@ -450,7 +458,9 @@ export class OrgManagerViewsAPI {
         };
 
         // todo: add proper paging
-        fetch(`${API_SERVER}/active-duty?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`)
+        fetch(`${API_SERVER}/active-duty?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`, {
+          headers
+        })
           .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
@@ -460,14 +470,18 @@ export class OrgManagerViewsAPI {
               });
             }
           })
-          .then(() => fetch(`${API_SERVER}/personnel?organizationId=${organizationId}&personnelId=${personnelId}&limit=1`))
+          .then(() => fetch(`${API_SERVER}/personnel?organizationId=${organizationId}&personnelId=${personnelId}&limit=1`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length === 1) {
               json.personnelSummary = records[0] as viewParsers.PersonnelSummary;
             }
           })
-          .then(() => fetch(`${API_SERVER}/certification?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
+          .then(() => fetch(`${API_SERVER}/certification?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
@@ -477,7 +491,9 @@ export class OrgManagerViewsAPI {
               });
             }
           })
-          .then(() => fetch(`${API_SERVER}/discord?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
+          .then(() => fetch(`${API_SERVER}/discord?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
@@ -487,7 +503,9 @@ export class OrgManagerViewsAPI {
               });
             }
           })
-          .then(() => fetch(`${API_SERVER}/joined-organization?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
+          .then(() => fetch(`${API_SERVER}/joined-organization?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
@@ -497,7 +515,9 @@ export class OrgManagerViewsAPI {
               });
             }
           })
-          .then(() => fetch(`${API_SERVER}/left-organization?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
+          .then(() => fetch(`${API_SERVER}/left-organization?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
@@ -507,7 +527,9 @@ export class OrgManagerViewsAPI {
               });
             }
           })
-          .then(() => fetch(`${API_SERVER}/note?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
+          .then(() => fetch(`${API_SERVER}/note?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
@@ -517,7 +539,9 @@ export class OrgManagerViewsAPI {
               });
             }
           })
-          .then(() => fetch(`${API_SERVER}/operation-attendence?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
+          .then(() => fetch(`${API_SERVER}/operation-attendence?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
@@ -527,7 +551,9 @@ export class OrgManagerViewsAPI {
               });
             }
           })
-          .then(() => fetch(`${API_SERVER}/rank-change?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
+          .then(() => fetch(`${API_SERVER}/rank-change?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
@@ -537,7 +563,9 @@ export class OrgManagerViewsAPI {
               });
             }
           })
-          .then(() => fetch(`${API_SERVER}/rsi-citizen?personnelId=${personnelId}&limit=1000`))
+          .then(() => fetch(`${API_SERVER}/rsi-citizen?personnelId=${personnelId}&limit=1000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
@@ -547,7 +575,9 @@ export class OrgManagerViewsAPI {
               });
             }
           })
-          .then(() => fetch(`${API_SERVER}/rsi-citizen-organization?personnelId=${personnelId}&limit=1000`))
+          .then(() => fetch(`${API_SERVER}/rsi-citizen-organization?personnelId=${personnelId}&limit=1000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
@@ -557,7 +587,9 @@ export class OrgManagerViewsAPI {
               });
             }
           })
-          .then(() => fetch(`${API_SERVER}/status?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`))
+          .then(() => fetch(`${API_SERVER}/status?organizationId=${organizationId}&personnelId=${personnelId}&limit=1000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((records: Object[]) => {
             if (records.length > 0) {
@@ -592,16 +624,22 @@ export class OrgManagerViewsAPI {
           throw new Error('organizationId required');
         }
 
+        const headers = OrgManagerViewsAPI.makeHeader(req);
+
         let organizationInfo: viewParsers.OrganizationInfoRaw;
         let json: viewParsers.Personnel;
 
         // todo: add proper paging
-        fetch(`${API_SERVER}/personnel/raw/${personnelId}?organizationId=${organizationId}`)
+        fetch(`${API_SERVER}/personnel/raw/${personnelId}?organizationId=${organizationId}`, {
+          headers
+        })
           .then(APIUtils.checkStatusOrThrow)
           .then((record: Object) => {
             json = record as viewParsers.Personnel;
           })
-          .then(() => fetch(`${API_SERVER}/organization-info/raw/${organizationId}`))
+          .then(() => fetch(`${API_SERVER}/organization-info/raw/${organizationId}`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((r: Object) => {
             organizationInfo = r as viewParsers.OrganizationInfoRaw;
@@ -673,6 +711,8 @@ export class OrgManagerViewsAPI {
           return;
         }
 
+        const headers = OrgManagerViewsAPI.makeHeader(req);
+
         const organizationId = req.params.id;
 
         const json: viewParsers.OrganizationInfoRaw = {
@@ -680,7 +720,9 @@ export class OrgManagerViewsAPI {
         };
   
         // todo: add proper paging
-        fetch(`${API_SERVER}/branches?organizationId=${organizationId}&limit=1000`)
+        fetch(`${API_SERVER}/branches?organizationId=${organizationId}&limit=1000`, {
+          headers
+        })
           .then(APIUtils.checkStatusOrThrow)
           .then((branches: Object[]) => {
             if (branches.length > 0) {
@@ -690,7 +732,9 @@ export class OrgManagerViewsAPI {
               });
             }
           })
-          .then(() => fetch(`${API_SERVER}/grades?organizationId=${organizationId}&limit=1000`))
+          .then(() => fetch(`${API_SERVER}/grades?organizationId=${organizationId}&limit=1000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((grades: Object[]) => {
             if (grades.length > 0) {
@@ -700,7 +744,9 @@ export class OrgManagerViewsAPI {
               });
             }
           })
-          .then(() => fetch(`${API_SERVER}/ranks?organizationId=${organizationId}&limit=1000`))
+          .then(() => fetch(`${API_SERVER}/ranks?organizationId=${organizationId}&limit=1000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((ranks: Object[]) => {
             if (ranks.length > 0) {
@@ -710,7 +756,9 @@ export class OrgManagerViewsAPI {
               });
             }
           })
-          .then(() => fetch(`${API_SERVER}/certifications?organizationId=${organizationId}&limit=1000`))
+          .then(() => fetch(`${API_SERVER}/certifications?organizationId=${organizationId}&limit=1000`, {
+            headers
+          }))
           .then(APIUtils.checkStatusOrThrow)
           .then((certifications: Object[]) => {
             if (certifications.length > 0) {
@@ -734,5 +782,21 @@ export class OrgManagerViewsAPI {
     });
 
     return router;
+  }
+
+  static makeHeader(req: core.Request): { [key: string]: string } {
+    const headers: { [key: string]: string } = {
+      'authorization': req.headers['authorization']!,
+    };
+    if (req.headers['x-proxy-username']) {
+      headers['x-proxy-username'] = req.headers['x-proxy-username'] as string;
+    }
+    if (req.headers['x-proxy-discriminator']) {
+      headers['x-proxy-discriminator'] = req.headers['x-proxy-discriminator'] as string;
+    }
+    if (req.headers['x-proxy-organization']) {
+      headers['x-proxy-organization'] = req.headers['x-proxy-organization'] as string;
+    }
+    return headers;
   }
 }
