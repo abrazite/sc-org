@@ -73,6 +73,10 @@ export class AuthAPI {
           const proxyOrganization = req.headers['x-proxy-organization'];
 
           if (proxyUsername && proxyDiscriminator && proxyOrganization) {
+            if (proxyOrganization !== organizationId) {
+              throw new Error('organization id must match authenticated organization id');
+            }
+
             const memberships = records as viewParsers.Membership[];
             const membership = memberships.find(r => r.organizationId === proxyOrganization && r.proxy >= APISecurityLevel.OrgRecords);
             if (!membership) {

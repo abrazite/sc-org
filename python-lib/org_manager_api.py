@@ -449,6 +449,7 @@ class OrgManagerAPI:
                 headers={
                     'Content-Type': 'application/json',
                     'authorization': f'{self.token_type} {self.access_token}',
+                    'x-org-manager-organization-id': self.organization_id,
                     'x-proxy-username': ctx.username,
                     'x-proxy-discriminator': ctx.discriminator,
                     'x-proxy-organization': self.organization_id,

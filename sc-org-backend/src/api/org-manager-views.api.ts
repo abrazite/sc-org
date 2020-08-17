@@ -788,6 +788,9 @@ export class OrgManagerViewsAPI {
     const headers: { [key: string]: string } = {
       'authorization': req.headers['authorization']!,
     };
+    if (req.headers['x-org-manager-organization-id']) {
+      headers['x-org-manager-organization-id'] = req.headers['x-org-manager-organization-id'] as string;
+    }
     if (req.headers['x-proxy-username']) {
       headers['x-proxy-username'] = req.headers['x-proxy-username'] as string;
     }
