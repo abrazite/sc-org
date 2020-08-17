@@ -62,11 +62,8 @@ export class AuthAPI {
           const proxyOrganization = req.headers['x-proxy-organization'];
 
           if (proxyUsername && proxyDiscriminator && proxyOrganization) {
-            // todo(abrazite): lookup permissions from membership table
-            // res.setHeader('x-org-manager-proxy-security-level', APISecurityLevel.OrgRecords);
-
             const memberships = records as viewParsers.Membership[];
-            const membership = memberships.find(r => r.organizationId === proxyOrganization);
+            const membership = memberships.find(r => r.organizationId === proxyOrganization && r.proxy >= APISecurityLevel.OrgRecords);
             if (!membership) {
               throw new Error(`Insufficient permissions to proxy ${proxyOrganization}`);
             }
@@ -112,10 +109,11 @@ export class AuthAPI {
               res.setHeader('x-org-manager-handle-name', handleName);
             }
             res.setHeader('x-org-manager-organizations', organizations);
-            res.setHeader('x-org-manager-get-security-level', APISecurityLevel.OrgRecords);
-            res.setHeader('x-org-manager-post-security-level', APISecurityLevel.OrgRecords);
-            res.setHeader('x-org-manager-put-security-level', APISecurityLevel.OrgRecords);
-            res.setHeader('x-org-manager-del-security-level', APISecurityLevel.OrgRecords);
+            res.setHeader('x-org-manager-get-security-level', membership.get);
+            res.setHeader('x-org-manager-post-security-level', membership.post);
+            res.setHeader('x-org-manager-put-security-level', membership.put);
+            res.setHeader('x-org-manager-del-security-level', membership.del);
+            res.setHeader('x-org-manager-proxy-security-level', membership.proxy);
             res.status(200).json({ status: 200 });
 
           } else {

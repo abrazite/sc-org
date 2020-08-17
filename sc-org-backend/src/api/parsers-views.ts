@@ -9,6 +9,17 @@ export interface Membership {
   citizenName: string | null;
   handleName: string | null;
   joinedDate: Date;
+  branchId: string | null;
+  gradeId: string | null;
+  rankId: string | null;
+  branchAbbreviation: string | null;
+  gradeAbbreviation: string | null;
+  rankAbbreviation: string | null;
+  get: number;
+  post: number;
+  put: number;
+  del: number;
+  proxy: number;
 }
 
 export class MembershipParser {
@@ -22,6 +33,17 @@ export class MembershipParser {
       citizenName: mysql.citizen_name,
       handleName: mysql.handle_name,
       joinedDate: new Date(Date.parse(mysql.joined_date)),
+      branchId: mysql.branch_id,
+      gradeId: mysql.grade_id,
+      rankId: mysql.rank_id,
+      branchAbbreviation: mysql.branch_abbreviation,
+      gradeAbbreviation: mysql.grade_abbreviation,
+      rankAbbreviation: mysql.rank_abbreviation,
+      get: parseInt(mysql.get),
+      post: parseInt(mysql.post),
+      put: parseInt(mysql.put),
+      del: parseInt(mysql.del),
+      proxy: parseInt(mysql.proxy),
     };
     return record;
   }
