@@ -398,7 +398,7 @@ FROM most_recent_discord AS t1
 RIGHT JOIN left_organization AS t2
 	ON t1.personnel_id = t2.personnel_id AND t1.organization_id = t2.organization_id AND t1.organization_id = t2.left_organization_id
 GROUP BY t1.personnel_id, t1.organization_id, t1.username, t1.discriminator)
-SELECT t1.personnel_id, t1.organization_id, t1.username, t1.discriminator, t3.citizen_record, t3.citizen_name, t3.handle_name, t1.date AS 'joined_date', t2.date AS 'left_date', t5.branch_id, t5.grade_id, t5.rank_id, t5.branch_abbreviation, t5.grade_abbreviation, t5.rank_abbreviation, t6.get, t6.post, t6.put, t6.del
+SELECT t1.personnel_id, t1.organization_id, t1.username, t1.discriminator, t3.citizen_record, t3.citizen_name, t3.handle_name, t1.date AS 'joined_date', t2.date AS 'left_date', t5.branch_id, t5.grade_id, t5.rank_id, t5.branch_abbreviation, t5.grade_abbreviation, t5.rank_abbreviation, t6.get, t6.post, t6.put, t6.del, t6.proxy
 FROM joined_org AS t1
 LEFT JOIN left_org AS t2
 	ON t1.personnel_id = t2.personnel_id AND t1.organization_id = t2.organization_id
