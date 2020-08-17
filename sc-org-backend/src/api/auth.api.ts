@@ -124,11 +124,11 @@ export class AuthAPI {
         })
         .catch(err => {
           console.error(err);
-          res.status(500).json({ status: 'error', message: err.message });
+          res.status(403).json({ status: 'error', message: err.message });
         });
       } catch(err) {
         console.error(err);
-        res.status(500).json({ status: 'error', message: err.message });
+        res.status(403).json({ status: 'error', message: err.message });
       }
     });
 
