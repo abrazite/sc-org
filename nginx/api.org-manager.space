@@ -61,6 +61,7 @@ server {
     auth_request_set $auth_resp_x_org_manager_put_security_level $upstream_http_x_org_manager_put_security_level;
     auth_request_set $auth_resp_x_org_manager_del_security_level $upstream_http_x_org_manager_del_security_level;
 
+    proxy_set_header Authorization $http_authorization;
     proxy_set_header X-Org-Manager-Personnel-Id $auth_resp_x_org_manager_personnel_id;
     proxy_set_header X-Org-Manager-Organization-Id $auth_resp_x_org_manager_organization_id;
     proxy_set_header X-Org-Manager-Organization-Ids $auth_resp_x_org_manager_organization_ids;
