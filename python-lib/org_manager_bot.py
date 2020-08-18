@@ -25,7 +25,8 @@ async def on_ready():
 
 @client.command()
 async def test(ctx):
-    theimc.create_org(api, create_api_context(ctx), ctx.message.channel.guild.members)
+    if ctx.author.name == 'abrazite':
+        theimc.create_org(api, create_api_context(ctx), ctx.message.channel.guild.members)
 
 
 # Clear messages in chat
