@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 import org_manager_api
 import theimc
 import secrets
-import json
+import string
 
 # API Server
 API_SERVER = 'https://api.org-manager.space/1.0.0'
@@ -502,9 +502,10 @@ async def validate(ctx):
 
 
 def create_api_context(ctx) -> org_manager_api.APIContext:
+    printable = set(string.printable)
     return org_manager_api.APIContext(
         ctx.author.id,
-        ctx.author.name,
+        ''.join(filter(lambda x: x in printable, ctx.author.name)),
         ctx.author.discriminator
     )
 

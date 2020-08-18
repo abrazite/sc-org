@@ -1,3 +1,4 @@
+import datetime
 import requests
 import json
 import sys
@@ -137,7 +138,7 @@ class OrgManagerAPI:
             body['gradeId'] = grade_id
         return self.api_post(ctx, url, body)
 
-    def add_member(self, ctx: APIContext, discord_handle: str, sc_handle_name: str, rank_str: str, recruited_by_str: str, joined_date: str) -> NewRecordId:
+    def add_member(self, ctx: APIContext, discord_handle: str, sc_handle_name: str, rank_str: str, recruited_by_str: str, joined_date: datetime.datetime) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
         discord_id = self.find_personnel_id(ctx, discord_handle)
         sc_handle_id = self.find_personnel_id(ctx, sc_handle_name)
@@ -215,7 +216,7 @@ class OrgManagerAPI:
             }
             return self.api_post(ctx, url, body)
 
-    def record_joined_org(self, ctx: APIContext, personnel_str: str, recruited_by_str: str, joined_date: str) -> NewRecordId:
+    def record_joined_org(self, ctx: APIContext, personnel_str: str, recruited_by_str: str, date: datetime.datetime) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
         personnel_id = self.find_personnel_id(ctx, personnel_str)
         recruited_by_personnel_id = self.find_personnel_id(ctx, recruited_by_str)
@@ -230,11 +231,11 @@ class OrgManagerAPI:
             }
             if recruited_by_personnel_id:
                 body['recruitedByPersonnelId'] = recruited_by_personnel_id
-            if joined_date:
-                body['date'] = joined_date
+            if date:
+                body['date'] = date
             return self.api_post(ctx, url, body)
 
-    def record_left_org(self, ctx: APIContext, personnel_str: str) -> NewRecordId:
+    def record_left_org(self, ctx: APIContext, personnel_str: str, date: datetime.datetime) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
         personnel_id = self.find_personnel_id(ctx, personnel_str)
 
@@ -246,6 +247,8 @@ class OrgManagerAPI:
                 'personnelId': personnel_id,
                 'leftOrganizationId': self.organization_id,
             }
+            if date:
+                body['date'] = date
             return self.api_post(ctx, url, body)
 
     def change_rank(self, ctx: APIContext, personnel_str: str, rank_str: str) -> NewRecordId:
