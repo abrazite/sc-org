@@ -4,11 +4,11 @@ import org_manager_api
 import secrets
 
 # API Server
-API_SERVER = 'https://api.org-manager.space/1.0.0/'
+API_SERVER = 'https://api.org-manager.space/1.0.0'
 api = org_manager_api.OrgManagerAPI(API_SERVER, secrets.ORGANIZATION_ID)
 
 # Prefix for calling bot in discord
-client = commands.Bot(command_prefix = '.')
+client = commands.Bot(command_prefix='.')
 
 # Runs on start to show bot is online
 @client.event
@@ -324,7 +324,7 @@ async def record_cert(ctx, personnel_or_channel_str: str, *, certification_str: 
     records_str = ''
     for member in members:
         personnel_str = f'{member["username"]}#{member["discriminator"]}'
-        record_id = api.record_cert(create_api_context(ctx), f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, certification_str)
+        record_id = api.record_cert(create_api_context(ctx), personnel_str, certification_str)
         if record_id:
             name = member["handleName"] if member["handleName"] else member["username"]
             records_str += f'updated {name}\r'
@@ -395,9 +395,39 @@ async def record_note(ctx, personnel_or_channel_str: str, *, note: str):
         await ctx.send('warning: no records updated')
 
 
+@client.command(brief='Creates all records for a new member')
+async def add_member(ctx, discord_handle, sc_handle_name, rank_str, recruited_by_str=None):
+    record_id = api.add_member(create_api_context(ctx), discord_handle, sc_handle_name, rank_str, recruited_by_str)
+
+    if record_id:
+        await ctx.send('member added')
+    else:
+        await ctx.send('error: could not add member')
+
+
+@client.command(brief='Records personnel joining org - do not use with add_member')
+async def record_joined_org(ctx, personnel_str, recruited_by_str=None):
+    record_id = api.record_joined_org(create_api_context(ctx), personnel_str, recruited_by_str)
+
+    if record_id:
+        await ctx.send('joined org')
+    else:
+        await ctx.send('error: could not join org')
+
+
+@client.command(brief='Records personnel leaving org')
+async def record_left_org(ctx, personnel_str):
+    record_id = api.record_left_org(create_api_context(ctx), personnel_str)
+
+    if record_id:
+        await ctx.send('left org')
+    else:
+        await ctx.send('error: could not leave org')
+
+
 @client.command(brief='Changes users rank, grade, and branch')
 async def change_rank(ctx, personnel_str, rank_str):
-    record_id = api.change_rank(create_api_context(ctx), f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, rank_str)
+    record_id = api.change_rank(create_api_context(ctx), personnel_str, rank_str)
 
     personnel = api.personnel_summary(create_api_context(ctx), personnel_str)
     member = ctx.message.channel.guild.get_member_named(f'{personnel["username"]}#{personnel["discriminator"]}')
@@ -431,7 +461,7 @@ async def change_nick(ctx, personnel_str, nick):
 async def check_tags(ctx, correct_tags: bool = False):
     report_users = ''
 
-    all_personnel = api.personnel_summary_all(create_api_context(ctx), )
+    all_personnel = api.personnel_summary_all(create_api_context(ctx))
     if all_personnel is None:
         await ctx.send('error: could not lookup personnel')
         return
@@ -453,7 +483,7 @@ async def check_tags(ctx, correct_tags: bool = False):
                 report_users += f'{member_nick}\t -> \t {nick}'
                 if correct_tags:
                     try:
-                        member.edit(nick=nick)
+                        await member.edit(nick=nick)
                     except:
                         report_users += '\tE'
                 report_users += '\r'
