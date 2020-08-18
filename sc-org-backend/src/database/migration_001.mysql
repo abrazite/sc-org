@@ -204,6 +204,7 @@ CREATE TABLE `org_manager`.`certifications` (
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE); 
 
 CREATE TABLE `org_manager`.`permissions` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
   `organization_id` BINARY(16) NOT NULL,
   `subject_id` BINARY(16) NOT NULL,
   `get` INT NOT NULL DEFAULT 0,
@@ -213,7 +214,8 @@ CREATE TABLE `org_manager`.`permissions` (
   `proxy` INT NOT NULL DEFAULT 0,
   INDEX `organization_id` (`organization_id` ASC) VISIBLE,
   INDEX `subject_id` (`subject_id` ASC) VISIBLE,
-  UNIQUE INDEX `id_UNIQUE` (`organization_id`, `subject_id`) VISIBLE); 
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE); 
 
 CREATE VIEW `most_recent_rsi_citizen` AS (SELECT t1.*
 FROM rsi_citizen AS t1
@@ -235,37 +237,6 @@ CREATE VIEW `most_recent_discord` AS ((WITH summary AS (
     SELECT s.*
     FROM summary s
     WHERE s.rk = 1));
-
-CREATE VIEW `personnel_permissions` AS (WITH summary AS 
-		(WITH personnel_permissions AS 
-			(WITH combined_permissions AS (
-			SELECT t1.personnel_id, t2.* FROM most_recent_rank_change AS t1
-			LEFT JOIN ranks_details AS t2
-				ON t1.rank_id = t2.rank_id)
-		SELECT t1.personnel_id, 1 AS priority, t2.* FROM combined_permissions AS t1
-		INNER JOIN permissions AS t2
-			ON t1.organization_id = t2.subject_id
-		UNION
-		SELECT t1.personnel_id, 2 AS priority, t2.* FROM combined_permissions AS t1
-		INNER JOIN permissions AS t2
-			ON t1.branch_id = t2.subject_id
-		UNION
-		SELECT t1.personnel_id, 3 AS priority, t2.* FROM combined_permissions AS t1
-		INNER JOIN permissions AS t2
-			ON t1.grade_id = t2.subject_id    
-		UNION
-		SELECT t1.personnel_id, 4 AS priority, t2.* FROM combined_permissions AS t1
-		INNER JOIN permissions AS t2
-			ON t1.rank_id = t2.subject_id       
-			UNION
-		SELECT t1.personnel_id, 5 AS priority, t2.* FROM combined_permissions AS t1
-		INNER JOIN permissions AS t2
-			ON t1.personnel_id = t2.subject_id)
-	 SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.priority DESC) AS rk
-	 FROM personnel_permissions AS t1)
-     SELECT s.*
-FROM summary s
-WHERE s.rk = 1);   
 
 CREATE VIEW `activity_dates` AS (SELECT 
 	t1.personnel_id AS 'personnel_id',
@@ -387,6 +358,55 @@ FROM personnel_summary AS t1
 RIGHT JOIN most_recent_certifications AS t2
 	ON t1.personnel_id = t2.personnel_id AND t1.organization_id = t2.organization_id);
 
+CREATE VIEW ranks_details AS (SELECT
+  t1.organization_id,
+  t1.branch_id,
+  t1.grade_id,
+  t1.id as 'rank_id',
+  t2.abbreviation as 'branch_abbreviation',
+  t3.abbreviation as 'grade_abbreviation',
+  t1.abbreviation as 'rank_abbreviation',
+  t2.branch as 'branch_name',
+  t3.grade as 'grade_name',
+  t1.name as 'rank_name'
+FROM ranks as t1
+LEFT JOIN branches as t2
+	ON t1.branch_id = t2.id
+LEFT JOIN grades as t3
+	ON t1.grade_id = t3.id
+ORDER BY branch_abbreviation, grade_abbreviation, rank_abbreviation  
+);
+
+CREATE VIEW `personnel_permissions` AS (WITH summary AS 
+		(WITH personnel_permissions AS 
+			(WITH combined_permissions AS (
+			SELECT t1.personnel_id, t2.* FROM most_recent_rank_change AS t1
+			LEFT JOIN ranks_details AS t2
+				ON t1.rank_id = t2.rank_id)
+		SELECT t1.personnel_id, 1 AS priority, t2.* FROM combined_permissions AS t1
+		INNER JOIN permissions AS t2
+			ON t1.organization_id = t2.subject_id
+		UNION
+		SELECT t1.personnel_id, 2 AS priority, t2.* FROM combined_permissions AS t1
+		INNER JOIN permissions AS t2
+			ON t1.branch_id = t2.subject_id
+		UNION
+		SELECT t1.personnel_id, 3 AS priority, t2.* FROM combined_permissions AS t1
+		INNER JOIN permissions AS t2
+			ON t1.grade_id = t2.subject_id    
+		UNION
+		SELECT t1.personnel_id, 4 AS priority, t2.* FROM combined_permissions AS t1
+		INNER JOIN permissions AS t2
+			ON t1.rank_id = t2.subject_id       
+			UNION
+		SELECT t1.personnel_id, 5 AS priority, t2.* FROM combined_permissions AS t1
+		INNER JOIN permissions AS t2
+			ON t1.personnel_id = t2.subject_id)
+	 SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.priority DESC) AS rk
+	 FROM personnel_permissions AS t1)
+     SELECT s.*
+FROM summary s
+WHERE s.rk = 1);   
 
 CREATE VIEW `membership` AS (WITH joined_org AS (SELECT t1.personnel_id, t1.organization_id, t1.username, t1.discriminator, MAX(t2.date) as date
 FROM most_recent_discord AS t1
@@ -411,20 +431,3 @@ LEFT JOIN ranks_details AS t5
 LEFT JOIN personnel_permissions AS t6
 	ON t1.personnel_id = t6.personnel_id AND t1.organization_id = t6.organization_id
 WHERE t1.personnel_id IS NOT NULL AND t1.date IS NOT NULL AND (t1.date > t2.date OR t2.date IS NULL));
-
-CREATE VIEW ranks_details AS (SELECT
-  t1.organization_id,
-  t1.branch_id,
-  t1.grade_id,
-  t1.id as 'rank_id',
-  t2.abbreviation as 'branch_abbreviation',
-  t3.abbreviation as 'grade_abbreviation',
-  t1.abbreviation as 'rank_abbreviation',
-  t2.branch as 'branch_name',
-  t3.grade as 'grade_name',
-  t1.name as 'rank_name'
-FROM ranks as t1
-LEFT JOIN branches as t2
-	ON t1.branch_id = t2.id
-LEFT JOIN grades as t3
-	ON t1.grade_id = t3.id);

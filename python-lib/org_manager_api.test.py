@@ -16,7 +16,7 @@ def create_api_context(username: str, discriminator: str) -> org_manager_api.API
     )
 
 
-ctx = create_api_context('abrazite', '7161')
+ctx = create_api_context('1234', 'abrazite', '7161')
 
 
 class TestMembership(unittest.TestCase):

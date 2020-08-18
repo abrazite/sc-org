@@ -4,16 +4,29 @@ const fetch = require('node-fetch');
 const API_SERVER = 'http://localhost:8081/api/1.0.0';
 // const API_SERVER = 'https://org-manager.space/api/1.0.0';
 
-function createTheIMC(users) {
-  const orgInfo = {
-    id: '4b40e446-5ceb-4543-a6d8-fa4e28a00406',       // v4();
-    adminId: '74844e1c-94f8-423c-a2cb-680fd3631e98',  // v4();
-    additionDate: new Date(Date.parse('2020-08-07T19:59:40.000Z')), // date to use when missing and don't want to use now
-  };
+const headers = {
+  'Content-Type': 'application/json',
+  'x-org-manager-personnel-id': '74844e1c-94f8-423c-a2cb-680fd3631e98',
+  'x-org-manager-organization-id': '4b40e446-5ceb-4543-a6d8-fa4e28a00406',
+  'x-org-manager-get-security-level': 3,
+  'x-org-manager-post-security-level': 3,
+  'x-org-manager-put-security-level': 3,
+  'x-org-manager-del-security-level': 3,
+  'x-org-manager-proxy-security-level': 3,
+}
 
+const orgInfo = {
+  id: '4b40e446-5ceb-4543-a6d8-fa4e28a00406',       // v4();
+  adminId: '74844e1c-94f8-423c-a2cb-680fd3631e98',  // v4();
+  additionDate: new Date(Date.parse('2020-08-07T19:59:40.000Z')), // date to use when missing and don't want to use now
+};
+
+function createTheIMC(users) {
   return createOrg({
     date: orgInfo.additionDate,
     organizationId: orgInfo.id,
+    issuerPersonnelId: orgInfo.adminId,
+    rsiOrganizationId: orgInfo.id,
     name: 'Interstellar Management Corps',
     sid: 'THEIMC',
     memberCount: 292,
@@ -39,15 +52,15 @@ function createTheIMC(users) {
     })
     .then(() => {
       orgInfo.grades = [
-        { organizationId: orgInfo.id, abbreviation: 'O6' },
-        { organizationId: orgInfo.id, abbreviation: 'O2' },
-        { organizationId: orgInfo.id, abbreviation: 'O1' },
-        { organizationId: orgInfo.id, abbreviation: 'E6' },
-        { organizationId: orgInfo.id, abbreviation: 'E5' },
-        { organizationId: orgInfo.id, abbreviation: 'E4' },
-        { organizationId: orgInfo.id, abbreviation: 'E3' },
-        { organizationId: orgInfo.id, abbreviation: 'E2' },
-        { organizationId: orgInfo.id, abbreviation: 'E1' },
+        { organizationId: orgInfo.id, abbreviation: 'O6', grade: 'Officer-6' },
+        { organizationId: orgInfo.id, abbreviation: 'O2', grade: 'Officer-2' },
+        { organizationId: orgInfo.id, abbreviation: 'O1', grade: 'Officer-1' },
+        { organizationId: orgInfo.id, abbreviation: 'E6', grade: 'Enlisted-6' },
+        { organizationId: orgInfo.id, abbreviation: 'E5', grade: 'Enlisted-5' },
+        { organizationId: orgInfo.id, abbreviation: 'E4', grade: 'Enlisted-4' },
+        { organizationId: orgInfo.id, abbreviation: 'E3', grade: 'Enlisted-3' },
+        { organizationId: orgInfo.id, abbreviation: 'E2', grade: 'Enlisted-2' },
+        { organizationId: orgInfo.id, abbreviation: 'E1', grade: 'Enlisted-1' },
       ];
       return Promise.all(orgInfo.grades.map(e => createGrade(e)))
         .then(ids => ids.forEach((id, i) => { orgInfo.grades[i].id = id; }));
@@ -58,6 +71,7 @@ function createTheIMC(users) {
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'O2'), abbreviation: 'CDR', name: 'Commander'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'O1'), abbreviation: 'LTCDR', name: 'Lt. Commander'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E6'), abbreviation: 'MCSO', name: 'Master Chief Space Warfare Operator'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E5'), abbreviation: 'SSPC-E', name: 'Senior Combat Specalist - Echo'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E5'), abbreviation: 'SSPC-Z', name: 'Senior Combat Specalist - Zulu'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E4'), abbreviation: 'SPC', name: 'Combat Specialist'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E5'), abbreviation: 'CSO', name: 'Chief Space Warfare Operator'},
@@ -107,14 +121,16 @@ function getId(array, abbreviation) {
 
 function createOrg(json) {
   json.date.setUTCMilliseconds(0);
-  return fetch(`${API_SERVER}/rsi-organization?organizationId=${json.organizationId}&date=${json.date.toISOString()}`)
+  return fetch(`${API_SERVER}/rsi-organization?organizationId=${json.organizationId}&date=${json.date.toISOString()}`, {
+    headers
+  })
     .then(res => res.ok ? res.json() : [{ status: 'error' }])
     .then(res => Array.isArray(res) && res.length === 1)
     .then(orgExists => {
       if (!orgExists) {
         return fetch(`${API_SERVER}/rsi-organization`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(json),
         })
           .then(res => res.ok ? res.json() : { status: 'error' });
@@ -159,7 +175,7 @@ function createPersonnel(orgInfo, personnelJson, defaultDiscriminator) {
     .then(id => {
       personnelJson.id = id;
     })
-    .then(() => createRsiCitizenRecordsFromPersonnel(personnelJson))
+    .then(() => createRsiCitizenRecordsFromPersonnel(orgInfo, personnelJson))
     .then(() => createRankChangeRecordsFromPersonnel(orgInfo, personnelJson))
     .then(() => createJoinedOrgRecordsFromPersonnel(orgInfo, personnelJson))
     .then(() => createLeftOrgRecordsFromPersonnel(orgInfo, personnelJson))
@@ -180,7 +196,9 @@ function createDiscordFromPersonnel(orgInfo, personnel, defaultDiscriminator) {
   }
   json.date.setUTCMilliseconds(0);
   return createDiscord(json)
-    .then(() => fetch(`${API_SERVER}/discord?organizationId=${json.organizationId}&date=${json.date.toISOString()}&username=${json.username}&discriminator=${json.discriminator}`)
+    .then(() => fetch(`${API_SERVER}/discord?organizationId=${json.organizationId}&date=${json.date.toISOString()}&username=${json.username}&discriminator=${json.discriminator}`, {
+      headers
+    })
     .then(res => res.ok ? res.json() : { status: 'error' })
     .then(res => Array.isArray(res) && res.length > 0 ? res[0] : null))
     .then(record => {
@@ -201,11 +219,13 @@ function createDiscord(json) {
   );
 }
 
-function createRsiCitizenRecordsFromPersonnel(personnel) {
+function createRsiCitizenRecordsFromPersonnel(orgInfo, personnel) {
   return Promise.all(personnel.serviceRecords.filter(r => r.kind === 'RsiCitizenRecord').map(r => {
     const fluency  = r.rsiCitizen.fluency ? r.rsiCitizen.fluency.split(',').map(s => s.trim()).join(', ') : null;
     const json = {
       date: r.date ? new Date(Date.parse(r.date)) : orgInfo.additionDate,
+      organizationId: orgInfo.id,
+      issuerPersonnelId: orgInfo.adminId,
       personnelId: personnel.id,
       citizenRecord: r.rsiCitizen.citizenRecord,
       citizenName: r.rsiCitizen.citizenName,
@@ -225,7 +245,7 @@ function createRsiCitizenRecordsFromPersonnel(personnel) {
 function createRsiCitizenRecord(json) {
   json.date.setUTCMilliseconds(0);
   return createRecord(
-    `${API_SERVER}/rsi-citizen?personnelId=${json.personnelId}&date=${json.date.toISOString()}`,
+    `${API_SERVER}/rsi-citizen?organizationId=${json.organizationId}&personnelId=${json.personnelId}&date=${json.date.toISOString()}`,
     `${API_SERVER}/rsi-citizen`,
     json
   );
@@ -389,14 +409,16 @@ function createNoteRecord(json) {
 }
 
 function createRecord(getRoute, postRoute, json, log=false) {
-  return fetch(getRoute)
+  return fetch(getRoute, {
+    headers
+  })
     .then(res => res.ok ? res.json() : { status: 'error' })
     .then(res => Array.isArray(res) && res.length > 0 ? res[0] : null)
     .then(record => {
       if (record === null) {
         return fetch(postRoute, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(json),
         })
           .then(res => res.ok ? 
@@ -418,6 +440,32 @@ function createRecord(getRoute, postRoute, json, log=false) {
     .then(record => record.id);
 }
 
+async function createTheIMCPermissions() {
+  return fetch(`${API_SERVER}/permissions`, { headers, method: 'POST', body: JSON.stringify({
+    organizationId: orgInfo.id,
+    subjectId:  orgInfo.id,
+    get: 3,
+    post: 0,
+    put: 0,
+    del: 0,
+    proxy: 0
+  })})
+  .then(() => fetch(`${API_SERVER}/personnel-summary?organizationId=${orgInfo.id}&username=abrazite`, { headers }))
+  .then(res => res.json())
+  .then(records => {
+    const personnelId = records[0].personnelId;
+    return fetch(`${API_SERVER}/permissions`, { headers, method: 'POST', body: JSON.stringify({
+      organizationId: orgInfo.id,
+      subjectId:  personnelId,
+      get: 3,
+      post: 3,
+      put: 0,
+      del: 0,
+      proxy: 3
+    })});
+  })
+}
+
 async function createTheIMCForAllUsers() {
   const users001 = require('./users-001.json');
   const users002 = require('./users-002.json');
@@ -425,6 +473,8 @@ async function createTheIMCForAllUsers() {
   await createTheIMC(users001);
   await createTheIMC(users002);
   await createTheIMC(users003);
+  await createTheIMCPermissions();
 }
 
 createTheIMCForAllUsers();
+// createTheIMCPermissions();

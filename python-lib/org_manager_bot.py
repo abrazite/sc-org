@@ -1,7 +1,9 @@
 import discord
 from discord.ext import commands, tasks
 import org_manager_api
+import theimc
 import secrets
+import json
 
 # API Server
 API_SERVER = 'https://api.org-manager.space/1.0.0'
@@ -9,6 +11,7 @@ api = org_manager_api.OrgManagerAPI(API_SERVER, secrets.ORGANIZATION_ID)
 
 # Prefix for calling bot in discord
 client = commands.Bot(command_prefix='.')
+
 
 # Runs on start to show bot is online
 @client.event
@@ -22,9 +25,7 @@ async def on_ready():
 
 @client.command()
 async def test(ctx):
-    members = ctx.message.channel.guild.members
-    for member in members:
-        print(f'{member.nick}\t\t{member.name}#{member.discriminator}\t{member.joined_at}')
+    theimc.create_org(api, create_api_context(ctx), ctx.message.channel.guild.members)
 
 
 # Clear messages in chat
@@ -502,6 +503,7 @@ async def validate(ctx):
 
 def create_api_context(ctx) -> org_manager_api.APIContext:
     return org_manager_api.APIContext(
+        ctx.author.id,
         ctx.author.name,
         ctx.author.discriminator
     )
