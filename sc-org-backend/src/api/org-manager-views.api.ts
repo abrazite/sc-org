@@ -785,21 +785,12 @@ export class OrgManagerViewsAPI {
   }
 
   static makeHeader(req: core.Request): { [key: string]: string } {
-    const headers: { [key: string]: string } = {
-      'authorization': req.headers['authorization']!,
-    };
-    if (req.headers['x-org-manager-organization-id']) {
-      headers['x-org-manager-organization-id'] = req.headers['x-org-manager-organization-id'] as string;
-    }
-    if (req.headers['x-proxy-username']) {
-      headers['x-proxy-username'] = req.headers['x-proxy-username'] as string;
-    }
-    if (req.headers['x-proxy-discriminator']) {
-      headers['x-proxy-discriminator'] = req.headers['x-proxy-discriminator'] as string;
-    }
-    if (req.headers['x-proxy-organization']) {
-      headers['x-proxy-organization'] = req.headers['x-proxy-organization'] as string;
-    }
+    const headers: { [key: string]: string } = {}
+
+    Object.keys(req.headers).forEach(key => {
+      headers[key] = req.headers[key] as string;
+    });
+
     return headers;
   }
 }
