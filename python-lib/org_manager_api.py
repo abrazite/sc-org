@@ -15,7 +15,7 @@ BranchId = NewType('BranchId', str)
 RankId = NewType('RankId', str)
 CertificationId = NewType('CertificationId', str)
 NewRecordId = NewType('NewRecordId', str)
-APIContext = NamedTuple('APIContext', [('username', str), ('discriminator', str)])
+APIContext = NamedTuple('APIContext', [('id', str), ('username', str), ('discriminator', str)])
 
 
 class OrgManagerAPI:
@@ -137,19 +137,21 @@ class OrgManagerAPI:
             body['gradeId'] = grade_id
         return self.api_post(ctx, url, body)
 
-    def add_member(self, ctx: APIContext, discord_handle: str, sc_handle_name: str, rank_str: str, recruited_by_str: str) -> NewRecordId:
+    def add_member(self, ctx: APIContext, discord_handle: str, sc_handle_name: str, rank_str: str, recruited_by_str: str, joined_date: str) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
         discord_id = self.find_personnel_id(ctx, discord_handle)
         sc_handle_id = self.find_personnel_id(ctx, sc_handle_name)
         rank_id = self.find_rank_id(ctx, rank_str)
 
         discord_split = discord_handle.split('#')
-        personnel_id = uuid.uuid()
 
-        if not issuer_id or discord_id or sc_handle_id or len(discord_split) != 2:
+        if discord_id or sc_handle_id or len(discord_split) != 2:
             return
 
         if issuer_id and rank_id and str(discord_split[1]) == str(int(discord_split[1])):
+            personnel_id = str(uuid.uuid4())
+            print(discord_handle)
+
             url = '/discord'
             body = {
                 'organizationId': self.organization_id,
@@ -163,14 +165,14 @@ class OrgManagerAPI:
             url = '/rsi-citizen'
             body = {
                 'organizationId': self.organization_id,
+                'issuerPersonnelId': issuer_id,
                 'personnelId': personnel_id,
-                'username': discord_split[0],
-                'discriminator': int(discord_split[1])
+                'handleName': sc_handle_name,
             }
             discord_record_id = self.api_post(ctx, url, body)
 
             rank_change_id = self.change_rank(ctx, personnel_id, rank_str)
-            joined_org_change_id = self.record_joined_org(ctx, personnel_id, recruited_by_str)
+            joined_org_change_id = self.record_joined_org(ctx, personnel_id, recruited_by_str, joined_date)
 
     def record_cert(self, ctx: APIContext, personnel_str: str, certification_str: str) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
@@ -213,10 +215,10 @@ class OrgManagerAPI:
             }
             return self.api_post(ctx, url, body)
 
-    def record_joined_org(self, ctx: APIContext, personnel_str: str, recruited_by_str: str) -> NewRecordId:
+    def record_joined_org(self, ctx: APIContext, personnel_str: str, recruited_by_str: str, joined_date: str) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
         personnel_id = self.find_personnel_id(ctx, personnel_str)
-        recruited_by_personnel_id = self.find_personnel_id((ctx, recruited_by_str))
+        recruited_by_personnel_id = self.find_personnel_id(ctx, recruited_by_str)
 
         if issuer_id and personnel_id:
             url = '/joined-organization'
@@ -228,6 +230,8 @@ class OrgManagerAPI:
             }
             if recruited_by_personnel_id:
                 body['recruitedByPersonnelId'] = recruited_by_personnel_id
+            if joined_date:
+                body['date'] = joined_date
             return self.api_post(ctx, url, body)
 
     def record_left_org(self, ctx: APIContext, personnel_str: str) -> NewRecordId:
@@ -260,6 +264,9 @@ class OrgManagerAPI:
             return self.api_post(ctx, url, body)
 
     def find_personnel_id(self, ctx: APIContext, personnel_str: str) -> PersonnelId:
+        if personnel_str is None:
+            return
+
         search_str = urllib.parse.quote(personnel_str, safe='')
 
         # try id lookup
@@ -346,7 +353,7 @@ class OrgManagerAPI:
             if candidate == grade_str:
                 return grade['id']
 
-        # try BRANCH match
+        # try GRADE match
         matches = []
         for grade in grades:
             candidate = grade['abbreviation']

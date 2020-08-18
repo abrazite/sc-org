@@ -106,6 +106,11 @@ class APIDefinitions {
         fieldTypes: [...commonFieldTypes, 'string-64'],
         mysqlCreateFieldRequired: [...commonFieldRequired, true]
       }, {
+        route: 'permissions',
+        mysqlFields: ['id', 'organization_id', 'subject_id', 'get', 'post', 'put', 'del', 'proxy'],
+        fieldTypes: ['uuid', 'uuid', 'uuid', 'int', 'int', 'int', 'int', 'int'],
+        mysqlCreateFieldRequired: [false, true, true, false, false, false, false, false]
+      }, {
         route: 'rsi-citizen',
         mysqlFields: [
           ...commonFields,
@@ -232,7 +237,7 @@ class APIDefinitions {
       d.parser  = APIDefinitions.titleCase(d.route.split('-').join(' ')).split(' ').join('') + 'Parser';
       d.mysqlTable = d.route.split('-').join('_');
   
-      d.insertFieldNames = d.mysqlFields.join(', ');
+      d.insertFieldNames = d.mysqlFields.map(p => '`' + p + '`').join(', ');
       d.insertFieldParams = d.mysqlFields.map(p => '?').join(', ');
       d.updateSetFields = d.mysqlFields.map(p => p + '=?').join(', ');
 
@@ -1002,7 +1007,7 @@ export class OrgManagerAPI {
 
           const keySplit = key.split(/(?=[A-Z])/).map(s => s.toLowerCase());
           const sqlField = keySplit.join('_');
-          filterStrs.push(sqlField + '=?');
+          filterStrs.push('\`' + sqlField + '\`=?');
           if (keySplit.includes('id')) {
             filterParams.push(parsers.toBinaryUUID(req.query[key] as string));
           } else if (keySplit.includes('date')) {
