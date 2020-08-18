@@ -1,4 +1,5 @@
 import org_manager_api
+import string
 
 BRANCHES = [
     {'abr': 'BOD', 'name': 'Board of Directors'},
@@ -161,12 +162,14 @@ def create_ranks(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APICon
 
 def create_members(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APIContext, members, records):
     all_personnel = api.personnel_summary_all(ctx)
+    printable = set(string.printable)
 
     missing = []
     for personnel in members:
+        username = ''.join(filter(lambda x: x in printable, personnel.name))
         found = False
         for existing in all_personnel:
-            if existing['username'] == personnel.name and existing['discriminator'] ==  personnel.discriminator:
+            if existing['username'] == username and existing['discriminator'] == personnel.discriminator:
                 found = True
         if not found:
             missing.append(personnel)
@@ -209,7 +212,8 @@ def create_members(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APIC
             if role.name in branch_map:
                 branch = branch_map[role.name]
 
-                display_name = personnel.display_name
+                username = ''.join(filter(lambda x: x in printable, personnel.name))
+                display_name = ''.join(filter(lambda x: x in printable, personnel.display_name))
                 if '[' in display_name and ']' in display_name:
                     split_1 = display_name.split(']')
                     split_2 = split_1[0].split('[')
@@ -219,7 +223,7 @@ def create_members(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APIC
 
                     sc_handle_name = split_1[1].strip()
 
-                    discord_handle = f'{personnel.name}#{personnel.discriminator}'
+                    discord_handle = f'{username}#{personnel.discriminator}'
 
                     record = api.add_member(ctx, discord_handle, sc_handle_name, rank_str, None, personnel.joined_at)
                     if not record:
