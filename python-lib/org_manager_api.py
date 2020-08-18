@@ -149,7 +149,8 @@ class OrgManagerAPI:
         if discord_id or sc_handle_id or len(discord_split) != 2:
             return
 
-        if issuer_id and rank_id and str(discord_split[1]) == str(int(discord_split[1])):
+        is_int = str(discord_split[1]), str(int(discord_split[1])).zfill(len(str(discord_split[1])))
+        if issuer_id and rank_id and is_int:
             personnel_id = str(uuid.uuid4())
             print(discord_handle)
 
