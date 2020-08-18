@@ -232,7 +232,7 @@ class OrgManagerAPI:
             if recruited_by_personnel_id:
                 body['recruitedByPersonnelId'] = recruited_by_personnel_id
             if date:
-                body['date'] = date
+                body['date'] = date.isoformat()
             return self.api_post(ctx, url, body)
 
     def record_left_org(self, ctx: APIContext, personnel_str: str, date: datetime.datetime) -> NewRecordId:
@@ -248,7 +248,7 @@ class OrgManagerAPI:
                 'leftOrganizationId': self.organization_id,
             }
             if date:
-                body['date'] = date
+                body['date'] = date.isoformat()
             return self.api_post(ctx, url, body)
 
     def change_rank(self, ctx: APIContext, personnel_str: str, rank_str: str) -> NewRecordId:
