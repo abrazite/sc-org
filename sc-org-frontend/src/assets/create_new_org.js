@@ -53,6 +53,9 @@ function createTheIMC(users) {
     .then(() => {
       orgInfo.grades = [
         { organizationId: orgInfo.id, abbreviation: 'O6', grade: 'Officer-6' },
+        { organizationId: orgInfo.id, abbreviation: 'O5', grade: 'Officer-5' },
+        { organizationId: orgInfo.id, abbreviation: 'O4', grade: 'Officer-4' },
+        { organizationId: orgInfo.id, abbreviation: 'O3', grade: 'Officer-3' },
         { organizationId: orgInfo.id, abbreviation: 'O2', grade: 'Officer-2' },
         { organizationId: orgInfo.id, abbreviation: 'O1', grade: 'Officer-1' },
         { organizationId: orgInfo.id, abbreviation: 'E6', grade: 'Enlisted-6' },
@@ -463,7 +466,7 @@ async function createTheIMCPermissions() {
       del: 0,
       proxy: 3
     })});
-  })
+  });
 }
 
 async function createTheIMCForAllUsers() {
