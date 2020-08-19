@@ -138,6 +138,32 @@ class OrgManagerAPI:
             body['gradeId'] = grade_id
         return self.api_post(ctx, url, body)
 
+    def create_permission(self, ctx: APIContext, subject_id: str, get: int, post: int, put: int, del_: int, proxy: int) -> NewRecordId:
+        issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
+
+        if not issuer_id:
+            return
+
+        if not get and not post and not put and not del_ and not proxy:
+            return
+
+        url = '/permissions'
+        body = {
+            'organizationId': self.organization_id,
+            "subjectId": subject_id,
+        }
+        if get is not None:
+            body['get'] = get
+        if post is not None:
+            body['post'] = post
+        if put is not None:
+            body['put'] = put
+        if del_ is not None:
+            body['del'] = del_
+        if proxy is not None:
+            body['proxy'] = proxy
+        return self.api_post(ctx, url, body)
+
     def add_member(self, ctx: APIContext, discord_handle: str, sc_handle_name: str, rank_str: str, recruited_by_str: str, joined_date: datetime.datetime) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
         discord_id = self.find_personnel_id(ctx, discord_handle)

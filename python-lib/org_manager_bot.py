@@ -54,19 +54,7 @@ async def whois(ctx, *, personnel_str=None):
         personnel = api.personnel_summary(create_api_context(ctx), f'{ctx.author.name}#{ctx.author.discriminator}')
 
     if personnel:
-        tag = ''
-        if personnel["branchAbbreviation"]:
-            tag += personnel["branchAbbreviation"] + '-'
-        if personnel["gradeAbbreviation"]:
-            tag += personnel["gradeAbbreviation"] + '-'
-        if personnel["rankAbbreviation"]:
-            tag += personnel["rankAbbreviation"]
-        if personnel['handleName']:
-            handle = personnel['handleName']
-        else:
-            handle = personnel['username']
-
-        message_str = f'[{tag}] {handle}\r'
+        message_str = f'{full_formatted_nick(personnel)}\r'
         if personnel['username']:
             message_str += f'\rdiscord:\t {personnel["username"]}#{personnel["discriminator"]}'
         if personnel['citizenRecord']:
@@ -280,6 +268,39 @@ async def list_note_records(ctx, personnel_str: str = None, page: int = 0):
     await ctx.send(record_str)
 
 
+@client.command(brief='Lists all personnel with filtering')
+async def search_personnel(ctx, filter_str=None, page=0):
+    LIMIT = 10
+    summary = api.personnel_summary_all(create_api_context(ctx))
+    list_str = ''
+
+    if len(summary) > LIMIT or page > 0:
+        total_pages = int(len(summary) / LIMIT)
+        list_str += f'(page {page} of {total_pages})\r\r'
+
+    summary = sorted(summary, key=lambda e: formatted_nick(e))
+
+    count = 0
+    for personnel in summary:
+        include = filter_str is None
+        include = include or (filter_str == personnel["gradeAbbreviation"])
+        include = include or (filter_str == personnel["branchAbbreviation"])
+        include = include or (filter_str == personnel["rankAbbreviation"])
+        include = include or (filter_str == f'{personnel["branchAbbreviation"]}-{personnel["gradeAbbreviation"]}-{personnel["rankAbbreviation"]}')
+        include = include or (filter_str == f'{personnel["branchAbbreviation"]}-{personnel["rankAbbreviation"]}')
+        include = include or (filter_str == f'{personnel["citizenRecord"]}')
+        include = include or (filter_str == f'{personnel["citizenName"]}')
+        include = include or (filter_str == f'{personnel["handleName"]}')
+        include = include or (filter_str == f'{personnel["username"]}#{personnel["discriminator"]}')
+
+        if include and count < LIMIT:
+            list_str += f'{formatted_nick(personnel)}\r'
+            count += 1
+
+    list_str += '\r'
+    await ctx.send(list_str)
+
+
 @client.command(brief='Create a new org branch')
 async def create_branch(ctx, abbreviation: str, branch: str = None):
     record_id = api.create_branch(create_api_context(ctx), abbreviation, branch)
@@ -437,12 +458,9 @@ async def change_rank(ctx, personnel_str, rank_str):
         await ctx.send('error: could not change rank, no discord member found in guild')
         return
 
-    name = personnel["handleName"] if personnel["handleName"] else personnel["username"]
-    formatted_nick = f'[{personnel["rankAbbreviation"]}] {name}'
-
     if record_id:
         try:
-            await member.edit(nick=formatted_nick)
+            await member.edit(nick=formatted_nick(personnel))
             await ctx.send('rank changed')
         except:
             await ctx.send('rank changed, could not update nickname')
@@ -474,12 +492,7 @@ async def check_tags(ctx, correct_tags: bool = False):
 
         if member:
             member_nick = member.nick if member.nick else member.display_name
-            tag = personnel["rankAbbreviation"]
-            if personnel['handleName']:
-                handle = personnel['handleName']
-            else:
-                handle = personnel['username']
-            nick = f'[{tag}] {handle}'
+            nick = formatted_nick(personnel)
 
             if member_nick != nick:
                 report_users += f'{member_nick}\t -> \t {nick}'
@@ -509,6 +522,25 @@ def create_api_context(ctx) -> org_manager_api.APIContext:
         ''.join(filter(lambda x: x in printable, ctx.author.name)),
         ctx.author.discriminator
     )
+
+
+def formatted_nick(personnel) -> str:
+    tag = personnel["rankAbbreviation"]
+    name = personnel["handleName"] if personnel["handleName"] else personnel["username"]
+    return f'[{tag}] {name}'
+
+
+def full_formatted_nick(personnel) -> str:
+    tag = ''
+    if personnel["branchAbbreviation"]:
+        tag += personnel["branchAbbreviation"] + '-'
+    if personnel["gradeAbbreviation"]:
+        tag += personnel["gradeAbbreviation"] + '-'
+    if personnel["rankAbbreviation"]:
+        tag += personnel["rankAbbreviation"]
+    name = personnel["handleName"] if personnel["handleName"] else personnel["username"]
+
+    return f'[{tag}] {name}'
 
 
 client.run(secrets.CLIENT_KEY)
