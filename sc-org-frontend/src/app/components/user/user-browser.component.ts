@@ -75,8 +75,18 @@ export class UserBrowserComponent {
   }
 
   private sortAllPersonnel(allPersonnel: PersonnelSummary[]) {
-    return allPersonnel.sort((a, b) => 
+    let sorted = allPersonnel.sort((a, b) => 
       (a.handleName ? a.handleName : a.username!).localeCompare(
         (b.handleName ? b.handleName : b.username!)));
+    sorted = allPersonnel.sort((a, b) => 
+      (a.rankAbbreviation ? a.rankAbbreviation : '').localeCompare(
+       (b.rankAbbreviation ? b.rankAbbreviation : '')));
+    sorted = allPersonnel.sort((a, b) => 
+      (b.gradeAbbreviation ? b.gradeAbbreviation : '').localeCompare(
+        (a.gradeAbbreviation ? a.gradeAbbreviation : '')));
+    sorted = allPersonnel.sort((a, b) => 
+      (a.branchAbbreviation ? a.branchAbbreviation : '').localeCompare(
+        (b.branchAbbreviation ? b.branchAbbreviation : '')));
+    return sorted;
   }
 }

@@ -1,4 +1,0 @@
-<div *ngIf="!membership"><a (click)="redirectToLoginPage()" style="cursor: pointer;">Login</a></div>
-<div *ngIf="membership">
-  {{membership.username}}#{{membership.discriminator}} | <a (click)="logout()" style="cursor: pointer;">Logout</a>
-</div>
