@@ -1,19 +1,11 @@
+import { concatMap, tap } from 'rxjs/operators';
+
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { LocalStorageService } from 'angular-2-local-storage';
-import { Observable, Subject } from 'rxjs';
 
-import { environment } from '../../../environments/environment';
-import { Membership } from '../../models/personnel.model';
-import { UserService } from '../../services/user.service';
-
-export interface IdentityResponse {
-  id: string;
-  username: string;
-  avatar: string;
-  discriminator: string;
-}
+import { Auth, AuthDetails } from '../../models/auth.model';
 
 @Component({
   selector: 'app-auth',
@@ -21,81 +13,80 @@ export interface IdentityResponse {
   styleUrls: ['./auth.component.css']
 })
 export class AuthComponent implements OnInit {
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private http: HttpClient,
-    private storage: LocalStorageService,
+  auth?: Auth;
+  authDetails?: AuthDetails;
+  error?: string;
 
-    private userService: UserService
+  constructor(
+    private storage: LocalStorageService,
+    private route: ActivatedRoute,
+    private httpClient: HttpClient
   ) {
   }
 
   ngOnInit(): void {
-    this.activatedRoute.queryParams.subscribe(params => {
-      if (params.code) {
-          this.getAccessToken(params.code, params.state);
-      }
-    });
-  }
-
-  getAccessToken(code: string, state: string): Observable<object> {
-    if (state !== this.storage.get('state')) {
-      const observable = new Subject<object>();
-      observable.error('invalid state');
-      return observable;
+    this.auth = this.storage.get('auth') as Auth;
+    this.authDetails = this.storage.get('authDetails') as AuthDetails;
+    if (!this.auth || !this.authDetails) {
+      this.updateAuth();
     }
-    const payload = new HttpParams()
-      .append('grant_type', 'authorization_code')
-      .append('code', code)
-      .append('code_verifier', this.storage.get('codeVerifier'))
-      .append('redirect_uri', environment.oauthCallbackUrl)
-      .append('client_id', environment.oauthClientId);
-    const observer = this.http.post(environment.oauthTokenUrl, payload, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+  }
+
+  updateAuth(): void {
+    delete this.error;
+    this.httpClient.head('/validate', { observe: 'response' }).pipe(
+      tap(res => {
+        if (!res.ok) {
+          throw new Error(((res as unknown) as HttpErrorResponse).message);
+        }
+        this.auth = {
+          accessToken: res.headers.get('x-vouch-idp-accesstoken') as string,
+        };
+      }),
+      concatMap(() => this.httpClient.head('/api/validate', {
+        observe: 'response',
+        headers: { 'authorization': `Bearer ${this.auth!.accessToken}` }
+      })),
+      tap(res => {
+        if (!res.ok) {
+          throw new Error(((res as unknown) as HttpErrorResponse).message);
+        }
+        this.authDetails = {
+          citizenRecord: res.headers.has('x-org-manager-citizen-record') ? parseInt(res.headers.get('x-org-manager-citizen-record') as string) : undefined,
+          citizenName: res.headers.get('x-org-manager-citizen-name') as string,
+          handleName: res.headers.get('x-org-manager-handle-name') as string,
+          organizationId: res.headers.get('x-org-manager-organization-id') as string,
+          organizationIds: (res.headers.get('x-org-manager-organization-ids') as string).split(','),
+          personnelId: res.headers.get('x-org-manager-personnel-id') as string,
+          getSecurityLevel: parseInt(res.headers.get('x-org-manager-get-security-level') as string),
+          postSecurityLevel: parseInt(res.headers.get('x-org-manager-post-security-level') as string),
+          putSecurityLevel: parseInt(res.headers.get('x-org-manager-put-security-level') as string),
+          delSecurityLevel: parseInt(res.headers.get('x-org-manager-del-security-level') as string),
+          proxySecurityLevel: parseInt(res.headers.get('x-org-manager-proxy-security-level') as string),
+        };
+      }),
+    ).subscribe(res => {
+      this.storage.set('auth', this.auth);
+      this.storage.set('authDetails', this.authDetails);
+
+      if (this.route.snapshot.queryParamMap.has('url')) {
+        window.location.href = this.route.snapshot.queryParamMap.get('url') as string;
+      } else {
+        window.location.href = '/';
       }
-    });
-    observer.subscribe(response => {
-      const tokenResponse = response as { access_token: string, refresh_token: string, token_type: string };
-      this.storage.set('code', code);
-      this.storage.set('access_token', tokenResponse.access_token);
-      this.storage.set('refresh_token', tokenResponse.refresh_token);
-      this.storage.set('token_type', tokenResponse.token_type);
-
-      this.getUserInfo().subscribe(() => 
-        this.userService.getMembership({
-          username: this.identity.username,
-          discriminator: this.identity.discriminator,
-        })
-        .subscribe(membership => {
-          console.log(membership);
-          if (membership && membership.length > 0) {
-            this.storage.set('membership', membership[0]);
-            window.location.href = '/';
-          }
-        }));
-    });
-    return observer;
+    }, (e: Error) => this.error = e.message);
   }
 
-  getUserInfo(): Observable<object> {
-    const observer = this.http.get(environment.userInfoUrl, {
-      headers: {
-        authorization: this.storage.get('token_type') + ' ' + this.storage.get('access_token'),
-      },
-    });
-    observer.subscribe(response => {
-      const identityResponse = response as IdentityResponse;
-      this.storage.set('identity', identityResponse);
-    });
-    return observer;
+  login(): void {
+    window.location.href = 'https://login.org-manager.space/login?url=https://app.org-manager.space/auth';
   }
 
-  get identity(): IdentityResponse {
-    return this.storage.get('identity');
-  }
+  logout(): void {
+    delete this.auth;
+    delete this.authDetails;
 
-  get membership(): Membership {
-    return this.storage.get('membership');
+    this.storage.remove('auth');
+    this.storage.remove('authDetails');
+    window.location.href = 'https://login.org-manager.space/logout?url=https://app.org-manager.space';
   }
 }

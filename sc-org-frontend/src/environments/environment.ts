@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  api: 'http://localhost:8081/api/1.0.0',
+  api: 'https://app.org-manager.space/api/1.0.0',
   mysqlHost: 'localhost',
   oauthClientId: '737862944410435625',
   oauthLoginUrl: 'https://discord.com/api/oauth2/authorize',

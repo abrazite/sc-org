@@ -5,6 +5,7 @@ import { LocalStorageService } from 'angular-2-local-storage';
 
 import { Membership, Personnel, PersonnelSummary } from '../models/personnel.model';
 import { environment } from 'src/environments/environment';
+import { Auth, AuthDetails } from '../models/auth.model';
 
 
 @Injectable({
@@ -17,17 +18,36 @@ export class UserService {
   ) {}
 
   public getMembership(filterPairs: { [key: string]: string} ): Observable<Membership[]> {
-    return this.httpService.get<Membership[]>(`${environment.api}/membership?${UserService.createFilterStr(filterPairs)}&limit=1000`);
+    const auth = this.storage.get('auth') as Auth;
+    const authDetails = this.storage.get('authDetails') as AuthDetails;
+    return this.httpService.get<Membership[]>(`${environment.api}/membership?${UserService.createFilterStr(filterPairs)}&limit=1000`, {
+      headers: {
+        'authorization': `Bearer ${auth.accessToken}`,
+        'x-org-manager-organization-id': authDetails.organizationId
+      }
+    });
   }
 
   public getAllPersonnel(): Observable<PersonnelSummary[]> {
-    const membership = this.storage.get('membership') as Personnel;
-    return this.httpService.get<PersonnelSummary[]>(`${environment.api}/personnel?organizationId=${membership.organizationId}&limit=1000`);
+    const auth = this.storage.get('auth') as Auth;
+    const authDetails = this.storage.get('authDetails') as AuthDetails;
+    return this.httpService.get<PersonnelSummary[]>(`${environment.api}/personnel?organizationId=${authDetails.organizationId}&limit=1000`, {
+      headers: {
+        'authorization': `Bearer ${auth.accessToken}`,
+        'x-org-manager-organization-id': authDetails.organizationId
+      }
+    });
   }
 
   public getPersonnel(personnelId: string): Observable<Personnel> {
-    const membership = this.storage.get('membership') as Personnel;
-    return this.httpService.get<Personnel>(`${environment.api}/personnel/${personnelId}?organizationId=${membership.organizationId}`);
+    const auth = this.storage.get('auth') as Auth;
+    const authDetails = this.storage.get('authDetails') as AuthDetails;
+    return this.httpService.get<Personnel>(`${environment.api}/personnel/${personnelId}?organizationId=${authDetails.organizationId}`, {
+      headers: {
+        'authorization': `Bearer ${auth.accessToken}`,
+        'x-org-manager-organization-id': authDetails.organizationId
+      }
+    });
   }
 
   private static createFilterStr(filterPairs: { [key: string]: string}): string {

@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import {CanActivate, Router, RouterStateSnapshot, ActivatedRouteSnapshot} from '@angular/router';
+import { CanActivate, Router, RouterStateSnapshot, ActivatedRouteSnapshot } from '@angular/router';
 
+import { Auth, AuthDetails } from '../models/auth.model';
 import { LocalStorageService } from 'angular-2-local-storage';
-import { Personnel } from '../models/personnel.model';
+import { Membership } from '../models/personnel.model';
 
 @Injectable()
 export class AuthGuardService implements CanActivate {
@@ -12,9 +13,11 @@ export class AuthGuardService implements CanActivate {
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    const membership = this.storage.get('membership') as Personnel | null;
-    if (!membership) {
-      this.router.navigate(['/login']);
+    const auth = this.storage.get('auth') as Auth;
+    const authDetails = this.storage.get('authDetails') as AuthDetails;
+
+    if (!auth || !authDetails) {
+      window.location.href = `/auth?url=${escape(location.href)}`;
       return false;
     } else {
       return true;

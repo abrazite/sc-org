@@ -1,8 +1,8 @@
 <div style="width: 400px; margin: auto;">
-  <app-login></app-login>
+  <app-auth></app-auth>
   <h2>Personnel</h2>
   <div>
-    <input [(ngModel)]="searchTerm" placeholder="Personel">
+    <input [(ngModel)]="searchTerm" placeholder="Personel" (keyup.enter)="findPersonnel()">
     <button type="button" (click)="findPersonnel()">Find</button>
     <button type="button" (click)="getAllPersonnel()">All</button>
   </div>
