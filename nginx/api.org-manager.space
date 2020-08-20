@@ -6,7 +6,7 @@ server {
   server_name api.org-manager.space;
 
   location = /validate {
-     # forward the /validate request to Vouch Proxy
+    # forward the /validate request to Vouch Proxy
     proxy_pass http://localhost:8081/api/1.0.0/validate;
 
     # be sure to pass the original host header
