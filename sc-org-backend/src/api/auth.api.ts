@@ -31,20 +31,14 @@ export class AuthAPI {
       try {
         // populated by vouch-proxy and discord claims
         const authorization: string = req.headers['authorization'] as string
-        const organizationId: string = req.headers['x-org-manager-organization-id'] as string
+        let organizationId: string | undefined = req.headers['x-org-manager-organization-id'] as string
 
         // todo(abrazite): add org-id as required header
-        // - premissions are org based
         // - create discord bot user
 
         const user: {[key: string]: string} = {};
         if (authorization === undefined) {
           res.status(403).json({ error: 'Invalid credentials sent' });
-          return
-        }
-
-        if (organizationId === undefined) {
-          res.status(403).json({ error: 'Missing organizationId header' });
           return
         }
 
@@ -62,7 +56,6 @@ export class AuthAPI {
         .then(() => fetch(`${API_SERVER}/membership?username=${user.username}&discriminator=${user.discriminator}`, {
           headers: {
             'authorization': req.headers['authorization']!,
-            'x-org-manager-organization-id': organizationId,
             'x-org-manager-get-security-level': APISecurityLevel.OrgRecords.toString()
           }
         }))
@@ -72,12 +65,21 @@ export class AuthAPI {
           const proxyDiscriminator = req.headers['x-proxy-discriminator'];
           const proxyOrganization = req.headers['x-proxy-organization'];
 
+          const memberships = records as viewParsers.Membership[];
+          if (organizationId === undefined) {
+            const membership = memberships.find(r => r.organizationId !== null);
+            organizationId = membership ? membership.organizationId! : undefined;
+          }
+
+          if (organizationId === undefined) {
+            throw new Error('Invalid or missing organization id');
+          }
+
           if (proxyUsername && proxyDiscriminator && proxyOrganization) {
             if (proxyOrganization !== organizationId) {
               throw new Error('organization id must match authenticated organization id');
             }
 
-            const memberships = records as viewParsers.Membership[];
             const membership = memberships.find(r => r.organizationId === proxyOrganization && r.proxy >= APISecurityLevel.OrgRecords);
             if (!membership) {
               throw new Error(`Insufficient permissions to proxy ${proxyOrganization}`);
@@ -123,7 +125,7 @@ export class AuthAPI {
             if (handleName !== null) {
               res.setHeader('x-org-manager-handle-name', handleName);
             }
-            res.setHeader('x-org-manager-organization-id', organizationId);
+            res.setHeader('x-org-manager-organization-id', organizationId!);
             res.setHeader('x-org-manager-organization-ids', organizations);
             res.setHeader('x-org-manager-get-security-level', membership.get);
             res.setHeader('x-org-manager-post-security-level', membership.post);
