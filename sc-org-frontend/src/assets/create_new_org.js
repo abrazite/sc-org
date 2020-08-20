@@ -70,7 +70,7 @@ function createTheIMC(users) {
     })
     .then(() => {
       orgInfo.ranks = [
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'O6'), abbreviation: 'DIR', name: 'Director'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'BOD'), gradeId: getId(orgInfo.grades, 'O6'), abbreviation: 'DIR', name: 'Director'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'O2'), abbreviation: 'CDR', name: 'Commander'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'O1'), abbreviation: 'LTCDR', name: 'Lt. Commander'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), gradeId: getId(orgInfo.grades, 'E6'), abbreviation: 'MCSO', name: 'Master Chief Space Warfare Operator'},
@@ -93,14 +93,14 @@ function createTheIMC(users) {
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'HJ', name: 'Helljumper Qualification'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'AG', name: 'Advanced Ground Tactics'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'L', name: 'Leadership'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'J'), abbreviation: 'F', name: 'Fighter'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'J'), abbreviation: 'F', name: 'Basic Flight'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'VA'), abbreviation: 'TP', name: 'Transport'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'SD'), abbreviation: 'TD', name: 'Trade'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'I-BG', name: 'Instructor - Basic Ground'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'I-CQB', name: 'Instructor - Close-Quarters Battle'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'I-HJ', name: 'Instructor - Helljumper Qualification'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'HJ'), abbreviation: 'I-AG', name: 'Instructor - Advanced Ground Tactics'},
-        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'J'), abbreviation: 'I-F', name: 'Instructor - Fighter'},
+        { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'J'), abbreviation: 'I-F', name: 'Instructor - Basic Flight'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'VA'), abbreviation: 'I-TP', name: 'Instructor - Transport'},
         { organizationId: orgInfo.id, branchId: getId(orgInfo.branches, 'SD'), abbreviation: 'I-TD', name: 'Instructor - Trade'},
       ];

@@ -138,6 +138,20 @@ class OrgManagerAPI:
             body['gradeId'] = grade_id
         return self.api_post(ctx, url, body)
 
+    def create_certification(self, ctx: APIContext, branch_str: str, abbreviation: str, name: str) -> BranchId:
+        branch_id = self.find_branch_id(ctx, branch_str)
+        if branch_str and branch_id is None:
+            return
+
+        url = '/certifications'
+        body = {
+            'organizationId': self.organization_id,
+            'branchId': branch_id,
+            'abbreviation': abbreviation,
+            'name': name
+        }
+        return self.api_post(ctx, url, body)
+
     def create_permission(self, ctx: APIContext, subject_id: str, get: int, post: int, put: int, del_: int, proxy: int) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
 
@@ -151,17 +165,12 @@ class OrgManagerAPI:
         body = {
             'organizationId': self.organization_id,
             "subjectId": subject_id,
+            'get': get if get else 0,
+            'post': post if post else 0,
+            'put': put if put else 0,
+            'del': del_ if del_ else 0,
+            'proxy': proxy if proxy else 0,
         }
-        if get is not None:
-            body['get'] = get
-        if post is not None:
-            body['post'] = post
-        if put is not None:
-            body['put'] = put
-        if del_ is not None:
-            body['del'] = del_
-        if proxy is not None:
-            body['proxy'] = proxy
         return self.api_post(ctx, url, body)
 
     def add_member(self, ctx: APIContext, discord_handle: str, sc_handle_name: str, rank_str: str, recruited_by_str: str, joined_date: datetime.datetime) -> NewRecordId:
@@ -548,8 +557,11 @@ class OrgManagerAPI:
                               })
             r.raise_for_status()
             return r.json()
-        except:
-            print(sys.exc_info()[0])
+        except Exception as e:
+            exceptName = type(e).__name__
+            print(exceptName, sys.exc_info()[0])
+            print(e)
+            print(json.dumps(body))
             return
 
     def api_get_token(self):
@@ -569,3 +581,5 @@ class OrgManagerAPI:
         self.access_token = data['access_token']
         self.token_type = data['token_type']
         self.expires_in = data['expires_in']
+
+        print(self.access_token)

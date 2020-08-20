@@ -23,17 +23,18 @@ async def on_ready():
     print(f'https://discord.com/oauth2/authorize?client_id={app_info.id}&bot')
 
 
-@client.command()
-async def test(ctx):
+@client.command(brief='superadmin')
+async def sync_theimc_from_discord(ctx):
     if ctx.author.name == 'abrazite':
         theimc.create_org(api, create_api_context(ctx), ctx.message.channel.guild.members)
 
 
 # Clear messages in chat
-@client.command()
+@client.command(brief='superadmin')
 async def clear(ctx, amount=5):
-    await ctx.channel.purge(limit=amount + 1)
-    await ctx.send(f'{amount} Posts have been cleared')
+    if ctx.author.name == 'abrazite':
+        await ctx.channel.purge(limit=amount + 1)
+        await ctx.send(f'{amount} Posts have been cleared')
 
 
 @client.command(brief='Reports when user joined the org')
@@ -274,13 +275,10 @@ async def search_personnel(ctx, filter_str=None, page=0):
     summary = api.personnel_summary_all(create_api_context(ctx))
     list_str = ''
 
-    if len(summary) > LIMIT or page > 0:
-        total_pages = int(len(summary) / LIMIT)
-        list_str += f'(page {page} of {total_pages})\r\r'
-
     summary = sorted(summary, key=lambda e: formatted_nick(e))
 
     count = 0
+    total_count = 0
     for personnel in summary:
         include = filter_str is None
         include = include or (filter_str == personnel["gradeAbbreviation"])
@@ -293,9 +291,16 @@ async def search_personnel(ctx, filter_str=None, page=0):
         include = include or (filter_str == f'{personnel["handleName"]}')
         include = include or (filter_str == f'{personnel["username"]}#{personnel["discriminator"]}')
 
+        if include:
+            total_count += 1
+
         if include and count < LIMIT:
             list_str += f'{formatted_nick(personnel)}\r'
             count += 1
+
+    if total_count > LIMIT:
+        total_pages = int(total_count / LIMIT)
+        list_str = f'(page {page} of {total_pages})\r\r' + list_str
 
     list_str += '\r'
     await ctx.send(list_str)
@@ -326,6 +331,15 @@ async def create_rank(ctx, abbreviation: str, rank: str = None, branch_str: str 
         await ctx.send(f'created rank {abbreviation}')
     else:
         await ctx.send('error: no rank created')
+
+
+@client.command(brief='Create a new certification')
+async def create_certification(ctx, branch_str: str, abbreviation: str, name: str):
+    record_id = api.create_certification(create_api_context(ctx), branch_str, abbreviation, name)
+    if record_id:
+        await ctx.send(f'created certification {abbreviation}')
+    else:
+        await ctx.send('error: no certification created')
 
 
 @client.command(brief='Records certification')

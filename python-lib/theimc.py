@@ -107,12 +107,31 @@ RANKS = [
     {"branch": "J", "grade": "O2", "abr": "CDR", 'name': "Commander", "get": 3, "post": 3, "put": None, "del": None, "proxy": None},
 ]
 
+CERTIFICATIONS = [
+    {"branch": "HJ", "abr": "BG", "name": "Basic Ground"},
+    {"branch": "HJ", "abr": "CQB", "name": "Close-Quarters Battle"},
+    {"branch": "HJ", "abr": "HJ", "name": "Helljumper Qualification"},
+    {"branch": "HJ", "abr": "AG", "name": "Advanced Ground Tactics"},
+    {"branch": "HJ", "abr": "L", "name": "Leadership"},
+    {"branch": "J", "abr": "F", "name": "Basic Flight"},
+    {"branch": "VA", "abr": "TP", "name": "Transport"},
+    {"branch": "SD", "abr": "TD", "name": "Trade"},
+    {"branch": "HJ", "abr": "I-BG", "name": "Instructor - Basic Ground"},
+    {"branch": "HJ", "abr": "I-CQB", "name": "Instructor - Close-Quarters Battle"},
+    {"branch": "HJ", "abr": "I-HJ", "name": "Instructor - Helljumper Qualification"},
+    {"branch": "HJ", "abr": "I-AG", "name": "Instructor - Advanced Ground Tactics"},
+    {"branch": "J", "abr": "I-F", "name": "Instructor - Basic Flight"},
+    {"branch": "VA", "abr": "I-TP", "name": "Instructor - Transport"},
+    {"branch": "SD", "abr": "I-TD", "name": "Instructor - Trade"},
+]
+
 
 def create_org(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APIContext, members):
     records = []
     create_branches(api, ctx, records)
     create_grades(api, ctx, records)
     create_ranks(api, ctx, records)
+    create_certifications(api, ctx, records)
     create_members(api, ctx, members, records)
 
     print(records)
@@ -153,16 +172,33 @@ def create_ranks(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APICon
             missing.append(rank)
 
     for rank in missing:
+        record = api.create_rank(ctx, rank['abr'], rank['name'], rank['branch'], rank['grade'])
         records.append({
             'func': 'create_ranks',
             'arg': f"{rank['branch']}-{rank['grade']}-{rank['abr']}",
-            'id': api.create_rank(ctx, rank['abr'], rank['name'], rank['branch'], rank['grade'])
+            'id': record
         })
 
+        if rank['get'] or rank['post'] or rank['put'] or rank['del'] or rank['proxy']:
+            print(rank, record)
+            records.append({
+                'func': 'create_ranks_perms',
+                'arg': f"{rank['branch']}-{rank['grade']}-{rank['abr']}",
+                'id': api.create_permission(ctx, record['id'], rank['get'], rank['post'], rank['put'], rank['del'], rank['proxy'])
+            })
+
+
+def create_certifications(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APIContext, records):
+    missing = []
+    for certification in CERTIFICATIONS:
+        if not api.find_certification_id(ctx, certification['abr']):
+            missing.append(certification)
+
+    for certification in missing:
         records.append({
-            'func': 'create_ranks_perms',
-            'arg': f"{rank['branch']}-{rank['grade']}-{rank['abr']}",
-            'id': api.create_permission(ctx, rank['get'], rank['post'], rank['put'], rank['del'], rank['proxy'])
+            'func': 'create_certifications',
+            'arg': certification['abr'],
+            'id': api.create_certification(ctx, certification['branch'], certification['abr'], certification['name'])
         })
 
 
@@ -215,27 +251,32 @@ def create_members(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APIC
         statuses = []
         unknown = []
         for role in personnel.roles:
+            username = ''.join(filter(lambda x: x in printable, personnel.name))
+            display_name = ''.join(filter(lambda x: x in printable, personnel.display_name))
+            discord_handle = f'{username}#{personnel.discriminator}'
+
             if role.name in branch_map:
                 branch = branch_map[role.name]
 
-                username = ''.join(filter(lambda x: x in printable, personnel.name))
-                display_name = ''.join(filter(lambda x: x in printable, personnel.display_name))
                 if '[' in display_name and ']' in display_name:
                     split_1 = display_name.split(']')
                     split_2 = split_1[0].split('[')
 
                     tag = split_2[len(split_2) - 1].strip()
                     rank_str = f'{branch}-{tag}'
-
                     sc_handle_name = split_1[1].strip()
 
-                    discord_handle = f'{username}#{personnel.discriminator}'
-
                     record = api.add_member(ctx, discord_handle, sc_handle_name, rank_str, None, personnel.joined_at)
+                    records.append(record)
                     if not record:
                         not_added.append(personnel)
                 else:
                     not_added.append(personnel)
+
+            if role.name in cert_map:
+                certification_str = cert_map[role.name]
+                record = api.record_cert(ctx, discord_handle, certification_str)
+                records.append(record)
 
     for personnel in not_added:
         print(personnel.display_name)
