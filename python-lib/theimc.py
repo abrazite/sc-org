@@ -52,15 +52,15 @@ RANKS = [
     {"branch": "HJ", "grade": "O6", "abr": "DIR", 'name': "Director", "get": 3, "post": 3, "put": None, "del": None, "proxy": None},
 
     {"branch": "VA", "grade": "GS1", "abr": "CM", 'name': "Crewman", "get": None, "post": None, "put": None, "del": None, "proxy": None},
-    {"branch": "VA", "grade": "G6", "abr": "MC", 'name': "Master Chief Petty Officer", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "VA", "grade": "GS6", "abr": "MC", 'name': "Master Chief Petty Officer", "get": None, "post": None, "put": None, "del": None, "proxy": None},
     {"branch": "VA", "grade": "GS2", "abr": "BM3", 'name': "Boatswain’s Mate - Petty Officer 3rd Class", "get": None, "post": None, "put": None, "del": None, "proxy": None},
     {"branch": "VA", "grade": "GS3", "abr": "BM2", 'name': "Boatswain’s Mate - Petty Officer 2nd Class", "get": None, "post": None, "put": None, "del": None, "proxy": None},
     {"branch": "VA", "grade": "GS4", "abr": "BM1", 'name': "Boatswain’s Mate - Petty Officer 1st Class", "get": None, "post": None, "put": None, "del": None, "proxy": None},
     {"branch": "VA", "grade": "GS5", "abr": "BMC", 'name': "Boatswain’s Mate - Chief Petty Officer", "get": None, "post": None, "put": None, "del": None, "proxy": None},
-    {"branch": "VA", "grade": "GS2", "abr": "CM3", 'name': "QuarterMaster - Petty Officer 3rd Class", "get": None, "post": None, "put": None, "del": None, "proxy": None},
-    {"branch": "VA", "grade": "GS3", "abr": "CM2", 'name': "QuarterMaster - Petty Officer 2nd Class", "get": None, "post": None, "put": None, "del": None, "proxy": None},
-    {"branch": "VA", "grade": "GS4", "abr": "CM1", 'name': "QuarterMaster - Petty Officer 1st Class", "get": None, "post": None, "put": None, "del": None, "proxy": None},
-    {"branch": "VA", "grade": "GS5", "abr": "CMC", 'name': "QuarterMaster - Chief Petty Officer", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "VA", "grade": "GS2", "abr": "QM3", 'name': "QuarterMaster - Petty Officer 3rd Class", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "VA", "grade": "GS3", "abr": "QM2", 'name': "QuarterMaster - Petty Officer 2nd Class", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "VA", "grade": "GS4", "abr": "QM1", 'name': "QuarterMaster - Petty Officer 1st Class", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "VA", "grade": "GS5", "abr": "QMC", 'name': "QuarterMaster - Chief Petty Officer", "get": None, "post": None, "put": None, "del": None, "proxy": None},
     {"branch": "VA", "grade": "GS2", "abr": "HM3", 'name': "Hospital Corpsman - Petty Officer 3rd Class", "get": None, "post": None, "put": None, "del": None, "proxy": None},
     {"branch": "VA", "grade": "GS3", "abr": "HM2", 'name': "Hospital Corpsman - Petty Officer 2nd Class", "get": None, "post": None, "put": None, "del": None, "proxy": None},
     {"branch": "VA", "grade": "GS4", "abr": "HM1", 'name': "Hospital Corpsman - Petty Officer 1st Class", "get": None, "post": None, "put": None, "del": None, "proxy": None},
@@ -88,10 +88,26 @@ RANKS = [
     {"branch": "SD", "grade": "GS5", "abr": "AL", 'name': "Assistant Lead", "get": None, "post": None, "put": None, "del": None, "proxy": None},
     {"branch": "SD", "grade": "GS5", "abr": "TL", 'name': "Team Lead", "get": None, "post": None, "put": None, "del": None, "proxy": None},
     {"branch": "SD", "grade": "GS13", "abr": "MGR", 'name': "Manager", "get": 3, "post": 3, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS1", "abr": "CIN", 'name': "Commodity Management - Intern", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS2", "abr": "CJA", 'name': "Commodity Management - Junior Associate", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS3", "abr": "CAS", 'name': "Commodity Management - Associate", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS4", "abr": "CSA", 'name': "Commodity Management - Senior Associate", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS5", "abr": "CAL", 'name': "Commodity Management - Assistant Lead", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS5", "abr": "CTL", 'name': "Commodity Management - Team Lead", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS13", "abr": "CMGR", 'name': "Commodity Management - Manager", "get": 3, "post": 3, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS1", "abr": "MIN", 'name': "Mineral Resources - Intern", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS2", "abr": "MJA", 'name': "Mineral Resources - Junior Associate", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS3", "abr": "MAS", 'name': "Mineral Resources - Associate", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS4", "abr": "MSA", 'name': "Mineral Resources - Senior Associate", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS5", "abr": "MAL", 'name': "Mineral Resources - Assistant Lead", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS5", "abr": "MTL", 'name': "Mineral Resources - Team Lead", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "SD", "grade": "GS13", "abr": "MMGR", 'name': "Mineral Resources - Manager", "get": 3, "post": 3, "put": None, "del": None, "proxy": None},
+
     {"branch": "SD", "grade": "GS14", "abr": "DCMS", 'name': "Deputy Commissioner", "get": 3, "post": 3, "put": None, "del": None, "proxy": None},
     {"branch": "SD", "grade": "GS15", "abr": "CMS", 'name': "Commissioner", "get": 3, "post": 3, "put": None, "del": None, "proxy": None},
 
     {"branch": "J", "grade": "E1", "abr": "AR", 'name': "Airman Recruit", "get": None, "post": None, "put": None, "del": None, "proxy": None},
+    {"branch": "J", "grade": "E1", "abr": "AC", 'name': "Airman Cadet", "get": None, "post": None, "put": None, "del": None, "proxy": None},
     {"branch": "J", "grade": "E2", "abr": "AM", 'name': "Airman", "get": None, "post": None, "put": None, "del": None, "proxy": None},
     {"branch": "J", "grade": "E3", "abr": "AF", 'name': "Airman First Class", "get": None, "post": None, "put": None, "del": None, "proxy": None},
     {"branch": "J", "grade": "E4", "abr": "CS", 'name': "Combat Control Specialist", "get": None, "post": None, "put": None, "del": None, "proxy": None},
@@ -126,14 +142,18 @@ CERTIFICATIONS = [
 ]
 
 
-def create_org(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APIContext, members):
+def create_org(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APIContext):
     records = []
     create_branches(api, ctx, records)
     create_grades(api, ctx, records)
     create_ranks(api, ctx, records)
     create_certifications(api, ctx, records)
-    create_members(api, ctx, members, records)
+    print(records)
 
+
+def sync_org(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APIContext, members):
+    records = []
+    create_members(api, ctx, members, records)
     print(records)
 
 
@@ -180,7 +200,6 @@ def create_ranks(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APICon
         })
 
         if rank['get'] or rank['post'] or rank['put'] or rank['del'] or rank['proxy']:
-            print(rank, record)
             records.append({
                 'func': 'create_ranks_perms',
                 'arg': f"{rank['branch']}-{rank['grade']}-{rank['abr']}",
@@ -217,7 +236,7 @@ def create_members(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APIC
             missing.append(personnel)
 
     branch_map = {
-        'Board of Directors': 'DIR',
+        'Board of Directors': 'BOD',
         # 'IMC Fleet Command': 'FC',
         'IMC Helljumper': 'HJ',
         'IMC Helljumper Command': 'HJ',
@@ -231,10 +250,10 @@ def create_members(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APIC
 
     cert_map = {
         'Basic Flight Certification': 'J-F',
-        'Basic Trade Certification': 'SD-T',
+        'Basic Trade Certification': 'SD-TD',
         'Ground Certification': 'HJ-BG',
         'Advanced Ground Certification': 'HJ-AG',
-        'Transport Certification': 'VA-T',
+        'Transport Certification': 'VA-TP',
     }
 
     status_map = {
@@ -245,16 +264,12 @@ def create_members(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APIC
 
     not_added = []
     for personnel in missing:
-        branches = []
-        ranks = []
-        certs = []
-        statuses = []
-        unknown = []
-        for role in personnel.roles:
-            username = ''.join(filter(lambda x: x in printable, personnel.name))
-            display_name = ''.join(filter(lambda x: x in printable, personnel.display_name))
-            discord_handle = f'{username}#{personnel.discriminator}'
+        username = ''.join(filter(lambda x: x in printable, personnel.name))
+        display_name = ''.join(filter(lambda x: x in printable, personnel.display_name))
+        discord_handle = f'{username}#{personnel.discriminator}'
 
+        record = None
+        for role in personnel.roles:
             if role.name in branch_map:
                 branch = branch_map[role.name]
 
@@ -273,10 +288,10 @@ def create_members(api: org_manager_api.OrgManagerAPI, ctx: org_manager_api.APIC
                 else:
                     not_added.append(personnel)
 
-            if role.name in cert_map:
+        for role in personnel.roles:
+            if record and role.name in cert_map:
                 certification_str = cert_map[role.name]
-                record = api.record_cert(ctx, discord_handle, certification_str)
-                records.append(record)
+                records.append(api.record_cert(ctx, record['id'], certification_str))
 
     for personnel in not_added:
-        print(personnel.display_name)
+        print('not: ' + personnel.display_name)

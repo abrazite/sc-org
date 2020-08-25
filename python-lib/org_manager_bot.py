@@ -24,9 +24,16 @@ async def on_ready():
 
 
 @client.command(brief='superadmin')
+async def create_theimc_from_discord(ctx):
+    if ctx.author.name == 'abrazite':
+        theimc.create_org(api, create_api_context(ctx))
+
+
+@client.command(brief='superadmin')
 async def sync_theimc_from_discord(ctx):
     if ctx.author.name == 'abrazite':
-        theimc.create_org(api, create_api_context(ctx), ctx.message.channel.guild.members)
+        theimc.create_org(api, create_api_context(ctx))
+        theimc.sync_org(api, create_api_context(ctx), ctx.message.channel.guild.members)
 
 
 # Clear messages in chat
@@ -343,7 +350,7 @@ async def create_certification(ctx, branch_str: str, abbreviation: str, name: st
 
 
 @client.command(brief='Records certification')
-async def record_cert(ctx, personnel_or_channel_str: str, *, certification_str: str = None):
+async def record_cert(ctx, personnel_or_channel_str: str, certification_str: str):
     members = None
     for channel in ctx.message.channel.guild.voice_channels:
         if channel.name == personnel_or_channel_str:
@@ -373,7 +380,7 @@ async def record_cert(ctx, personnel_or_channel_str: str, *, certification_str: 
 
 
 @client.command(brief='Records operation attendance')
-async def record_op(ctx, personnel_or_channel_str: str, *, op_name: str = None):
+async def record_op(ctx, personnel_or_channel_str: str, op_name: str = None):
     members = None
     for channel in ctx.message.channel.guild.voice_channels:
         if channel.name == personnel_or_channel_str:
@@ -391,7 +398,7 @@ async def record_op(ctx, personnel_or_channel_str: str, *, op_name: str = None):
     records_str = ''
     for member in members:
         personnel_str = f'{member["username"]}#{member["discriminator"]}'
-        record_id = api.record_op(create_api_context(ctx), f'{ctx.author.name}#{ctx.author.discriminator}', personnel_str, op_name)
+        record_id = api.record_op(create_api_context(ctx), personnel_str, op_name)
         if record_id:
             name = member["handleName"] if member["handleName"] else member["username"]
             records_str += f'updated {name}\r'
@@ -434,7 +441,8 @@ async def record_note(ctx, personnel_or_channel_str: str, *, note: str):
 
 @client.command(brief='Creates all records for a new member')
 async def add_member(ctx, discord_handle, sc_handle_name, rank_str, recruited_by_str=None):
-    record_id = api.add_member(create_api_context(ctx), discord_handle, sc_handle_name, rank_str, recruited_by_str)
+    joined_date = ctx.message.channel.guild.get_member(discord_handle)
+    record_id = api.add_member(create_api_context(ctx), discord_handle, sc_handle_name, rank_str, recruited_by_str, joined_date)
 
     if record_id:
         await ctx.send('member added')

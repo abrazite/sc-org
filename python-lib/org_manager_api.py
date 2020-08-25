@@ -121,8 +121,10 @@ class OrgManagerAPI:
         grade_id = self.find_grade_id(ctx, grade_str)
 
         if branch_str and branch_id is None:
+            print('create_rank', abbreviation, branch_str, branch_id)
             return
         if grade_str and grade_id is None:
+            print('create_rank', abbreviation, grade_str, grade_id)
             return
 
         url = '/ranks'
@@ -141,6 +143,7 @@ class OrgManagerAPI:
     def create_certification(self, ctx: APIContext, branch_str: str, abbreviation: str, name: str) -> BranchId:
         branch_id = self.find_branch_id(ctx, branch_str)
         if branch_str and branch_id is None:
+            print('create_certification', abbreviation, branch_str, branch_id)
             return
 
         url = '/certifications'
@@ -156,9 +159,11 @@ class OrgManagerAPI:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
 
         if not issuer_id:
+            print('create_permission', subject_id, issuer_id)
             return
 
         if not get and not post and not put and not del_ and not proxy:
+            print('create_permission', subject_id, get, post, put, del_, proxy)
             return
 
         url = '/permissions'
@@ -182,9 +187,10 @@ class OrgManagerAPI:
         discord_split = discord_handle.split('#')
 
         if discord_id or sc_handle_id or len(discord_split) != 2:
+            print('add_member', discord_handle, discord_id, sc_handle_id, len(discord_split))
             return
 
-        is_int = str(discord_split[1]), str(int(discord_split[1])).zfill(len(str(discord_split[1])))
+        is_int = str(discord_split[1]) == str(int(discord_split[1])).zfill(len(str(discord_split[1])))
         if issuer_id and rank_id and is_int:
             personnel_id = str(uuid.uuid4())
             print(discord_handle)
@@ -211,6 +217,10 @@ class OrgManagerAPI:
             rank_change_id = self.change_rank(ctx, personnel_id, rank_str)
             joined_org_change_id = self.record_joined_org(ctx, personnel_id, recruited_by_str, joined_date)
 
+            return { 'id': personnel_id }
+        else:
+            print('add_member', discord_handle, rank_str, issuer_id, rank_id, is_int)
+
     def record_cert(self, ctx: APIContext, personnel_str: str, certification_str: str) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
         personnel_id = self.find_personnel_id(ctx, personnel_str)
@@ -224,8 +234,10 @@ class OrgManagerAPI:
                 'certificationId': certification_id
             }
             return self.api_post(ctx, url, body)
+        else:
+            print('record_cert', personnel_str, certification_str, issuer_id, personnel_id, certification_id)
 
-    def record_op(self, ctx: APIContext, personnel_str: str, op_name: str) -> NewRecordId:
+    def record_op(self, ctx: APIContext, personnel_str: str, op_name: str = None) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
         personnel_id = self.find_personnel_id(ctx, personnel_str)
         if issuer_id and personnel_id:
@@ -238,6 +250,8 @@ class OrgManagerAPI:
             if op_name:
                 body['name'] = op_name
             return self.api_post(ctx, url, body)
+        else:
+            print('record_op', personnel_str, issuer_id, personnel_id)
 
     def record_note(self, ctx: APIContext, personnel_str: str, note: str) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
@@ -251,6 +265,8 @@ class OrgManagerAPI:
                 'note': note
             }
             return self.api_post(ctx, url, body)
+        else:
+            print('record_note', personnel_str, issuer_id, personnel_id)
 
     def record_joined_org(self, ctx: APIContext, personnel_str: str, recruited_by_str: str, date: datetime.datetime) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
@@ -270,6 +286,8 @@ class OrgManagerAPI:
             if date:
                 body['date'] = date.isoformat()
             return self.api_post(ctx, url, body)
+        else:
+            print('record_joined_org', personnel_str, issuer_id, personnel_id)
 
     def record_left_org(self, ctx: APIContext, personnel_str: str, date: datetime.datetime) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
@@ -286,6 +304,8 @@ class OrgManagerAPI:
             if date:
                 body['date'] = date.isoformat()
             return self.api_post(ctx, url, body)
+        else:
+            print('record_left_org', personnel_str, issuer_id, personnel_id)
 
     def change_rank(self, ctx: APIContext, personnel_str: str, rank_str: str) -> NewRecordId:
         issuer_id = self.find_personnel_id(ctx, f'{ctx.username}#{ctx.discriminator}')
@@ -301,6 +321,8 @@ class OrgManagerAPI:
                 'rankId': rank_id,
             }
             return self.api_post(ctx, url, body)
+        else:
+            print('change_rank', personnel_str, rank_str, issuer_id, personnel_id, rank_id)
 
     def find_personnel_id(self, ctx: APIContext, personnel_str: str) -> PersonnelId:
         if personnel_str is None:
@@ -581,5 +603,3 @@ class OrgManagerAPI:
         self.access_token = data['access_token']
         self.token_type = data['token_type']
         self.expires_in = data['expires_in']
-
-        print(self.access_token)
