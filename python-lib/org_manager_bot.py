@@ -286,6 +286,7 @@ async def search_personnel(ctx, filter_str=None, page=0):
 
     count = 0
     total_count = 0
+
     for personnel in summary:
         include = filter_str is None
         include = include or (filter_str == personnel["gradeAbbreviation"])
