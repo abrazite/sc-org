@@ -5,6 +5,11 @@ import theimc
 import secrets
 import string
 
+import os
+os.environ['REQUESTS_CA_BUNDLE'] = os.path.join(
+    '/etc/ssl/certs/',
+    'ca-certificates.crt')
+
 # API Server
 API_SERVER = 'https://api.org-manager.space/1.0.0'
 api = org_manager_api.OrgManagerAPI(API_SERVER, secrets.ORGANIZATION_ID)
