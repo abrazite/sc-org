@@ -1,0 +1,72 @@
+<div *ngIf="personnel && personnel.personnelSummary as p">
+  <h3><span *ngIf="tag !== ''">[{{tag}}] </span>{{p.handleName}}</h3>
+  <h4>Contact:</h4>
+  <div *ngIf="p.citizenRecord">Citizen Record: {{p.citizenRecord}}</div>
+  <div *ngIf="p.citizenName">Citizen Name: {{p.citizenName}}</div>
+  <div *ngIf="p.handleName">Citizen Handle: {{p.handleName}}</div>
+  <div *ngIf="p.username && p.discriminator">Discord: {{p.username}}#{{p.discriminator}}</div>
+  <h4>Service records:</h4>
+  <ul >
+    <div *ngIf="personnel.joinedOrganizationRecords">
+      <li *ngFor="let r of personnel.joinedOrganizationRecords" class="record-container">
+        <span class="record-header">Joined Org Records</span>
+        <span class="record-date" *ngIf="r.date">{{formatDate(r.date)}}</span>
+      </li>
+    </div>
+    <div *ngIf="personnel.discordRecords">
+      <li *ngFor="let r of personnel.discordRecords" class="record-container">
+        <span class="record-header">Discord Records</span>
+        <span class="record-date" *ngIf="r.date">{{formatDate(r.date)}}</span>
+        <span class="record-value" *ngIf="r.username && r.discriminator">{{r.username}}#{{r.discriminator}}</span>
+      </li>
+    </div>
+    <div *ngIf="personnel.rankChangeRecords">
+      <li *ngFor="let r of personnel.rankChangeRecords" class="record-container">
+        <span class="record-header">Rank Change Record</span>
+        <span class="record-date" *ngIf="r.date">{{formatDate(r.date)}}</span>
+        <span class="record-value" *ngIf="r.abbreviation">{{r.abbreviation}}</span>
+      </li>
+    </div>
+    <div *ngIf="personnel.certificationRecords">
+      <li *ngFor="let r of personnel.certificationRecords" class="record-container">
+        <span class="record-header">Certification Record</span>
+        <span class="record-date" *ngIf="r.date">{{formatDate(r.date)}}</span>
+        <span class="record-value" *ngIf="r.abbreviation">{{r.abbreviation}}</span>
+      </li>
+    </div>
+    <div *ngIf="personnel.operationAttendenceRecords">
+      <li *ngFor="let r of personnel.operationAttendenceRecords" class="record-container">
+        <span class="record-header">Operation Attendence Record</span>
+        <span class="record-date" *ngIf="r.date">{{formatDate(r.date)}}</span>
+        <span class="record-value" *ngIf="r.name">{{r.name}}</span>
+      </li>
+    </div>
+    <div *ngIf="personnel.activeDutyRecords">
+      <li *ngFor="let r of personnel.activeDutyRecords" class="record-container">
+        <span class="record-header">Active Duty Record</span>
+        <span class="record-date" *ngIf="r.date">{{formatDate(r.date)}}</span>
+        <span class="record-value" *ngIf="r.description">{{r.description}}</span>
+      </li>
+    </div>
+    <div *ngIf="personnel.noteRecords">
+      <li *ngFor="let r of personnel.noteRecords" class="record-container">
+        <span class="record-header">Note Records</span>
+        <span class="record-date" *ngIf="r.date">{{formatDate(r.date)}}</span>
+        <div class="record-value" *ngIf="r.note">{{r.note}}</div>
+      </li>
+    </div>
+    <div *ngIf="personnel.statusRecords">
+      <li *ngFor="let r of personnel.statusRecords" class="record-container">
+        <span class="record-header">Status Records</span>
+        <span class="record-date" *ngIf="r.date">{{formatDate(r.date)}}</span>
+        <span class="record-value" *ngIf="r.status">{{r.status}}</span>
+      </li>
+    </div>
+    <div *ngIf="personnel.leftOrganizationRecords">
+      <li *ngFor="let r of personnel.leftOrganizationRecords" class="record-container">
+        <span class="record-header">Left Org Records</span>
+        <span class="record-date" *ngIf="r.date">{{formatDate(r.date)}}</span>
+      </li>
+    </div>
+  </ul>
+</div>

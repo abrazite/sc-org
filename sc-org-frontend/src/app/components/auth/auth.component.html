@@ -1,0 +1,6 @@
+<div *ngIf="error">{{error}}</div>
+<div *ngIf="!error">
+  <div *ngIf="!auth && !authDetails">Loading personnel records...</div>
+  <div *ngIf="auth && !authDetails">Loading personnel records....</div>
+  <div *ngIf="auth && authDetails"><a (click)="logout()" style="cursor: pointer;">Logout</a></div>
+</div>

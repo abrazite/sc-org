@@ -1,0 +1,135 @@
+server {
+  # Add index.php to the list if you are using PHP
+  index index.html index.htm index.nginx-debian.html;
+
+  server_name app.org-manager.space;
+
+  location = /validate {
+    # forward the /validate request to Vouch Proxy
+    proxy_pass http://127.0.0.1:9090/validate;
+
+    # be sure to pass the original host header
+    proxy_set_header Host $http_host;
+
+    # Vouch Proxy only acts on the request headers
+    proxy_pass_request_body off;
+    proxy_set_header Content-Length "";
+
+    auth_request_set $auth_resp_x_vouch_idp_claims_id $upstream_http_x_vouch_idp_claims_id;
+    auth_request_set $auth_resp_x_vouch_idp_claims_username $upstream_http_x_vouch_idp_claims_username;
+    auth_request_set $auth_resp_x_vouch_idp_claims_discriminator $upstream_http_x_vouch_idp_claims_discriminator;
+    auth_request_set $auth_resp_x_vouch_idp_accesstoken $upstream_http_x_vouch_idp_accesstoken;
+
+    # these return values are used by the @error401 call
+    auth_request_set $auth_resp_jwt $upstream_http_x_vouch_jwt;
+    auth_request_set $auth_resp_err $upstream_http_x_vouch_err;
+    auth_request_set $auth_resp_failcount $upstream_http_x_vouch_failcount;
+  }
+
+  # if validate returns `401 not authorized` then forward the request to the error401block
+  error_page 401 = @error401;
+
+  location @error401 {
+      # redirect to Vouch Proxy for login
+      return 302 https://login.org-manager.space/login?url=$scheme://$http_host$request_uri&vouch-failcount=$auth_resp_failcount&X-Vouch-Token=$auth_resp_jwt&error=$auth_resp_err;
+  }
+
+  location = /api/validate {
+    # forward the /validate request to Vouch Proxy
+    proxy_pass http://localhost:8081/api/1.0.0/validate;
+
+    # be sure to pass the original host header
+    proxy_set_header Host $http_host;
+
+    # proxy only acts on the request headers
+    proxy_pass_request_body off;
+    proxy_set_header Content-Length "";
+
+    auth_request_set $auth_resp_x_org_manager_personnel_id $upstream_http_x_org_manager_personnel_id;
+    auth_request_set $auth_resp_x_org_manager_organization_id $upstream_http_x_org_manager_organization_id;
+    auth_request_set $auth_resp_x_org_manager_organization_ids $upstream_http_x_org_manager_organization_ids;
+    auth_request_set $auth_resp_x_org_manager_citizen_record $upstream_http_x_org_manager_citizen_record;
+    auth_request_set $auth_resp_x_org_manager_citizen_name $upstream_http_x_org_manager_citizen_name;
+    auth_request_set $auth_resp_x_org_manager_handle_name $upstream_http_x_org_manager_handle_name;
+    auth_request_set $auth_resp_x_org_manager_get_security_level $upstream_http_x_org_manager_get_security_level;
+    auth_request_set $auth_resp_x_org_manager_post_security_level $upstream_http_x_org_manager_post_security_level;
+    auth_request_set $auth_resp_x_org_manager_put_security_level $upstream_http_x_org_manager_put_security_level;
+    auth_request_set $auth_resp_x_org_manager_del_security_level $upstream_http_x_org_manager_del_security_level;
+
+    proxy_cache validate;
+    proxy_cache_lock on;
+    proxy_cache_valid 200 10m;
+    proxy_cache_valid 500 501 502 503 504 505 30s;
+    proxy_cache_valid 401 402 403 404 30s;
+    proxy_cache_key $http_authorization$http_x_org_manager_organization_id$scheme$proxy_host$uri$is_args$args;
+  }
+
+  location /api {
+    auth_request /api/validate;
+
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-NginX-Proxy true;
+
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+
+    proxy_pass http://localhost:8081;
+    proxy_redirect off;
+
+    auth_request_set $auth_resp_x_org_manager_personnel_id $upstream_http_x_org_manager_personnel_id;
+    auth_request_set $auth_resp_x_org_manager_organization_id $upstream_http_x_org_manager_organization_id;
+    auth_request_set $auth_resp_x_org_manager_organization_ids $upstream_http_x_org_manager_organization_ids;
+    auth_request_set $auth_resp_x_org_manager_citizen_record $upstream_http_x_org_manager_citizen_record;
+    auth_request_set $auth_resp_x_org_manager_citizen_name $upstream_http_x_org_manager_citizen_name;
+    auth_request_set $auth_resp_x_org_manager_handle_name $upstream_http_x_org_manager_handle_name;
+    auth_request_set $auth_resp_x_org_manager_get_security_level $upstream_http_x_org_manager_get_security_level;
+    auth_request_set $auth_resp_x_org_manager_post_security_level $upstream_http_x_org_manager_post_security_level;
+    auth_request_set $auth_resp_x_org_manager_put_security_level $upstream_http_x_org_manager_put_security_level;
+    auth_request_set $auth_resp_x_org_manager_del_security_level $upstream_http_x_org_manager_del_security_level;
+
+    proxy_set_header Authorization $http_authorization;
+    proxy_set_header X-Org-Manager-Personnel-Id $auth_resp_x_org_manager_personnel_id;
+    proxy_set_header X-Org-Manager-Organization-Id $auth_resp_x_org_manager_organization_id;
+    proxy_set_header X-Org-Manager-Organization-Ids $auth_resp_x_org_manager_organization_ids;
+    proxy_set_header X-Org-Manager-Citizen-Record $auth_resp_x_org_manager_citizen_record;
+    proxy_set_header X-Org-Manager-Citizen-Name $auth_resp_x_org_manager_citizen_name;
+    proxy_set_header X-Org-Manager-Handle-Name $auth_resp_x_org_manager_handle_name;
+    proxy_set_header X-Org-Manager-Get-Security-Level $auth_resp_x_org_manager_get_security_level;
+    proxy_set_header X-Org-Manager-Post-Security-Level $auth_resp_x_org_manager_post_security_level;
+    proxy_set_header X-Org-Manager-Put-Security-Level $auth_resp_x_org_manager_put_security_level;
+    proxy_set_header X-Org-Manager-Del-Security-Level $auth_resp_x_org_manager_del_security_level;
+
+    proxy_cache api;
+    proxy_cache_lock on;
+    proxy_cache_valid 200 1s;
+    proxy_cache_valid 500 501 502 503 504 505 10s;
+    proxy_cache_valid 401 402 403 404 10s;
+    proxy_cache_key $http_authorization$http_x_org_manager_organization_id$scheme$proxy_host$uri$is_args$args;
+  }
+
+  location / {
+    auth_request /validate;
+
+    proxy_pass http://127.0.0.1:8082;
+    proxy_set_header Host $http_host;
+
+    auth_request_set $auth_resp_x_vouch_idp_claims_id $upstream_http_x_vouch_idp_claims_id;
+    auth_request_set $auth_resp_x_vouch_idp_claims_username $upstream_http_x_vouch_idp_claims_username;
+    auth_request_set $auth_resp_x_vouch_idp_claims_discriminator $upstream_http_x_vouch_idp_claims_discriminator;
+    auth_request_set $auth_resp_x_vouch_idp_accesstoken $upstream_http_x_vouch_idp_accesstoken;
+
+    proxy_set_header X-Vouch-IdP-Claims-Id $auth_resp_x_vouch_idp_claims_id;
+    proxy_set_header X-Vouch-IdP-Claims-Username $auth_resp_x_vouch_idp_claims_username;
+    proxy_set_header X-Vouch-IdP-Claims-Discriminator $auth_resp_x_vouch_idp_claims_discriminator;
+    proxy_set_header X-Vouch-IdP-AccessToken $auth_resp_x_vouch_idp_accesstoken;
+  }
+
+  listen 443 ssl; # managed by Certbot
+  ssl_certificate /etc/letsencrypt/live/app.org-manager.space/fullchain.pem; # managed by Certbot
+  ssl_certificate_key /etc/letsencrypt/live/app.org-manager.space/privkey.pem; # managed by Certbot
+  include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}

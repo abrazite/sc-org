@@ -1,0 +1,10 @@
+server {
+  listen 8082;
+  server_name  localhost;
+
+  root /var/www/org-manager.space/html/;
+
+  location / {
+    try_files $uri$args $uri$args/ $uri/ /index.html =404;
+  }
+}

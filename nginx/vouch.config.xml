@@ -1,0 +1,34 @@
+vouch:
+   logLevel: debug
+        # testing: true
+   allowAllUsers: true
+   publicAccess: false
+   cookie:
+     name: VouchCookie
+     domain: org-manager.space
+     secure: true
+   headers:
+     jwt: X-Vouch-Token
+     querystring: access_token
+     claims:
+       - id
+       - username
+       - discriminator
+       - avatar
+       - guilds
+     accesstoken: X-Vouch-IdP-AccessToken
+
+oauth:
+  provider: oidc
+  client_id: 
+  client_secret: 
+  auth_url: https://discord.com/api/oauth2/authorize
+  token_url: https://discord.com/api/oauth2/token
+  user_info_url: https://discord.com/api/users/@me
+  user_team_url: https://discord.com/api/users/@me/guilds
+  # end_session_endpoint: https://discord.com/api/oauth2/token/revoke
+  scopes:
+   - identify
+   - guilds
+  # Set the callback URL to the domain that Vouch is running on
+  callback_url: https://login.org-manager.space/auth

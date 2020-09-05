@@ -1,0 +1,20 @@
+server {
+  root /var/www/org-manager.space/html/;
+
+  # Add index.php to the list if you are using PHP
+  index index.html index.htm index.nginx-debian.html;
+
+  server_name org-manager.space www.org-manager.space;
+
+  location / {
+    alias   /var/www/org-manager.space/html/;
+    try_files $uri$args $uri$args/ $uri/ /index.html =404;
+  }
+
+  listen [::]:443 ssl ipv6only=on; # managed by Certbot
+  listen 443 ssl; # managed by Certbot
+  ssl_certificate /etc/letsencrypt/live/org-manager.space/fullchain.pem; # managed by Certbot
+  ssl_certificate_key /etc/letsencrypt/live/org-manager.space/privkey.pem; # managed by Certbot
+  include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}

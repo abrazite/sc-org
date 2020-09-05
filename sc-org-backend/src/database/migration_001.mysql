@@ -1,0 +1,433 @@
+CREATE TABLE `org_manager`.`joined_organization` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
+  `personnel_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NULL,
+  `recruited_by_personnel_id` BINARY(16) NULL,
+  `joined_organization_id` BINARY(16) NOT NULL,
+  INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
+
+  CREATE TABLE `org_manager`.`left_organization` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
+  `personnel_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NULL,
+  `left_organization_id` BINARY(16) NOT NULL,
+  INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
+
+CREATE TABLE `org_manager`.`operation_attendence` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
+  `personnel_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NULL,
+  `name` VARCHAR(128) NULL,
+  INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
+
+CREATE TABLE `org_manager`.`rank_change` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
+  `personnel_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NULL,
+  `rank_id` BINARY(16) NOT NULL,
+  INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
+
+CREATE TABLE `org_manager`.`certification` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
+  `personnel_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NULL,
+  `certification_id` BINARY(16) NOT NULL,
+  INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
+
+CREATE TABLE `org_manager`.`status` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
+  `personnel_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NULL,
+  `status` VARCHAR(16) NOT NULL,
+  INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);  
+
+CREATE TABLE `org_manager`.`note` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `date` DATETIME NULL DEFAULT NOW(),
+  `personnel_id` BINARY(16) NOT NULL,
+  `organization_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NULL,
+  `note` LONGTEXT NOT NULL,
+  INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);  
+
+CREATE TABLE `org_manager`.`active_duty` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
+  `personnel_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NULL,
+  `description` VARCHAR(128) NULL,
+  INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);    
+
+CREATE TABLE `org_manager`.`discord` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
+  `personnel_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NULL,
+  `username` VARCHAR(128) NULL,
+  `discriminator` INT NULL,
+  INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);      
+
+CREATE TABLE `org_manager`.`rsi_citizen` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
+  `personnel_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NOT NULL,
+  `citizen_record` INT NULL,
+  `citizen_name` VARCHAR(64) NULL,
+  `handle_name` VARCHAR(64) NULL,
+  `enlisted_rank` VARCHAR(64) NULL,
+  `enlisted_date` DATETIME NULL,
+  `location` VARCHAR(64) NULL,
+  `fluency` VARCHAR(64) NULL,
+  `website` VARCHAR(512) NULL,
+  `biography` LONGTEXT NULL,
+  INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);    
+
+CREATE TABLE `org_manager`.`rsi_organization` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NOT NULL,
+  `rsi_organization_id` BINARY(16) NOT NULL,
+  `name` VARCHAR(64) NULL,
+  `sid` VARCHAR(32) NULL,
+  `member_count` INT NULL,
+  `archetype` VARCHAR(64) NULL,
+  `primary_activity` VARCHAR(64) NULL,
+  `secondary_activity` VARCHAR(64) NULL,
+  `commitment` VARCHAR(64) NULL,
+  `primary_language` VARCHAR(64) NULL,
+  `recruiting` BOOLEAN NULL,
+  `role_play` BOOLEAN NULL,
+  `exclusive` BOOLEAN NULL,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);   
+
+CREATE TABLE `org_manager`.`rsi_citizen_organization` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `date` DATETIME NULL DEFAULT NOW(),
+  `organization_id` BINARY(16) NOT NULL,
+  `personnel_id` BINARY(16) NOT NULL,
+  `issuer_personnel_id` BINARY(16) NOT NULL,
+  `main` BOOLEAN NULL,
+  INDEX `personnel_id` (`personnel_id` ASC) VISIBLE,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);   
+
+CREATE TABLE `org_manager`.`branches` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `organization_id` BINARY(16) NOT NULL,
+  `abbreviation` VARCHAR(16) NOT NULL,
+  `branch` VARCHAR(64) NULL,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);   
+
+CREATE TABLE `org_manager`.`grades` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `organization_id` BINARY(16) NOT NULL,
+  `abbreviation` VARCHAR(16) NOT NULL,
+  `grade` VARCHAR(64) NULL,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);   
+
+CREATE TABLE `org_manager`.`ranks` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `organization_id` BINARY(16) NOT NULL,
+  `branch_id` BINARY(16) NULL,
+  `grade_id` BINARY(16) NULL,
+  `abbreviation` VARCHAR(16) NOT NULL,
+  `name` VARCHAR(64) NULL,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  INDEX `branch_id` (`branch_id` ASC) VISIBLE,
+  INDEX `grade_id` (`grade_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE); 
+
+CREATE TABLE `org_manager`.`certifications` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `organization_id` BINARY(16) NOT NULL,
+  `branch_id` BINARY(16) NULL,
+  `abbreviation` VARCHAR(16) NOT NULL,
+  `name` VARCHAR(64) NULL,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  INDEX `branch_id` (`branch_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE); 
+
+CREATE TABLE `org_manager`.`permissions` (
+  `id` BINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+  `organization_id` BINARY(16) NOT NULL,
+  `subject_id` BINARY(16) NOT NULL,
+  `get` INT NOT NULL DEFAULT 0,
+  `post` INT NOT NULL DEFAULT 0,
+  `put` INT NOT NULL DEFAULT 0,
+  `del`INT NOT NULL DEFAULT 0,
+  `proxy` INT NOT NULL DEFAULT 0,
+  INDEX `organization_id` (`organization_id` ASC) VISIBLE,
+  INDEX `subject_id` (`subject_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE); 
+
+CREATE VIEW `most_recent_rsi_citizen` AS (SELECT t1.*
+FROM rsi_citizen AS t1
+LEFT OUTER JOIN rsi_citizen AS t2
+  ON t1.personnel_id = t2.personnel_id 
+        AND (t1.date < t2.date 
+         OR (t1.date = t2.date AND t1.Id < t2.Id))); 
+
+CREATE VIEW `most_recent_rank_change` AS ((WITH summary AS (
+      SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.date DESC) AS rk
+      FROM rank_change t1)
+    SELECT s.*
+    FROM summary s
+    WHERE s.rk = 1));       
+
+CREATE VIEW `most_recent_discord` AS ((WITH summary AS (
+      SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.date DESC) AS rk
+      FROM discord t1)
+    SELECT s.*
+    FROM summary s
+    WHERE s.rk = 1));
+
+CREATE VIEW `activity_dates` AS (SELECT 
+	t1.personnel_id AS 'personnel_id',
+  t1.organization_id AS 'organization_id',
+  GREATEST(
+    COALESCE(t2.date, 0),
+    COALESCE(t3.date, 0), 
+    COALESCE(t4.date, 0),
+    COALESCE(t5.date, 0), 
+    COALESCE(t6.date, 0)) AS 'last_date',
+  t2.date AS 'active_duty_date',
+  t3.date AS 'certification_date',
+  t4.date AS 'joined_organization_date',
+  t5.date AS 'operation_attendence_date',
+  t6.date AS 'rank_change_date'
+FROM (WITH summary AS (
+      SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.date DESC) AS rk
+      FROM discord t1)
+    SELECT s.*
+    FROM summary s
+    WHERE s.rk = 1) AS t1
+LEFT JOIN (WITH summary AS (
+      SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.date DESC) AS rk
+      FROM active_duty t1)
+    SELECT s.*
+    FROM summary s
+    WHERE s.rk = 1) AS t2
+  ON t1.personnel_id = t2.personnel_id AND t1.organization_id = t2.organization_id
+LEFT JOIN (WITH summary AS (
+      SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.date DESC) AS rk
+      FROM certification t1)
+    SELECT s.*
+    FROM summary s
+    WHERE s.rk = 1) AS t3
+  ON t1.personnel_id = t3.personnel_id AND t1.organization_id = t3.organization_id               
+LEFT JOIN (WITH summary AS (
+      SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.date DESC) AS rk
+      FROM joined_organization t1)
+    SELECT s.*
+    FROM summary s
+    WHERE s.rk = 1) AS t4             
+  ON t1.personnel_id = t4.personnel_id AND t1.organization_id = t4.organization_id  
+LEFT JOIN (WITH summary AS (
+      SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.date DESC) AS rk
+      FROM operation_attendence t1)
+    SELECT s.*
+    FROM summary s
+    WHERE s.rk = 1) AS t5             
+  ON t1.personnel_id = t5.personnel_id AND t1.organization_id = t5.organization_id     
+LEFT JOIN (WITH summary AS (
+      SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.date DESC) AS rk
+      FROM rank_change t1)
+    SELECT s.*
+    FROM summary s
+    WHERE s.rk = 1) AS t6
+  ON t1.personnel_id = t6.personnel_id AND t1.organization_id = t6.organization_id);
+
+CREATE VIEW `most_recent_certifications` AS (SELECT 
+  t1.personnel_id, 
+  t1.organization_id,
+  t1.certification_id,
+  t2.abbreviation AS 'abbreviation',
+  MAX(t1.date) AS 'latest_date'
+FROM certification AS t1
+LEFT JOIN certifications AS t2
+	ON t2.id = t1.certification_id
+GROUP BY t1.personnel_id, t1.organization_id, t1.certification_id);
+
+CREATE VIEW `personnel_summary` AS (SELECT
+	t1.personnel_id,
+  t1.organization_id,
+  t1.username,
+  t1.discriminator,
+  t2.citizen_record,
+  t2.citizen_name,
+  t2.handle_name,
+  t3.date as 'rank_date',
+  t3.rank_id,
+  t4.grade_id,
+  t4.branch_id,
+  t6.abbreviation AS 'branch_abbreviation',
+  t5.abbreviation AS 'grade_abbreviation',
+  t4.abbreviation AS 'rank_abbreviation',
+  t7.last_date
+FROM most_recent_discord as t1
+LEFT JOIN most_recent_rsi_citizen as t2
+	ON t2.personnel_id = t1.personnel_id
+LEFT JOIN most_recent_rank_change as t3
+	ON t3.personnel_id = t1.personnel_id AND t3.organization_id = t1.organization_id
+LEFT JOIN ranks as t4
+	ON t4.id = t3.rank_id
+LEFT JOIN grades as t5
+	ON t5.id = t4.grade_id
+LEFT JOIN branches as t6
+	ON t6.id = t4.branch_id
+LEFT JOIN activity_dates as t7
+	ON t7.personnel_id = t1.personnel_id AND t7.organization_id = t1.organization_id);
+
+CREATE VIEW `personnel_summary_with_certifications` AS (SELECT
+  t1.personnel_id,
+  t1.organization_id,
+  t1.username,
+  t1.discriminator,
+  t1.citizen_record,
+  t1.citizen_name,
+  t1.handle_name,
+  t1.rank_date,
+  t1.rank_id,
+  t1.grade_id,
+  t1.branch_id,
+  t1.branch_abbreviation,
+  t1.grade_abbreviation,
+  t1.rank_abbreviation,
+  t1.last_date,
+  t2.certification_id,
+  t2.latest_date AS 'certification_date',
+  t2.abbreviation AS 'certification_abbreviation'
+FROM personnel_summary AS t1
+RIGHT JOIN most_recent_certifications AS t2
+	ON t1.personnel_id = t2.personnel_id AND t1.organization_id = t2.organization_id);
+
+CREATE VIEW ranks_details AS (SELECT
+  t1.organization_id,
+  t1.branch_id,
+  t1.grade_id,
+  t1.id as 'rank_id',
+  t2.abbreviation as 'branch_abbreviation',
+  t3.abbreviation as 'grade_abbreviation',
+  t1.abbreviation as 'rank_abbreviation',
+  t2.branch as 'branch_name',
+  t3.grade as 'grade_name',
+  t1.name as 'rank_name'
+FROM ranks as t1
+LEFT JOIN branches as t2
+	ON t1.branch_id = t2.id
+LEFT JOIN grades as t3
+	ON t1.grade_id = t3.id
+ORDER BY branch_abbreviation, grade_abbreviation, rank_abbreviation  
+);
+
+CREATE VIEW `personnel_permissions` AS (WITH summary AS 
+		(WITH personnel_permissions AS 
+			(WITH combined_permissions AS (
+			SELECT t1.personnel_id, t2.* FROM most_recent_rank_change AS t1
+			LEFT JOIN ranks_details AS t2
+				ON t1.rank_id = t2.rank_id)
+		SELECT t1.personnel_id, 1 AS priority, t2.* FROM combined_permissions AS t1
+		INNER JOIN permissions AS t2
+			ON t1.organization_id = t2.subject_id
+		UNION
+		SELECT t1.personnel_id, 2 AS priority, t2.* FROM combined_permissions AS t1
+		INNER JOIN permissions AS t2
+			ON t1.branch_id = t2.subject_id
+		UNION
+		SELECT t1.personnel_id, 3 AS priority, t2.* FROM combined_permissions AS t1
+		INNER JOIN permissions AS t2
+			ON t1.grade_id = t2.subject_id    
+		UNION
+		SELECT t1.personnel_id, 4 AS priority, t2.* FROM combined_permissions AS t1
+		INNER JOIN permissions AS t2
+			ON t1.rank_id = t2.subject_id       
+			UNION
+		SELECT t1.personnel_id, 5 AS priority, t2.* FROM combined_permissions AS t1
+		INNER JOIN permissions AS t2
+			ON t1.personnel_id = t2.subject_id)
+	 SELECT t1.*, ROW_NUMBER() OVER(PARTITION BY t1.personnel_id, t1.organization_id ORDER BY t1.priority DESC) AS rk
+	 FROM personnel_permissions AS t1)
+     SELECT s.*
+FROM summary s
+WHERE s.rk = 1);   
+
+CREATE VIEW `membership` AS (WITH joined_org AS (SELECT t1.personnel_id, t1.organization_id, t1.username, t1.discriminator, MAX(t2.date) as date
+FROM most_recent_discord AS t1
+RIGHT JOIN joined_organization AS t2
+	ON t1.personnel_id = t2.personnel_id AND t1.organization_id = t2.organization_id AND t1.organization_id = t2.joined_organization_id
+GROUP BY t1.personnel_id, t1.organization_id, t1.username, t1.discriminator),
+left_org AS (SELECT t1.personnel_id, t1.organization_id, t1.username, t1.discriminator, MAX(t2.date) as date
+FROM most_recent_discord AS t1
+RIGHT JOIN left_organization AS t2
+	ON t1.personnel_id = t2.personnel_id AND t1.organization_id = t2.organization_id AND t1.organization_id = t2.left_organization_id
+GROUP BY t1.personnel_id, t1.organization_id, t1.username, t1.discriminator)
+SELECT t1.personnel_id, t1.organization_id, t1.username, t1.discriminator, t3.citizen_record, t3.citizen_name, t3.handle_name, t1.date AS 'joined_date', t2.date AS 'left_date', t5.branch_id, t5.grade_id, t5.rank_id, t5.branch_abbreviation, t5.grade_abbreviation, t5.rank_abbreviation, t6.get, t6.post, t6.put, t6.del, t6.proxy
+FROM joined_org AS t1
+LEFT JOIN left_org AS t2
+	ON t1.personnel_id = t2.personnel_id AND t1.organization_id = t2.organization_id
+LEFT JOIN rsi_citizen AS t3
+	ON t1.personnel_id = t3.personnel_id AND t1.organization_id = t3.organization_id
+LEFT JOIN most_recent_rank_change AS t4
+	ON t1.personnel_id = t4.personnel_id AND t1.organization_id = t4.organization_id
+LEFT JOIN ranks_details AS t5
+	ON t4.rank_id = t5.rank_id
+LEFT JOIN personnel_permissions AS t6
+	ON t1.personnel_id = t6.personnel_id AND t1.organization_id = t6.organization_id
+WHERE t1.personnel_id IS NOT NULL AND t1.date IS NOT NULL AND (t1.date > t2.date OR t2.date IS NULL));
